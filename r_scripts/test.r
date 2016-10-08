@@ -1,0 +1,11 @@
+library(DBI)
+library(RSQLite)
+setwd("C:\\Users\\andrei\\dev\\Midas\\db")
+con = dbConnect(RSQLite::SQLite(), dbname = "currencies.sqlite")
+alltables = dbListTables(con)
+print(alltables)
+
+eth = dbGetQuery( con,'select date, close from eth_test' )
+btc = dbGetQuery( con,'select date, close from btc_test' )
+comb = dbGetQuery(con, 'select eth_test.close as eth_close, btc_test.close as btc_close, eth_test.date from eth_test inner join btc_test on (eth_test.date = btc_test.date)')
+reg = lm(eth_close ~ btc_close, data = comb)

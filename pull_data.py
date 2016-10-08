@@ -5,7 +5,7 @@ import sqlite3
 from db_manager import DBManager
 from tick_parser import TickParser
 
-table_name = "eth_test"
+table_name = "btc_test"
 
 def pull_data():
 	chart_data_endpoint = "https://poloniex.com/public?command=returnChartData"
@@ -24,9 +24,9 @@ def pull_data():
 	##print data
 	tp = TickParser(table_name, data)
 
-##db_manager = DBManager()
-##db_manager.create_data_table("eth_test")
-##db_manager.drop_table("eth_test1")
+db_manager = DBManager()
+##db_manager.drop_table(table_name)
 
+db_manager.create_data_table(table_name)
 pull_data()
 
