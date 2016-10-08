@@ -3,6 +3,9 @@ import urllib2
 import json
 import sqlite3
 from db_manager import DBManager
+from tick_parser import TickParser
+
+table_name = "eth_test"
 
 def pull_data():
 	chart_data_endpoint = "https://poloniex.com/public?command=returnChartData"
@@ -18,10 +21,12 @@ def pull_data():
 
 	response = urllib2.urlopen(url)
 	data = json.load(response)
-	print data
+	##print data
+	tp = TickParser(table_name, data)
 
-db_manager = DBManager()
-db_manager.create_data_table("eth_test")
+##db_manager = DBManager()
+##db_manager.create_data_table("eth_test")
 ##db_manager.drop_table("eth_test1")
 
+pull_data()
 
