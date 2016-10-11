@@ -36,7 +36,6 @@ class PoloniexClient:
 	def pull_candle_data(self):
 		url = PoloniexClient.POLO_ENDPOINT + PoloniexClient.CMD_CANDLE + "&" + "currencyPair=" + self.currency_pair + "&" + "start=" + str(self.start) + "&" + "end=" + str(self.end) + "&" + "period=" + str(self.period)
 		response = urllib2.urlopen(url)
-		
 		data = json.load(response)
 		return data
 
