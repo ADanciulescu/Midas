@@ -4,11 +4,12 @@ from trade_simulator import TradeSimulator
 from test_strategy import TestStrategy
 
 def main():
-	##get_tick_data()
+	get_tick_data()
 	##drop_table("eth_test")
 
-	table_name = "USDT_BTC_1470628800_9999999999_14400"
-	simulate_test_strategy(table_name)
+	##table_name = "USDT_BTC_1470628800_9999999999_14400"
+	##table_name = "USDT_BTC_1470628800_9999999999_300"
+	##simulate_test_strategy(table_name)
 
 ##drops table that matches the given table name
 def drop_table(table_name):
@@ -27,10 +28,10 @@ def get_tick_data():
 	##configuration
 	start = 1470628800 ## aug 8 2016
 	end = 9999999999 ## present
-	period = 14400 ## in seconds
+	period = 1800 ## in seconds
 	currency_pair = "USDT_BTC"
 	table_name = "{cp}_{s}_{e}_{p}".format(cp = currency_pair, s = start, e = end, p = period)
-	
+	print table_name	
 	
 	db_manager = DBManager()
 	if db_manager.exists_table(table_name):

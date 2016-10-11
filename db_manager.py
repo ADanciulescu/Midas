@@ -59,7 +59,7 @@ class DBManager:
 		cursor = self.conn.cursor()
 		exec_string = "SELECT name FROM sqlite_master WHERE type='table' AND name='{tn}'".format(tn = table_name)
 		cursor.execute(exec_string)
-		if cursor > 0:
+		if cursor.fetchone() is not None:
 			return True
 		else:
 			return False
