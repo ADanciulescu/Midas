@@ -13,7 +13,7 @@ class TickParser:
 	def insert(self):
 		db_manager = DBManager()
 		for t in self.data:
-			ct = ChartTick(db_manager, self.table_name, t)
+			ct = ChartTick(db_manager, self.table_name, t['date'], t['high'], t['low'], t['open'], t['close'], t['volume'], t['quoteVolume'], t['weightedAverage'])
 			ct.save()
 		db_manager.conn.commit()
 		db_manager.conn.close()

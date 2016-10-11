@@ -17,24 +17,21 @@ class PoloniexClient:
 	def __init__(self, table_name):
 		self.table_name = table_name
 
-	##gets candle data from endpoint and adds it to db
+	##gets tick data from endpoint and adds it to db
 	##called from main
-	def populate_candle_db(self, start, end, period, currency_pair):
+	def populate_tick_db(self, start, end, period, currency_pair):
 		##pull raw json data from endpoint
-		data = self.pull_candle_data(start, end, period, currency_pair)
-		self.store_candle_data(data)
+		data = self.pull_tick_data(start, end, period, currency_pair)
+		self.store_tick_data(data)
 	
 	##enters data into db
-	def store_candle_data(self, data):
+	def store_tick_data(self, data):
 		tp = TickParser(self.table_name, data)
 
-	##returns raw json data from candle endpoint	
-	def pull_candle_data(self, start, end, period, currency_pair):
+	##returns raw json data from tick endpoint	
+	def pull_tick_data(self, start, end, period, currency_pair):
 		url = PoloniexClient.POLO_ENDPOINT + PoloniexClient.CMD_CANDLE + "&" + "currencyPair=" + currency_pair + "&" + "start=" + str(start) + "&" + "end=" + str(end) + "&" + "period=" + str(period)
 		response = urllib2.urlopen(url)
 		data = json.load(response)
 		return data
 
-	##returns raw json data from order book endpoint
-	def pull_order_data(self):
-		return

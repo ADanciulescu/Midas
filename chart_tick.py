@@ -8,19 +8,26 @@ import json
 import sqlite3
 
 class ChartTick:
-	##created ChartTick object from json data entry
-	def __init__(self,db_manager, table_name, json):
+	##created ChartTick object from passed in data
+	def __init__(self,db_manager, table_name, date, high, low, open, close, volume, quoteVolume, weightedAverage):
 		self.table_name = table_name
 		self.db_manager = db_manager
 
-		self.date = json["date"]
-		self.high = json["high"]
-		self.low = json["low"]
-		self.open = json["open"]
-		self.close = json["close"]
-		self.volume = json["volume"]
-		self.quoteVolume = json["quoteVolume"]
-		self.weightedAverage = json["weightedAverage"]
+		self.date = date
+		self.high = high
+		self.low = low
+		self.open = open
+		self.close = close
+		self.volume = volume
+		self.quoteVolume = quoteVolume
+		self.weightedAverage = weightedAverage
+	
+	
+	##uses cursor tuple to create a ChartTick and return it
+	@staticmethod
+	def from_tuple(table_name, tup):
+		dbm = DBManager()
+		return ChartTick(dbm, table_name, tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6], tup[7])
 
 	def save(self):
 		cursor = self.db_manager.conn.cursor()
