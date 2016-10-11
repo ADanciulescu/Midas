@@ -28,7 +28,7 @@ def get_candle_data():
 		print "table with same configuration already exists, deleting it and rebuilding..."
 		drop_table(table_name)
 	db_manager.create_data_table(table_name)
-	pc = PoloniexClient(table_name, start, end, period, currency_pair)
-	pc.run()
+	pc = PoloniexClient(table_name)
+	pc.populate_candle_db( start, end, period, currency_pair)
 
 main()

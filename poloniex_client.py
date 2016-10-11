@@ -14,28 +14,27 @@ class PoloniexClient:
 	CMD_CANDLE = "?command=returnChartData"
 	CMD_ORDER_BOOK = "?command=returnOrderBook"
 
-	def __init__(self, table_name, start, end, period, currency_pair):
+	def __init__(self, table_name):
 		self.table_name = table_name
-		self.start = start
-		self.end = end
-		self.period = period
-		self.currency_pair = currency_pair
 
 	##gets candle data from endpoint and adds it to db
 	##called from main
-	def run(self):
+	def populate_candle_db(self, start, end, period, currency_pair):
 		##pull raw json data from endpoint
-		data = self.pull_candle_data()
+		data = self.pull_candle_data(start, end, period, currency_pair)
 		self.store_candle_data(data)
 	
 	##enters data into db
 	def store_candle_data(self, data):
 		tp = TickParser(self.table_name, data)
 
-	##returns raw json data from endpoint	
-	def pull_candle_data(self):
-		url = PoloniexClient.POLO_ENDPOINT + PoloniexClient.CMD_CANDLE + "&" + "currencyPair=" + self.currency_pair + "&" + "start=" + str(self.start) + "&" + "end=" + str(self.end) + "&" + "period=" + str(self.period)
+	##returns raw json data from candle endpoint	
+	def pull_candle_data(self, start, end, period, currency_pair):
+		url = PoloniexClient.POLO_ENDPOINT + PoloniexClient.CMD_CANDLE + "&" + "currencyPair=" + currency_pair + "&" + "start=" + str(start) + "&" + "end=" + str(end) + "&" + "period=" + str(period)
 		response = urllib2.urlopen(url)
 		data = json.load(response)
 		return data
 
+	##returns raw json data from order book endpoint
+	def pull_order_data(self):
+		return
