@@ -44,3 +44,14 @@ class DBManager:
 		self.conn.commit()
 		self.conn.close()
 
+	##returns true if table exists otherwise false
+	def exists_table(self, table_name):
+		self.conn = sqlite3.connect(self.sqlfile)
+		cursor = self.conn.cursor()
+		exec_string = "SELECT name FROM sqlite_master WHERE type='table' AND name='{tn}'".format(tn = table_name)
+		cursor.execute(exec_string)
+		if cursor > 0:
+			return True
+		else:
+			return False
+
