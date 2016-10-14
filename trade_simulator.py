@@ -52,18 +52,18 @@ class TradeSimulator:
 		if operation.op == Operation.NONE_OP or operation.amount == 0:
 			pass
 		elif operation.op == Operation.BUY_OP:
-				print "Bought: ", self.amount
+				print "Bought: ", amount
 				self.bank -= amount*price
 				self.bits += amount
 		elif operation.op == Operation.SELL_OP:
 			if self.bits > amount: ##if there are enough bits to sell
-				print "Sold: ", self.amount
+				print "Sold: ", amount
 				self.bank += amount*price
 				self.bits -= amount
 			else:
 				print "Sell operation failed because not enough bits are owned"
 				print "Bits: " , self.bits
-				print "Sold Amount Attempted: " , self.amount
+				print "Sold Amount Attempted: " , amount
 
 		
 

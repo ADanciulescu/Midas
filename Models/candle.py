@@ -44,7 +44,7 @@ class Candle:
 
 	##returns candle objects for the given table_name
 	@staticmethod
-	def get_candle_array(self, table_name):
+	def get_candle_array(table_name):
 		db_manager = DBManager()
 
 		##returns a cursor pointing to all candles linked to the table_name
@@ -55,7 +55,7 @@ class Candle:
 		##loop through cursor and add all candles to array
 		row = cursor.fetchone()
 		while row is not None:
-			t = Candle.from_tuple(self.table_name, row) 
+			t = Candle.from_tuple(table_name, row) 
 			candles.append(t)
 			row = cursor.fetchone()
 		return candles

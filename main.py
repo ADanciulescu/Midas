@@ -8,12 +8,12 @@ from candle_table import CandleTable
 ##TODO: move DBManager logic to candles and table classes
 
 def main():
-	get_candle_data()
+	##get_candle_data()
 	##drop_table("eth_test")
 
-	##table_name = "USDT_BTC_1470628800_9999999999_14400"
+	table_name = "USDT_BTC_1470628800_9999999999_14400"
 	##table_name = "USDT_BTC_1470628800_9999999999_300"
-	##simulate_test_strategy(table_name)
+	simulate_test_strategy(table_name)
 
 ##drops table that matches the given table name
 def drop_table(table_name):
@@ -30,7 +30,7 @@ def simulate_test_strategy(table_name):
 def get_candle_data():
 	##configuration
 	curr_ref = "USDT"
-	curr_target = "BTC"
+	curr_target = "ETH"
 	start = 1470628800 ## aug 8 2016
 	end = 9999999999 ## present
 	period = 14400 ## in seconds
