@@ -1,9 +1,9 @@
-## adds ticks to table
+## adds candles to table
 
-from chart_tick import ChartTick
+from candle import Candle
 from db_manager import DBManager
 
-class TickParser:
+class CandleParser:
 	def __init__(self, table_name, data):
 		self.table_name = table_name
 		self.data = data
@@ -12,8 +12,8 @@ class TickParser:
 	
 	def insert(self):
 		db_manager = DBManager()
-		for t in self.data:
-			ct = ChartTick(db_manager, self.table_name, t['date'], t['high'], t['low'], t['open'], t['close'], t['volume'], t['quoteVolume'], t['weightedAverage'])
+		for c in self.data:
+			ct = Candle(db_manager, self.table_name, c['date'], c['high'], c['low'], c['open'], c['close'], c['volume'], c['quoteVolume'], c['weightedAverage'])
 			ct.save()
 		db_manager.conn.commit()
 		db_manager.conn.close()

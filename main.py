@@ -2,9 +2,13 @@ from poloniex_client import PoloniexClient
 from db_manager import DBManager
 from trade_simulator import TradeSimulator
 from test_strategy import TestStrategy
+from candle_table import CandleTable
+
+##TODO: rename tick to candle
+##TODO: move DBManager logic to candles and table classes
 
 def main():
-	get_tick_data()
+	get_candle_data()
 	##drop_table("eth_test")
 
 	##table_name = "USDT_BTC_1470628800_9999999999_14400"
@@ -13,8 +17,7 @@ def main():
 
 ##drops table that matches the given table name
 def drop_table(table_name):
-	db_manager = DBManager()
-	db_manager.drop_table(table_name)
+	CandleTable.drop_table(table_name)
 
 	
 def simulate_test_strategy(table_name):
@@ -22,24 +25,26 @@ def simulate_test_strategy(table_name):
 	trade_sim = TradeSimulator(table_name, test_strat)
 	trade_sim.run()
 
-##grabs tick data from poloniex and enters it into db
+##grabs candle data from poloniex and enters it into db
 ##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
-def get_tick_data():
+def get_candle_data():
 	##configuration
+	curr_ref = "USDT"
+	curr_target = "BTC"
 	start = 1470628800 ## aug 8 2016
 	end = 9999999999 ## present
-	period = 1800 ## in seconds
-	currency_pair = "USDT_BTC"
-	table_name = "{cp}_{s}_{e}_{p}".format(cp = currency_pair, s = start, e = end, p = period)
-	print table_name	
+	period = 14400 ## in seconds
 	
-	db_manager = DBManager()
-	if db_manager.exists_table(table_name):
+	table_name = CandleTable.calc_table_name(curr_ref, curr_target, start, end, period)
+	
+	##if exists drop firt and recreate
+	if CandleTable.exists_table(table_name):
 		##db_manager.drop_table(table_name)
 		print "table with same configuration already exists, deleting it and rebuilding..."
 		drop_table(table_name)
-	db_manager.create_tick_table(table_name)
+	ct = CandleTable(curr_ref, curr_target, start, end, period)
+	ct.save()
 	pc = PoloniexClient(table_name)
-	pc.populate_tick_db( start, end, period, currency_pair)
+	pc.populate_candle_db(curr_ref, curr_target, start, end, period)
 
 main()

@@ -5,7 +5,7 @@ import urllib2
 import json
 import sqlite3
 from db_manager import DBManager
-from tick_parser import TickParser
+from candle_parser import CandleParser
 
 
 class PoloniexClient:
@@ -17,19 +17,20 @@ class PoloniexClient:
 	def __init__(self, table_name):
 		self.table_name = table_name
 
-	##gets tick data from endpoint and adds it to db
+	##gets candle data from endpoint and adds it to db
 	##called from main
-	def populate_tick_db(self, start, end, period, currency_pair):
+	def populate_candle_db(self, curr_ref, curr_target, start, end, period):
+		curr_pair = curr_ref + "_" + curr_target
 		##pull raw json data from endpoint
-		data = self.pull_tick_data(start, end, period, currency_pair)
-		self.store_tick_data(data)
+		data = self.pull_candle_data(curr_pair, start, end, period)
+		self.store_candle_data(data)
 	
 	##enters data into db
-	def store_tick_data(self, data):
-		tp = TickParser(self.table_name, data)
+	def store_candle_data(self, data):
+		tp = CandleParser(self.table_name, data)
 
-	##returns raw json data from tick endpoint	
-	def pull_tick_data(self, start, end, period, currency_pair):
+	##returns raw json data from candle endpoint	
+	def pull_candle_data(self, currency_pair, start, end, period):
 		url = PoloniexClient.POLO_ENDPOINT + PoloniexClient.CMD_CANDLE + "&" + "currencyPair=" + currency_pair + "&" + "start=" + str(start) + "&" + "end=" + str(end) + "&" + "period=" + str(period)
 		response = urllib2.urlopen(url)
 		data = json.load(response)

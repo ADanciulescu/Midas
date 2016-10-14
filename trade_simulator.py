@@ -3,7 +3,7 @@
 ##prints stats about trading session
 
 from db_manager import DBManager
-from chart_tick import ChartTick
+from candle import Candle
 from test_strategy import TestStrategy
 from operation import Operation
 
@@ -18,13 +18,13 @@ class TradeSimulator:
 		##keeps track of bits owned
 		self.bits = 0
 
-		self.ticks = []
+		self.candles = []
 
 	def run(self):
-		self.ticks = self.get_tick_array()
-		self.strategy.ticks = self.ticks
+		self.candles = Candle.get_candle_array(self.table_name)
+		self.strategy.cur_traded_candles = self.candles
 
-		for i, t in enumerate(self.ticks):
+		for i, t in enumerate(self.candles):
 			operation = self.strategy.decide(i, self.bits)
 			self.perform_operation(operation, t)
 
@@ -37,44 +37,35 @@ class TradeSimulator:
 		print "Bits:" + str(self.bits)
 		print "Net Worth:" + str(self.net_worth)
 
-	## returns net_worth which is equal to money + w/e money you get by selling bits during the last tick
+	## returns net_worth which is equal to money + w/e money you get by selling bits during the last candle 
 	def update_net_worth(self):
 		self.net_worth = self.bank
-		last_price = self.ticks[-1].close
+		last_price = self.candles[-1].close
 		self.net_worth += self.bits*last_price
 
 	##performs market operation updating bits and bank
-	def perform_operation(self, operation, tick):
+	def perform_operation(self, operation, candle):
 		
 		amount = operation.amount
-		price = tick.close
+		price = candle.close
 		
 		if operation.op == Operation.NONE_OP or operation.amount == 0:
 			pass
 		elif operation.op == Operation.BUY_OP:
-			self.bank -= amount*price
-			self.bits += amount
+				print "Bought: ", self.amount
+				self.bank -= amount*price
+				self.bits += amount
 		elif operation.op == Operation.SELL_OP:
-			self.bank += amount*price
-			self.bits -= amount
+			if self.bits > amount: ##if there are enough bits to sell
+				print "Sold: ", self.amount
+				self.bank += amount*price
+				self.bits -= amount
+			else:
+				print "Sell operation failed because not enough bits are owned"
+				print "Bits: " , self.bits
+				print "Sold Amount Attempted: " , self.amount
 
 		
-	##returns array of json entries each corresponding to a tick
-	def get_tick_array(self):
-		db_manager = DBManager()
-
-		##returns a cursor pointing to all ticks linked to the table_name
-		cursor = db_manager.get_tick_cursor(self.table_name)
-		
-		ticks = []
-
-		##loop through cursor and add all ticks to array
-		row = cursor.fetchone()
-		while row is not None:
-			t = ChartTick.from_tuple(self.table_name, row) 
-			ticks.append(t)
-			row = cursor.fetchone()
-		return ticks
 
 
 
