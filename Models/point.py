@@ -17,7 +17,7 @@ class Point:
 	@staticmethod
 	def from_tuple(table_name, tup):
 		dbm = DBManager()
-		return Candle(dbm, table_name, tup[1], tup[2])
+		return Point(dbm, table_name, tup[1], tup[2])
 	
 	def pprint(self):
 		print ""

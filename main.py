@@ -5,6 +5,7 @@ from test_strategy import TestStrategy
 from currency_trailer_strategy import CurrencyTrailerStrategy
 from candle_table import CandleTable
 from point_populator import PointPopulator
+from simple_buyer_strategy import SimpleBuyerStrategy
 
 ##TODO: rename tick to candle
 ##TODO: move DBManager logic to candles and table classes
@@ -17,8 +18,9 @@ def main():
 	table_name_ETH_14400 = "USDT_ETH_1470628800_9999999999_14400"
 	##table_name = "USDT_BTC_1470628800_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
-	simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_BTC_14400)
-	##populate_points(table_name_BTC_14400)
+	simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
+	##populate_points(table_name_BTC_14400 + PointPopulator.EXP)
+	##simulate_buyer_strategy(table_name_ETH_14400)
 
 ##drops table that matches the given table name
 def drop_table(table_name):
@@ -30,14 +32,19 @@ def simulate_test_strategy(table_name):
 	trade_sim = TradeSimulator(table_name, test_strat)
 	trade_sim.run()
 
+def simulate_buyer_strategy(table_name):
+	strat = SimpleBuyerStrategy()
+	trade_sim = TradeSimulator(table_name, strat)
+	trade_sim.run()
+
 def simulate_trailer_strategy(tn_reference, tn_target):
-	strat = CurrencyTrailerStrategy(tn_reference)
+	strat = CurrencyTrailerStrategy(tn_reference, mode = CurrencyTrailerStrategy.EXP)
 	trade_sim = TradeSimulator(tn_target, strat)
 	trade_sim.run()
 
 def populate_points(table_name):
 	pp = PointPopulator(table_name)
-	pp.create_moving_avg_simple()
+	pp.populate()
 
 ##grabs candle data from poloniex and enters it into db
 ##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)

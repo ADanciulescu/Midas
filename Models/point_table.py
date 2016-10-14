@@ -32,3 +32,15 @@ class PointTable:
 		cursor = db_manager.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor
+	
+	##returns value for given index
+	@staticmethod
+	def lookup(table_name, index):
+		print index
+		db_manager = DBManager()
+		cursor = db_manager.get_cursor()
+		exec_string = "SELECT value FROM '{tn}' WHERE id = {i}".format(tn = table_name, i = index)
+		print exec_string
+		cursor.execute(exec_string)
+		return cursor.fetchone()
+
