@@ -13,10 +13,11 @@ class TradeSimulator:
 		self.table_name = table_name
 		self.strategy = strategy
 	
-		##keeps track of money spent and made
-		self.bank = 0
-		##keeps track of bits owned
-		self.bits = 0
+		self.bank = 0 ##keeps track of money spent and made
+		self.bits = 0 ##keeps track of bits owned
+		self.total_bought = 0
+		self.total_sold = 0
+
 
 		self.candles = []
 
@@ -26,12 +27,14 @@ class TradeSimulator:
 
 		for i, t in enumerate(self.candles):
 			operation = self.strategy.decide(i, self.bits)
-			self.perform_operation(operation, t)
+			self.process_operation(operation, t)
 
 		self.update_net_worth()
 		self.print_results()
 
 	def print_results(self):
+		print "Total Bought: ", self.total_bought
+		print "Total Sold: ", self.total_sold
 		print "Ended with: "
 		print "Money:" + str(self.bank)
 		print "Bits:" + str(self.bits)
@@ -44,7 +47,7 @@ class TradeSimulator:
 		self.net_worth += self.bits*last_price
 
 	##performs market operation updating bits and bank
-	def perform_operation(self, operation, candle):
+	def process_operation(self, operation, candle):
 		
 		amount = operation.amount
 		price = candle.close
@@ -52,18 +55,28 @@ class TradeSimulator:
 		if operation.op == Operation.NONE_OP or operation.amount == 0:
 			pass
 		elif operation.op == Operation.BUY_OP:
-				print "Bought: ", amount
-				self.bank -= amount*price
-				self.bits += amount
+			self.perform_buy(amount, price)
 		elif operation.op == Operation.SELL_OP:
-			if self.bits > amount: ##if there are enough bits to sell
-				print "Sold: ", amount
-				self.bank += amount*price
-				self.bits -= amount
+			if self.bits >= amount: ##if there are enough bits to sell
+				self.perform_sell(amount, price)
 			else:
 				print "Sell operation failed because not enough bits are owned"
 				print "Bits: " , self.bits
 				print "Sold Amount Attempted: " , amount
+	
+	def perform_buy(self, amount, price):
+		##print "Bought: ", amount
+		self.bank -= amount*price
+		self.bits += amount
+		self.total_bought += amount
+	
+	def perform_sell(self, amount, price):
+		##print "Sold: ", amount
+		self.bank += amount*price
+		self.bits -= amount
+		self.total_sold += amount
+
+
 
 		
 

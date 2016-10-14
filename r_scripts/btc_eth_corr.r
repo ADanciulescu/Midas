@@ -6,8 +6,8 @@ con = dbConnect(RSQLite::SQLite(), dbname = "currencies.sqlite")
 alltables = dbListTables(con)
 print(alltables)
 
-eth = dbGetQuery( con,'select date, close from USDT_ETH_1470628800_9999999999_1800' )
-btc = dbGetQuery( con,'select date, close from USDT_BTC_1470628800_9999999999_1800' )
+eth = dbGetQuery( con,'select date, close from USDT_ETH_1470628800_9999999999_14400' )
+btc = dbGetQuery( con,'select date, close from USDT_BTC_1470628800_9999999999_14400' )
 
 
 comb1 = merge(x = eth, y = btc, by = "date") 
@@ -19,6 +19,6 @@ comb2 = merge(x = eth, y = btc, by = "date")
 
 
 
-reg1 = lm(close.x ~ close.y, data = comb1)
-reg2 = lm(close.x ~ close.y, data = comb2)
+##reg1 = lm(close.x ~ close.y, data = comb1)
+##reg2 = lm(close.x ~ close.y, data = comb2)
 

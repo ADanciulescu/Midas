@@ -19,12 +19,23 @@ class DBManager:
 	def get_cursor(self):
 		return self.conn.cursor()
 
+	## drops the table by name
+	@staticmethod	
+	def drop_table(table_name):
+		db_manager = DBManager()
+		cursor = db_manager.get_cursor()
+		cursor.execute('DROP TABLE ' + table_name)
+		db_manager.save_and_close()
 
-	##returns cursor to all candles in table_name)
-	def get_candle_cursor(self, table_name):
-		self.conn = sqlite3.connect(self.sqlfile)
-		cursor = self.conn.cursor()
-		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
-		return cursor
-
-
+	##returns true if table exists otherwise false
+	@staticmethod	
+	def exists_table(table_name):
+		db_manager = DBManager()
+		cursor = db_manager.get_cursor()
+		exec_string = "SELECT name FROM sqlite_master WHERE type='table' AND name='{tn}'".format(tn = table_name)
+		cursor.execute(exec_string)
+		if cursor.fetchone() is not None:
+			return True
+		else:
+			return False
+		db_manager.save_and_close()

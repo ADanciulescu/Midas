@@ -1,4 +1,6 @@
 ## used to get info about candle table and create new candle tables
+	##each row is a candle and holds data about the candle 
+	##columns: id, date, high, low, open, close, volume, quoteVolume, weightedAverage
 
 from db_manager import DBManager
 
@@ -32,10 +34,7 @@ class CandleTable:
 		return "{cr}_{ct}_{s}_{e}_{p}".format(cr = curr_ref,ct = curr_target, s = start, e = end, p = period)
 
 
-	
-	##creates table for candle data
-	##each row is a candle and holds data about the candle 
-	##columns: id, date, high, low, open, close, volume, quoteVolume, weightedAverage
+	##creates candle table in db
 	def create_candle_table(self):
 		db_manager = DBManager()
 		cursor = db_manager.get_cursor()
@@ -46,26 +45,14 @@ class CandleTable:
 		db_manager.save_and_close()
 	
 	
-	## drops the table by name
-	@staticmethod	
-	def drop_table(table_name):
+	##returns cursor to all candles in table_name)
+	@staticmethod
+	def get_candle_cursor(table_name):
 		db_manager = DBManager()
 		cursor = db_manager.get_cursor()
-		cursor.execute('DROP TABLE ' + table_name)
-		db_manager.save_and_close()
+		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
+		return cursor
 
-	##returns true if table exists otherwise false
-	@staticmethod	
-	def exists_table(table_name):
-		db_manager = DBManager()
-		cursor = db_manager.get_cursor()
-		exec_string = "SELECT name FROM sqlite_master WHERE type='table' AND name='{tn}'".format(tn = table_name)
-		cursor.execute(exec_string)
-		if cursor.fetchone() is not None:
-			return True
-		else:
-			return False
-		db_manager.save_and_close()
 
 	##returns currency name of the reference currency that the other is measured in terms of
 	@staticmethod

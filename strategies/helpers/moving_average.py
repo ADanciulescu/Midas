@@ -18,14 +18,14 @@ class MovingAverage:
 		avg = 0
 
 		##special case with less points
-		if time < (self.POINTS_SIMPLE - 1 ):
-			for i in range(0,time + 1):
-				total += self.candles[i]
-			avg = total/(time+1)
+		if self.time < (self.POINTS_SIMPLE - 1 ):
+			for i in range(0, self.time + 1):
+				total += self.candles[i].mid
+			avg = total/(self.time + 1)
 		else:
-			for i in range(time - self.POINTS_SIMPLE, time +1):
-				total += self.candles[i]
-			avg = total/(time+1)
+			for i in range(self.time - self.POINTS_SIMPLE, self.time +1):
+				total += self.candles[i].mid
+			avg = total/(self.POINTS_SIMPLE)
 		return avg
 
 

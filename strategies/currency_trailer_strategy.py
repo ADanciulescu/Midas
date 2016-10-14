@@ -24,7 +24,7 @@ class CurrencyTrailerStrategy:
 		self.predicter_table_name = predicter_table_name
 		self.predicter_candles = Candle.get_candle_array(predicter_table_name)
 		
-		self.table_period = CandleTable.get_period(predicter_table)
+		self.table_period = CandleTable.get_period(predicter_table_name)
 
 		self.candles_to_skip = 0
 		## if want to trade more often than data available, don't skip anything else skip however many table periods fit into TIME_PERIOD
@@ -37,17 +37,17 @@ class CurrencyTrailerStrategy:
 	##time represents which candle the trade_simulator is processing atm
 	def decide(self, time, bits):
 		##only return a trade when time_period has passed and sufficient candles are skipped
-		if time % self.candles_to_skip == 0:
-			mv_past = MovingAverage(predicter_candles, (time-self.candles_to_skip))
-			mv_present = MovingAverage(predicter_candles, time)
+		if time % self.candles_to_skip == 0 and time > self.candles_to_skip:
+			mv_past = MovingAverage(self.predicter_candles, (time-self.candles_to_skip))
+			mv_present = MovingAverage(self.predicter_candles, time)
 			avg_past = mv_past.simple()
 			avg_present = mv_present.simple()
 
 			if avg_past < avg_present: ##trending up
 				return Operation(Operation.BUY_OP, self.AMOUNT)
-			elif avg_past > avg_presnet: ##trending down
+			elif avg_past > avg_present: ##trending down
 				return Operation(Operation.SELL_OP, self.AMOUNT)
-			elif avg_past == avg_presnet: ##stable trend
+			elif avg_past == avg_present: ##stable trend
 				return Operation(Operation.NONE_OP, 0)
 
 		##do nothing rest of the time
