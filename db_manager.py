@@ -5,6 +5,7 @@ class DBManager:
 
 	INTEGER = "INTEGER"
 	REAL = "REAL"
+	TEXT = "TEXT"
 	NOT_NULL = "NOT NULL"
 	
 	def __init__(self):
