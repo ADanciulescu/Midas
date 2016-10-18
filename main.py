@@ -8,6 +8,7 @@ from point_populator import PointPopulator
 from simple_buyer_strategy import SimpleBuyerStrategy
 from trend_fetcher import TrendFetcher
 from trend_cutter import TrendCutter
+from tools import date_to_timestamp
 
 ##TODO: rename tick to candle
 ##TODO: move DBManager logic to candles and table classes
@@ -24,14 +25,14 @@ def main():
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
 	populate_points(table_name_ETH_14400 + PointPopulator.SIMPLE_ROC)
 	##simulate_buyer_strategy(table_name_ETH_14400)
-	##grab_trend(table_name_ethereum, "ethereum", "07/2016", 3)
-	##cut_trend(table_name_BTC_14400)
+	##grab_trend(table_name_ethereum, "ethereum", "08/2016", 3)
+	##cut_trend(table_name_ETH_14400, table_name_ethereum)
 	
-	##date_to_timestamp("2015-02-03")
+	##print date_to_timestamp("2016-08-01")
 
 ## cut from the trend table to create a new trend table that matches the given candle table
-def cut_trend(c_table_name):
-	tc = TrendCutter(c_table_name)
+def cut_trend(c_table_name, t_table_name):
+	tc = TrendCutter(c_table_name, t_table_name)
 	tc.create_cut_table()
 
 ##grabs google trends data
