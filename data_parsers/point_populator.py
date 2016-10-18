@@ -8,8 +8,9 @@ from db_manager import DBManager
 
 class PointPopulator():
 
-	SIMPLE = "___SIMPLE_AVG"
-	EXP = "___EXP_AVG"
+	SIMPLE_AVG = "___SIMPLE_AVG"
+	EXP_AVG = "___EXP_AVG"
+	SIMPLE_ROC = "___SIMPLE_ROC"
 
 	def __init__(self, table_name):
 		self.table_name = table_name
@@ -17,10 +18,12 @@ class PointPopulator():
 
 	##based on table name it decides what type of points to populate with
 	def populate(self):
-			if self.SIMPLE in self.table_name:
+			if self.SIMPLE_AVG in self.table_name:
 				self.create_moving_avg_simple()
-			elif self.EXP in self.table_name:
+			elif self.EXP_AVG in self.table_name:
 				self.create_moving_avg_exp()
+			elif self.SIMPLE_ROC in self.table_name:
+				self.create_roc()
 	
 	def create_moving_avg_simple(self):
 		pt_name = self.table_name
@@ -67,4 +70,25 @@ class PointPopulator():
 
 
 
+	def create_roc(self):
+		pt_name = self.table_name
+		
+		##if already exists, drop it first and then recreate
+		if DBManager.exists_table(pt_name):
+			DBManager.drop_table(pt_name)
+		
+		pt = PointTable(pt_name)
+		pt.save()
+
+		candles = Candle.get_candle_array(self.candle_table_name)
+		dbm = DBManager()
+		for i, c in enumerate(candles):
+			## can't create ROC for i = 0
+			if i > 0:
+
+				roc_val = candles[i].mid - candles[i-1].mid
+				date = c.date
+				p = Point(dbm, pt_name, date, roc_val)
+				p.save()
+		dbm.save_and_close()
 

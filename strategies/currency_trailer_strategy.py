@@ -75,9 +75,9 @@ class CurrencyTrailerStrategy:
 	def create_table(self, tn, mode):
 		dbm = DBManager()
 		if mode == self.SIMPLE:
-			point_table_name = tn + PointPopulator.SIMPLE
+			point_table_name = tn + PointPopulator.SIMPLE_AVG
 		else:
-			point_table_name = tn + PointPopulator.EXP
+			point_table_name = tn + PointPopulator.EXP_AVG
 
 		if dbm.exists_table(point_table_name): ##if already exists, no need to populate
 			pass

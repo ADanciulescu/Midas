@@ -8,8 +8,9 @@ print(alltables)
 
 eth = dbGetQuery( con,'select date, close from USDT_ETH_1470628800_9999999999_14400' )
 btc = dbGetQuery( con,'select date, close from USDT_BTC_1470628800_9999999999_14400' )
+eth_trend = dbGetQuery( con,'select date, hits from ethereum_table_1470628800_1476432000' )
 avg = dbGetQuery( con,'select date, value from USDT_BTC_1470628800_9999999999_14400___EXP_AVG' )
-
+eth_roc = dbGetQuery( con,'select date, value from USDT_ETH_1470628800_9999999999_14400___SIMPLE_ROC' )
 
 comb1 = merge(x = eth, y = btc, by = "date") 
 
@@ -17,6 +18,8 @@ comb1 = merge(x = eth, y = btc, by = "date")
 btc$date[] = btc$date[] - 3600
 
 comb2 = merge(x = eth, y = btc, by = "date") 
+
+comb3 = merge(x = eth, y = eth_trend, all = TRUE) 
 
 
 

@@ -22,16 +22,16 @@ def main():
 	##table_name = "USDT_BTC_1470628800_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
-	##populate_points(table_name_BTC_14400 + PointPopulator.EXP)
+	populate_points(table_name_ETH_14400 + PointPopulator.SIMPLE_ROC)
 	##simulate_buyer_strategy(table_name_ETH_14400)
 	##grab_trend(table_name_ethereum, "ethereum", "07/2016", 3)
-	cut_trend(table_name_BTC_14400, table_name_ethereum)
+	##cut_trend(table_name_BTC_14400)
 	
 	##date_to_timestamp("2015-02-03")
 
 ## cut from the trend table to create a new trend table that matches the given candle table
-def cut_trend(c_table_name, t_table_name):
-	tc = TrendCutter(c_table_name, t_table_name)
+def cut_trend(c_table_name):
+	tc = TrendCutter(c_table_name)
 	tc.create_cut_table()
 
 ##grabs google trends data
