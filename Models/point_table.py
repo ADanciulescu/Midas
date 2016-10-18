@@ -44,3 +44,4 @@ class PointTable:
 		cursor.execute(exec_string)
 		return cursor.fetchone()
 
+

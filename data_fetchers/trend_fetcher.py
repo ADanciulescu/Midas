@@ -1,11 +1,11 @@
 ## fetches trends from google api
 
 from pytrends.request import TrendReq
-from trends_parser import TrendsParser
+from trend_parser import TrendParser
 from db_manager import DBManager
 from trend_table import TrendTable
 
-class TrendsFetcher:
+class TrendFetcher:
 	## num_months less than 4 will give daily level data
 	## date format is "01/2015" etc
 	def __init__(self, table_name, keyword, date, num_months):
@@ -26,7 +26,7 @@ class TrendsFetcher:
 	
 	def fetch(self):
 		data = self.pytrend.trend(self.payload)
-		tp = TrendsParser(self.table_name, data)
+		tp = TrendParser(self.table_name, data)
 		tp.insert()
 
 

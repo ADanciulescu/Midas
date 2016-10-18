@@ -2,8 +2,9 @@
 
 from db_manager import DBManager
 from trend import Trend
+from tools import date_to_timestamp
 
-class TrendsParser():
+class TrendParser():
 
 	def __init__(self, table_name, data):
 		self.table_name = table_name
@@ -14,7 +15,8 @@ class TrendsParser():
 		rows = self.data["table"]["rows"]
 		dbm = DBManager()
 		for r in rows:
-			date = r["c"][0]["v"]
+			date_string = r["c"][0]["v"]
+			date = date_to_timestamp(date_string)
 			hits = r["c"][1]["f"]
 			t = Trend(dbm, self.table_name, date, hits)
 			t.save()

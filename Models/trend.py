@@ -32,8 +32,11 @@ class Trend:
 		exec_string = "INSERT INTO {tn} ({nf_date}, {nf_hits}) VALUES\
 				(\"{v_date}\", {v_hits})"\
 			.format(tn = self.table_name, nf_date = TrendTable.DATE, nf_hits = TrendTable.HITS, v_date = self.date, v_hits = self.hits)
-		print exec_string
-		cursor.execute(exec_string)
+		
+		try:
+			cursor.execute(exec_string)
+		except:
+			print "Unable to insert trend into database, most likely a duplicate"
 			
 	
 	##returns trend objects for the given table_name
