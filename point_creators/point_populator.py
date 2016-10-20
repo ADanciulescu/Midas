@@ -5,6 +5,7 @@ from candle import Candle
 from point import Point
 from point_table import PointTable
 from db_manager import DBManager
+from roc_calculator import ROCCalculator
 
 class PointPopulator():
 
@@ -16,16 +17,14 @@ class PointPopulator():
 		self.table_name = table_name
 		self.candle_table_name = table_name.split("___")[0]
 
-	##based on table name it decides what type of points to populate with
-	def populate(self):
-			if self.SIMPLE_AVG in self.table_name:
-				self.create_moving_avg_simple()
-			elif self.EXP_AVG in self.table_name:
-				self.create_moving_avg_exp()
-			elif self.SIMPLE_ROC in self.table_name:
-				self.create_roc()
+	##passed in an array of pts, save each point
+	def save_pts(self, dbm, pt_array):
+		for p in pt_array:
+			p.save()
+		dbm.save_and_close()
 	
-	def create_moving_avg_simple(self):
+	##calculates and inserts simple moving average points in sql table
+	def create_moving_avg_simple(self, num_history_pts):
 		pt_name = self.table_name
 		
 		##if already exists, drop it first and then recreate
@@ -37,15 +36,12 @@ class PointPopulator():
 
 		candles = Candle.get_candle_array(self.candle_table_name)
 		dbm = DBManager()
-		for i, c in enumerate(candles):
-			mv = MovingAverage(self.table_name, candles, i)
-			mvs = mv.simple()
-			date = c.date
-			p = Point(dbm, pt_name, date, mvs)
-			p.save()
-		dbm.save_and_close()
+		mv = MovingAverage(dbm, pt_name, candles)
+		pt_array = mv.simple(num_history_pts)
+		self.save_pts(dbm, pt_array)
 
 
+	##calculates and inserts exponential moving average points in sql table
 	def create_moving_avg_exp(self):
 
 		pt_name = self.table_name
@@ -58,18 +54,12 @@ class PointPopulator():
 
 		candles = Candle.get_candle_array(self.candle_table_name)
 		dbm = DBManager()
-		for i, c in enumerate(candles):
-			print "wtf"
-			mv = MovingAverage(self.table_name, candles, i)
-			mvs = mv.exponential()
-			date = c.date
-			p = Point(dbm, pt_name, date, mvs)
-			p.save()
-			dbm.conn.commit()
-		dbm.save_and_close()
+		mv = MovingAverage(dbm, pt_name, candles)
+		pt_array = mv.exponential()
+		self.save_pts(dbm, pt_array)
 
 
-
+	##calculates and inserts simple roc points in sql table
 	def create_roc(self):
 		pt_name = self.table_name
 		
@@ -82,13 +72,6 @@ class PointPopulator():
 
 		candles = Candle.get_candle_array(self.candle_table_name)
 		dbm = DBManager()
-		for i, c in enumerate(candles):
-			## can't create ROC for i = 0
-			if i > 0:
-
-				roc_val = candles[i].mid - candles[i-1].mid
-				date = c.date
-				p = Point(dbm, pt_name, date, roc_val)
-				p.save()
-		dbm.save_and_close()
-
+		r = ROCCalculator(dbm, pt_name, candles)
+		pt_array = r.simple()
+		self.save_pts(dbm, pt_array)

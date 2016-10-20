@@ -15,9 +15,9 @@ eth_roc = dbGetQuery( con,'select date, value from USDT_ETH_1470628800_999999999
 comb1 = merge(x = eth, y = btc, by = "date") 
 
 ##offset btc by a mulitple of 1800
-eth$date[] <- eth$date[] - 518400 
-eth$close[] <- eth$close[] * 3
-eth_roc$value[] <- (eth_roc$value[] * 10) + 30
+##eth$date[] <- eth$date[] - 518400 
+eth$close[] <- eth$close[] * 5
+##eth_roc$value[] <- (eth_roc$value[] * 10) + 30
 
 comb2 = merge(x = eth, y = btc, by = "date") 
 

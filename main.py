@@ -23,7 +23,9 @@ def main():
 	##table_name = "USDT_BTC_1470628800_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
-	populate_points(table_name_ETH_14400 + PointPopulator.SIMPLE_ROC)
+	##populate_sim_avg_points(table_name_ETH_14400, 10)
+	populate_sim_roc_points(table_name_ETH_14400)
+	##populate_exp_avg_points(table_name_ETH_14400)
 	##simulate_buyer_strategy(table_name_ETH_14400)
 	##grab_trend(table_name_ethereum, "ethereum", "08/2016", 3)
 	##cut_trend(table_name_ETH_14400, table_name_ethereum)
@@ -60,9 +62,20 @@ def simulate_trailer_strategy(tn_reference, tn_target):
 	trade_sim = TradeSimulator(tn_target, strat)
 	trade_sim.run()
 
-def populate_points(table_name):
-	pp = PointPopulator(table_name)
-	pp.populate()
+def populate_sim_avg_points(source_table_name, num_history_points):
+	pt_table_name = source_table_name + PointPopulator.SIMPLE_AVG + "_" + str(num_history_points) 
+	pp = PointPopulator(pt_table_name)
+	pp.create_moving_avg_simple(num_history_points)
+
+def populate_exp_avg_points(source_table_name):
+	pt_table_name = source_table_name + PointPopulator.EXP_AVG 
+	pp = PointPopulator(pt_table_name)
+	pp.create_moving_avg_exp()
+
+def populate_sim_roc_points(source_table_name):
+	pt_table_name = source_table_name + PointPopulator.SIMPLE_ROC 
+	pp = PointPopulator(pt_table_name)
+	pp.create_roc()
 
 ##grabs candle data from poloniex and enters it into db
 ##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
