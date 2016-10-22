@@ -9,6 +9,7 @@ from simple_buyer_strategy import SimpleBuyerStrategy
 from trend_fetcher import TrendFetcher
 from trend_cutter import TrendCutter
 from tools import date_to_timestamp
+from two_avg_trend_strategy import TwoAvgTrendStrategy
 
 ##TODO: rename tick to candle
 ##TODO: move DBManager logic to candles and table classes
@@ -24,9 +25,9 @@ def main():
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
 	##populate_sim_avg_points(table_name_ETH_14400, 10)
-	populate_sim_roc_points(table_name_ETH_14400)
+	##populate_sim_roc_points(table_name_ETH_14400)
 	##populate_exp_avg_points(table_name_ETH_14400)
-	##simulate_buyer_strategy(table_name_ETH_14400)
+	simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
 	##grab_trend(table_name_ethereum, "ethereum", "08/2016", 3)
 	##cut_trend(table_name_ETH_14400, table_name_ethereum)
 	
@@ -46,6 +47,10 @@ def grab_trend(table_name, keyword, date, num_months):
 def drop_table(table_name):
 	DBManager.drop_table(table_name)
 
+def simulate_two_trend_strategy(trends_table, candle_table_name):
+	strat = TwoAvgTrendStrategy(candle_table_name, trends_table)
+	trade_sim = TradeSimulator(candle_table_name, strat)
+	trade_sim.run()
 	
 def simulate_test_strategy(table_name):
 	test_strat = TestStrategy()
@@ -61,6 +66,7 @@ def simulate_trailer_strategy(tn_reference, tn_target):
 	strat = CurrencyTrailerStrategy(tn_reference, mode = CurrencyTrailerStrategy.EXP)
 	trade_sim = TradeSimulator(tn_target, strat)
 	trade_sim.run()
+
 
 def populate_sim_avg_points(source_table_name, num_history_points):
 	pt_table_name = source_table_name + PointPopulator.SIMPLE_AVG + "_" + str(num_history_points) 

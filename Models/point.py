@@ -3,9 +3,12 @@
 
 import sqlite3
 from db_manager import DBManager
-from point_table import PointTable
 
 class Point:
+	
+	ID = "id"
+	DATE = "date"
+	VALUE = "value"
 
 	def __init__(self, db_manager, table_name, date, value):
 		self.table_name = table_name
@@ -32,23 +35,8 @@ class Point:
 		try:
 			cursor.execute("INSERT INTO {tn} ({nf_date}, {nf_value}) VALUES\
 					({v_date}, {v_value})"\
-				.format(tn = self.table_name, nf_date = PointTable.DATE, nf_value = PointTable.VALUE, v_date = self.date, v_value = self.value))
+				.format(tn = self.table_name, nf_date = Point.DATE, nf_value = Point.VALUE, v_date = self.date, v_value = self.value))
 			
 		except sqlite3.IntegrityError:
 			    print('ERROR: Something went wrong inserting point into {tn}'.format(tn = table_name))
 	
-	##returns point objects for the given table_name
-	@staticmethod
-	def get_point_array(table_name):
-
-		##returns a cursor pointing to all candles linked to the table_name
-		cursor = PointTable.get_point_cursor(table_name)
-		points = []
-
-		##loop through cursor and add all candles to array
-		row = cursor.fetchone()
-		while row is not None:
-			t = Point.from_tuple(table_name, row) 
-			points.append(t)
-			row = cursor.fetchone()
-		return points

@@ -23,7 +23,8 @@ comb2 = merge(x = eth, y = btc, by = "date")
 
 comb3 = merge(x = eth, y = eth_trend, by = "date", all = TRUE) 
 
-
+trend2 =  dbGetQuery( con,'select date, value from USDT_ETH_1470628800_9999999999_14400___SIMPLE_AVG_2' )
+trend5 =  dbGetQuery( con,'select date, value from USDT_ETH_1470628800_9999999999_14400___SIMPLE_AVG_5' )
 
 
 ##reg1 = lm(close.x ~ close.y, data = comb1)

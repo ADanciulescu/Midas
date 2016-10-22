@@ -86,6 +86,6 @@ class CurrencyTrailerStrategy:
 			pt = PointTable(point_table_name)
 			pp.populate()
 			
-		return Point.get_point_array(point_table_name)	
+		return PointTable.get_point_array(point_table_name)	
 
 

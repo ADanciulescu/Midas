@@ -33,7 +33,7 @@ class PointPopulator():
 		
 		pt = PointTable(pt_name)
 		pt.save()
-
+		print self.candle_table_name
 		candles = Candle.get_candle_array(self.candle_table_name)
 		dbm = DBManager()
 		mv = MovingAverage(dbm, pt_name, candles)
