@@ -3,19 +3,14 @@
 	##columns: id, date, high, low, open, close, volume, quoteVolume, weightedAverage
 
 from db_manager import DBManager
+from point_table import PointTable
+from point import Point
+from candle import Candle
 
 class CandleTable:
 	
-	ID = "id"
-	DATE = "date"
-	HIGH = "high"
-	LOW = "low"
-	OPEN = "open"
-	CLOSE = "close"
-	MID = "mid"
-	VOLUME = "volume"
-	QUOTE_VOLUME = "quoteVolume"
-	WEIGHTED_AVERAGE = "weightedAverage"
+	CANDLE = "CANDLE"
+	TEMP = "TEMP"
 
 	def __init__(self, curr_ref, curr_target, start, end, period):
 		self.curr_ref = curr_ref
@@ -31,7 +26,7 @@ class CandleTable:
 	##calculate correctly formatted table_name from configuration
 	@staticmethod
 	def calc_table_name(curr_ref, curr_target, start, end, period):
-		return "{cr}_{ct}_{s}_{e}_{p}".format(cr = curr_ref,ct = curr_target, s = start, e = end, p = period)
+		return "{c}_{cr}_{ct}_{s}_{e}_{p}".format(c = CandleTable.CANDLE, cr = curr_ref,ct = curr_target, s = start, e = end, p = period)
 
 
 	##creates candle table in db
@@ -95,3 +90,40 @@ class CandleTable:
 	def get_period(table_name):
 		info = table_name.split("_")
 		return info[4]
+
+
+	##create point table using date and mid from candle_table_name, return its name
+	@staticmethod
+	def to_point_table(candle_table_name):
+		pt_name = CandleTable.TEMP + "_" + candle_table_name
+		
+		##if already exists, drop it first and then recreate
+		if DBManager.exists_table(pt_name):
+			DBManager.drop_table(pt_name)
+		
+		pt = PointTable(pt_name)
+		pt.save()
+		candles = CandleTable.get_candle_array(candle_table_name)
+		dbm = DBManager()
+		for c in candles:
+			p = Point(dbm, pt_name, c.date, c.mid)
+			p.save()
+		dbm.save_and_close()
+		return pt_name
+	
+	##returns candle objects for the given table_name
+	@staticmethod
+	def get_candle_array(table_name):
+
+		##returns a cursor pointing to all candles linked to the table_name
+		cursor = CandleTable.get_candle_cursor(table_name)
+	
+		candles = []
+
+		##loop through cursor and add all candles to array
+		row = cursor.fetchone()
+		while row is not None:
+			t = Candle.from_tuple(table_name, row) 
+			candles.append(t)
+			row = cursor.fetchone()
+		return candles

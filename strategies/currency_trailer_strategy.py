@@ -30,7 +30,7 @@ class CurrencyTrailerStrategy:
 	def __init__(self, predicter_table_name, mode):
 		self.cur_traded_candles = None
 		self.predicter_table_name = predicter_table_name
-		self.predicter_candles = Candle.get_candle_array(predicter_table_name)
+		self.predicter_candles = CandleTable.get_candle_array(predicter_table_name)
 		self.table_period = CandleTable.get_period(predicter_table_name)
 
 

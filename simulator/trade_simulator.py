@@ -4,6 +4,7 @@
 
 from db_manager import DBManager
 from candle import Candle
+from candle_table import CandleTable
 from test_strategy import TestStrategy
 from operation import Operation
 
@@ -22,7 +23,7 @@ class TradeSimulator:
 		self.candles = []
 
 	def run(self):
-		self.candles = Candle.get_candle_array(self.table_name)
+		self.candles = CandleTable.get_candle_array(self.table_name)
 		self.strategy.cur_traded_candles = self.candles
 
 		for i, t in enumerate(self.candles):
@@ -65,12 +66,13 @@ class TradeSimulator:
 				print "Sold Amount Attempted: " , amount
 	
 	def perform_buy(self, amount, price):
-		##print "Bought: ", amount
+		print "Bought: " + str(amount) + " at: " + str(price)
 		self.bank -= amount*price
 		self.bits += amount
 		self.total_bought += amount
 	
 	def perform_sell(self, amount, price):
+		print "Sold: " + str(amount) + " at: " + str(price)
 		##print "Sold: ", amount
 		self.bank += amount*price
 		self.bits -= amount

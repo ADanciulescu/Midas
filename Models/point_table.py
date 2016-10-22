@@ -35,7 +35,7 @@ class PointTable:
 	def get_point_array(table_name):
 
 		##returns a cursor pointing to all candles linked to the table_name
-		cursor = self.get_point_cursor(table_name)
+		cursor = PointTable.get_point_cursor(table_name)
 		points = []
 
 		##loop through cursor and add all candles to array
@@ -48,19 +48,29 @@ class PointTable:
 	
 	##returns point object for given index
 	@staticmethod
+	def get_last(table_name):
+		db_manager = DBManager()
+		cursor = db_manager.get_cursor()
+		exec_string = "SELECT * FROM {tn} WHERE date = (SELECT MAX(date)  FROM {tn});".format(tn = table_name)
+		cursor.execute(exec_string)
+		return Point.from_tuple(table_name, cursor.fetchone())
+	
+	##returns point object for given index
+	@staticmethod
 	def lookup(table_name, index):
 		db_manager = DBManager()
 		cursor = db_manager.get_cursor()
 		exec_string = "SELECT * FROM '{tn}' WHERE id = {i}".format(tn = table_name, i = index)
 		cursor.execute(exec_string)
 		return Point.from_tuple(table_name, cursor.fetchone())
+	
 
 	##returns point object for given date or the first one after
 	@staticmethod
 	def lookup_date(table_name, date):
 		db_manager = DBManager()
 		cursor = db_manager.get_cursor()
-		exec_string = "SELECT * FROM '{tn}' WHERE date <= {d}".format(tn = table_name, d = date)
+		exec_string = "SELECT * FROM '{tn}' WHERE date >= {d}".format(tn = table_name, d = date)
 		cursor.execute(exec_string)
 		return Point.from_tuple(table_name, cursor.fetchone())
 

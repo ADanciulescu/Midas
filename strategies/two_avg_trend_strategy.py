@@ -10,10 +10,10 @@ class TwoAvgTrendStrategy():
 
 	##constants for how many days to use to create the simple avg tables
 	AVG_SHORT_DAYS = 2
-	AVG_LONG_DAYS = 5
+	AVG_LONG_DAYS = 10
 
 	DAY = 86400 ## secs in a day
-	DELAY = 2 ## how many days in the past to look at trends to predict when to buy or sell
+	DELAY = 0 ## how many days in the past to look at trends to predict when to buy or sell
 
 	BUY_AMOUNT = 30 ## amount of bits to buy when a buy signal is detected
 
@@ -28,10 +28,8 @@ class TwoAvgTrendStrategy():
 	
 	##creates avg point table for the given period
 	def create_avg_table(self, period):	
-		pt_table_name = self.candle_table_name + PointPopulator.SIMPLE_AVG + "_" + str(period)
-		pp = PointPopulator(pt_table_name)
-		pp.create_moving_avg_simple(period)
-		return pt_table_name
+		pp = PointPopulator(self.trends_table_name)
+		return pp.create_moving_avg_simple(period)
 	
 	##returns market operation
 	##time represents which candle the trade_simulator is processing atm
@@ -52,7 +50,6 @@ class TwoAvgTrendStrategy():
 			past_long_val = PointTable.lookup_date(self.avg_table_name_long, trend_date_past).value
 			present_short_val = PointTable.lookup_date(self.avg_table_name_short, trend_date_present).value
 			present_long_val = PointTable.lookup_date(self.avg_table_name_long, trend_date_present).value
-
 			##detect intersection between the long and short trend tables
 			if present_short_val >= present_long_val:
 				if past_short_val >= past_long_val: ## no intersection
@@ -63,16 +60,20 @@ class TwoAvgTrendStrategy():
 				if past_short_val <= past_long_val: ##no intersection
 					return Operation(Operation.NONE_OP, 0)
 				elif past_short_val > past_long_val: ## intersection with short term trough
-					return Operation(Operation.SELL_OP, self.SELL_AMOUNT)
+					return Operation(Operation.SELL_OP, bits)
 
 
 	##make sure date is late enough so that there is trend table data
 	def is_valid_date(self, date):
 		earliest_date = PointTable.lookup(self.avg_table_name_short, 1).date
+		latest_date = PointTable.get_last(self.avg_table_name_short).date
 		if (date - (self.DELAY+1)* self.DAY) < earliest_date:
 			return False
 		else:
-			return True
+			if date > latest_date:
+				return False
+			else:
+				return True
 
 
 
