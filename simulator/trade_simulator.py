@@ -21,6 +21,7 @@ class TradeSimulator:
 		self.bits = 0 ##keeps track of bits owned
 		self.total_bought = 0
 		self.total_sold = 0
+		self.money_spent = 0
 
 
 		self.candles = []
@@ -30,6 +31,7 @@ class TradeSimulator:
 		##create trade logger
 		self.trade_table_name = TradeTable.calc_name(self.table_name, self.strategy.get_name())
 		self.trade_logger = TradeLogger(self.trade_table_name, self.table_name)
+		self.strategy.trade_table_name = self.trade_table_name
 
 		self.candles = CandleTable.get_candle_array(self.table_name)
 		self.strategy.cur_traded_candles = self.candles
@@ -43,6 +45,7 @@ class TradeSimulator:
 
 	def print_results(self):
 		print "Total Bought: ", self.total_bought
+		print "Total Spent: ", self.money_spent
 		print "Total Sold: ", self.total_sold
 		print "Ended with: "
 		print "Money:" + str(self.bank)
@@ -76,6 +79,7 @@ class TradeSimulator:
 	def perform_buy(self, date, amount, price):
 		print "Bought: " + str(amount) + " at: " + str(price)
 		self.bank -= amount*price
+		self.money_spent += amount*price
 		self.bits += amount
 		self.total_bought += amount
 		self.trade_logger.log_trade(date, amount, price, Trade.BUY_TYPE)

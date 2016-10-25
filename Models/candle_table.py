@@ -9,7 +9,7 @@ from candle import Candle
 
 class CandleTable:
 	
-	CANDLE = "CANDLE"
+	Candle = "CANDLE"
 	TEMP = "TEMP"
 
 	def __init__(self, curr_ref, curr_target, start, end, period):
@@ -26,7 +26,7 @@ class CandleTable:
 	##calculate correctly formatted table_name from configuration
 	@staticmethod
 	def calc_table_name(curr_ref, curr_target, start, end, period):
-		return "{c}_{cr}_{ct}_{s}_{e}_{p}".format(c = CandleTable.CANDLE, cr = curr_ref,ct = curr_target, s = start, e = end, p = period)
+		return "{c}_{cr}_{ct}_{s}_{e}_{p}".format(c = CandleTable.Candle, cr = curr_ref,ct = curr_target, s = start, e = end, p = period)
 
 
 	##creates candle table in db
@@ -34,7 +34,7 @@ class CandleTable:
 		db_manager = DBManager()
 		cursor = db_manager.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_id} {ft_i} PRIMARY KEY {nn}, {nf_date} {ft_i} {nn}, {nf_high} {ft_r} {nn}, {nf_low} {ft_r} {nn}, {nf_open} {ft_r} {nn}, {nf_close} {ft_r} {nn}, {nf_mid} {ft_r} {nn}, {nf_volume} {ft_r} {nn}, {nf_qVol} {ft_r} {nn}, {nf_wAvg} {ft_r} {nn})'\
-				.format(tn = self.table_name, nf_id = self.ID, nf_date = self.DATE, nf_high = self.HIGH, nf_low = self.LOW, nf_open = self.OPEN, nf_close = self.CLOSE, nf_mid = self.MID, nf_volume = self.VOLUME, nf_qVol = self.QUOTE_VOLUME, nf_wAvg = self.WEIGHTED_AVERAGE, ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, nn = DBManager.NOT_NULL)
+				.format(tn = self.table_name, nf_id = Candle.ID, nf_date = Candle.DATE, nf_high = Candle.HIGH, nf_low = Candle.LOW, nf_open = Candle.OPEN, nf_close = Candle.CLOSE, nf_mid = Candle.MID, nf_volume = Candle.VOLUME, nf_qVol = Candle.QUOTE_VOLUME, nf_wAvg = Candle.WEIGHTED_AVERAGE, ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, nn = DBManager.NOT_NULL)
 		print exec_string
 		cursor.execute(exec_string)
 		db_manager.save_and_close()

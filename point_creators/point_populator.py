@@ -46,6 +46,9 @@ class PointPopulator():
 	
 	##calculates and inserts simple moving average points in sql table
 	def create_moving_avg_simple(self, num_history_pts):
+		self.output_table_name = self.output_table_name.replace("TREND", "POINT")
+		self.output_table_name = self.output_table_name.replace("CANDLE", "POINT")
+		print self.output_table_name
 		self.output_table_name = self.output_table_name + self.SIMPLE_AVG + "_" + str(num_history_pts)
 		
 		##if already exists, drop it first and then recreate

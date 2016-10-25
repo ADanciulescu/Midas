@@ -60,7 +60,6 @@ class Trade:
 			exec_string = "UPDATE {tn} SET {nf_amount} = {v_amount}, {nf_price} = {v_price}, {nf_type} = '{v_type}'\
 					WHERE {nf_date} = {v_date}"\
 				.format(tn = self.table_name, nf_date = Trade.DATE, nf_amount = Trade.AMOUNT, nf_price = Trade.PRICE, nf_type = Trade.TYPE, v_date = self.date, v_amount = self.amount, v_price = self.price, v_type = self.type)
-			print exec_string
 			cursor.execute(exec_string)
 			
 			##for speed purposes only commit when changing one at a time

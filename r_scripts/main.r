@@ -6,7 +6,12 @@ con = dbConnect(RSQLite::SQLite(), dbname = "currencies.sqlite")
 alltables = dbListTables(con)
 print(alltables)
 
-eth = dbGetQuery( con,'select date, close from CANDLE_USDT_ETH_1470628800_9999999999_14400' )
+##eth = dbGetQuery( con,'select date, close from CANDLE_USDT_ETH_1470628800_9999999999_14400' )
+##xmr = dbGetQuery( con,'select date, close from CANDLE_USDT_XMR_1470628800_9999999999_14400' )
+##xmr_trend = dbGetQuery( con,'select date, hits from TREND_monero_table_1470628800_1477382400' )
+##xmr_buy = dbGetQuery( con,"select date, price from TRADE_AVG_TREND_XMR_9999999999 where type = 'BUY_TYPE'" )
+##xmr_sell = dbGetQuery( con,"select date, price from TRADE_AVG_TREND_XMR_9999999999 where type = 'SELL_TYPE'" )
+
 ##eth_trend = dbGetQuery( con,'select date, hits from ethereum_table_1470628800_1476432000' )
 ##eth_roc = dbGetQuery( con,'select date, value from USDT_ETH_1470628800_9999999999_14400___SIMPLE_ROC' )
 
@@ -21,8 +26,12 @@ eth = dbGetQuery( con,'select date, close from CANDLE_USDT_ETH_1470628800_999999
 
 ##comb3 = merge(x = eth, y = eth_trend, by = "date", all = TRUE) 
 
-trend2 =  dbGetQuery( con,'select date, value from POINT_ethereum_table___SIMPLE_AVG_2' )
-trend5 =  dbGetQuery( con,'select date, value from POINT_ethereum_table___SIMPLE_AVG_5' )
+trend1 =  dbGetQuery( con,'select date, hits from TREND_monero_table' )
+trend2 =  dbGetQuery( con,'select date, hits from TREND_XMR_table' )
+
+plot(trend1[,'date'], trend1[,'hits'], type = 'l')
+par(new=TRUE)
+plot(trend2[,'date'], trend2[,'hits'], type = 'l', col = 'green')
 
 
 ##reg1 = lm(close.x ~ close.y, data = comb1)

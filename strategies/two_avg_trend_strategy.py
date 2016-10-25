@@ -6,17 +6,19 @@ from point_populator import PointPopulator
 from point_table import PointTable
 from operation import Operation
 from trade_logger import TradeLogger
+from trade_table import TradeTable
+from trade import Trade
 
 class TwoAvgTrendStrategy():
 
 	##constants for how many days to use to create the simple avg tables
 	AVG_SHORT_DAYS = 2
-	AVG_LONG_DAYS = 5 
+	AVG_LONG_DAYS = 20 
 
 	DAY = 86400 ## secs in a day
 	DELAY = 0 ## how many days in the past to look at trends to predict when to buy or sell
 
-	BUY_AMOUNT = 30 ## amount of bits to buy when a buy signal is detected
+	BUY_AMOUNT = 100 ## amount of bits to buy when a buy signal is detected
 
 	NAME = "AVG_TREND"
 
@@ -29,6 +31,7 @@ class TwoAvgTrendStrategy():
 		self.avg_table_name_short = self.create_avg_table(self.AVG_SHORT_DAYS)
 		self.avg_table_name_long = self.create_avg_table(self.AVG_LONG_DAYS)
 
+		self.trade_table = None
 
 	##simply returns name
 	def get_name(self):
@@ -62,7 +65,10 @@ class TwoAvgTrendStrategy():
 				if past_short_val >= past_long_val: ## no intersection
 					return Operation(Operation.NONE_OP, 0)
 				elif past_short_val < past_long_val: ## intersection with short term spike
-					return Operation(Operation.BUY_OP, self.BUY_AMOUNT)
+					if self.is_valid_buy(cur_date):
+						return Operation(Operation.BUY_OP, self.BUY_AMOUNT)
+					else:
+						return Operation(Operation.NONE_OP, 0)
 			elif present_short_val <= present_long_val:
 				if past_short_val <= past_long_val: ##no intersection
 					return Operation(Operation.NONE_OP, 0)
@@ -81,6 +87,11 @@ class TwoAvgTrendStrategy():
 				return False
 			else:
 				return True
-
-
-
+	
+	##makes sure that a buy signal is never used more than once
+	def is_valid_buy(self, date):
+		trades = TradeTable.get_trades_in_range(self.trade_table_name, date - self.DAY, date, Trade.BUY_TYPE)
+		if len(trades) > 0:
+			return False
+		else:
+			return True
