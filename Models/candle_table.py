@@ -74,12 +74,12 @@ class CandleTable:
 	@staticmethod
 	def get_target_currency(table_name):
 		info = table_name.split("_")
-		return info[1]
+		return info[2]
 	
 	@staticmethod
 	def get_start_time(table_name):
 		info = table_name.split("_")
-		return info[2]
+		return info[1]
 	
 	@staticmethod
 	def get_end_time(table_name):

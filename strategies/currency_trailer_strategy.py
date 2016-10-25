@@ -25,6 +25,8 @@ class CurrencyTrailerStrategy:
 	SIMPLE = "SIMPLE"
 	EXP = "EXP"
 
+	NAME = "CUR_TRAILER"
+
 	##passed in predicter_currency_candles when strategy object is created
 	##cur_traded_candles is updated later from trade_simulator
 	def __init__(self, predicter_table_name, mode):
@@ -43,6 +45,11 @@ class CurrencyTrailerStrategy:
 
 		##an array where avg at each time can be looked up
 		self.point_avgs = self.create_table(predicter_table_name, mode)
+	
+	##simply returns name
+	def get_name(self):
+		return  self.NAME
+	
 	
 	##returns market operation
 	##time represents which candle the trade_simulator is processing atm

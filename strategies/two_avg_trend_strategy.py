@@ -5,17 +5,20 @@
 from point_populator import PointPopulator
 from point_table import PointTable
 from operation import Operation
+from trade_logger import TradeLogger
 
 class TwoAvgTrendStrategy():
 
 	##constants for how many days to use to create the simple avg tables
 	AVG_SHORT_DAYS = 2
-	AVG_LONG_DAYS = 10
+	AVG_LONG_DAYS = 5 
 
 	DAY = 86400 ## secs in a day
 	DELAY = 0 ## how many days in the past to look at trends to predict when to buy or sell
 
 	BUY_AMOUNT = 30 ## amount of bits to buy when a buy signal is detected
+
+	NAME = "AVG_TREND"
 
 	def __init__(self, candle_table_name, trends_table_name):
 		self.trends_table_name = trends_table_name
@@ -25,7 +28,12 @@ class TwoAvgTrendStrategy():
 		##create the 2 avg tables needed
 		self.avg_table_name_short = self.create_avg_table(self.AVG_SHORT_DAYS)
 		self.avg_table_name_long = self.create_avg_table(self.AVG_LONG_DAYS)
-	
+
+
+	##simply returns name
+	def get_name(self):
+		return  self.NAME
+
 	##creates avg point table for the given period
 	def create_avg_table(self, period):	
 		pp = PointPopulator(self.trends_table_name)
@@ -34,7 +42,6 @@ class TwoAvgTrendStrategy():
 	##returns market operation
 	##time represents which candle the trade_simulator is processing atm
 	def decide(self, time, bits):
-			
 			cur_date = self.cur_traded_candles[time].date ##current date
 
 			## if cur_date is too early to have valid trend data return no operation

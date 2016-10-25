@@ -5,9 +5,14 @@ from operation import Operation
 
 class SimpleBuyerStrategy:
 	AMOUNT = 1
+	NAME = "SIMPLE_BUYER"
 
 	def __init__(self):
 		self.candles = None
+	
+	##simply returns name
+	def get_name(self):
+		return  self.NAME
 	
 	##returns market operation
 	##time represents which candle the trade_simulator is processing atm
