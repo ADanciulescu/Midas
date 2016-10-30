@@ -7,6 +7,8 @@ alltables = dbListTables(con)
 print(alltables)
 
 ##eth = dbGetQuery( con,'select date, close from CANDLE_USDT_ETH_1470628800_9999999999_14400' )
+etc = dbGetQuery( con,'select date, close from CANDLE_USDT_ETC_1470628800_9999999999_14400' )
+ltc = dbGetQuery( con,'select date, close from CANDLE_USDT_LTC_1470628800_9999999999_14400' )
 ##xmr = dbGetQuery( con,'select date, close from CANDLE_USDT_XMR_1470628800_9999999999_14400' )
 ##xmr_trend = dbGetQuery( con,'select date, hits from TREND_monero_table_1470628800_1477382400' )
 ##xmr_buy = dbGetQuery( con,"select date, price from TRADE_AVG_TREND_XMR_9999999999 where type = 'BUY_TYPE'" )
