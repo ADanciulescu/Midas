@@ -49,25 +49,32 @@ def main():
 	table_name_ETC = "TREND_ETC_table"
 	
 	
-	##get_candle_data("XMR")
+	##get_candle_data("XRP")
 	##table_name = "USDT_BTC_1470628800_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
 	##populate_sim_avg_points(table_name_ETH_14400, 10)
 	##populate_sim_roc_points(table_name_ETH_14400)
 	##populate_exp_avg_points(table_name_ETH_14400)
-	##grab_trend_all(table_name_monero, "monero")
-	##grab_trend_all(table_name_XMR, "XMR")
+	##grab_trend_all(table_name_ripple, "ripple")
+	##grab_trend_all(table_name_ETH, "XRP")
 	##simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
 	##simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
 	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
-	##simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
-	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
-	##simulate_two_trend_strategy(table_name_LTC, table_name_LTC_14400)
-	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
+	
+	simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
+	simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
+	simulate_two_trend_strategy(table_name_LTC, table_name_LTC_14400)
+	simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
 	simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
 	simulate_two_trend_strategy(table_name_monero, table_name_XMR_14400)
+	simulate_two_trend_strategy(table_name_ETH, table_name_ETH_14400)
+	simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
+	simulate_two_trend_strategy(table_name_XRP, table_name_XRP_14400)
+	simulate_two_trend_strategy(table_name_ripple, table_name_XRP_14400)
+	
+	
 	##cut_trend(table_name_XMR_14400, table_name_monero)
 	##print date_to_timestamp("2016-08-01")
 

@@ -16,7 +16,7 @@ class TwoAvgTrendStrategy():
 	AVG_LONG_DAYS = 20 
 
 	DAY = 86400 ## secs in a day
-	DELAY = 0 ## how many days in the past to look at trends to predict when to buy or sell
+	DELAY = 1 ## how many days in the past to look at trends to predict when to buy or sell
 
 	BUY_AMOUNT = 100 ## amount of bits to buy when a buy signal is detected
 
