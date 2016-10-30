@@ -2,6 +2,7 @@
 ##passed in table_name to run on and strategy to use
 ##prints stats about trading session
 
+import time
 from db_manager import DBManager
 from candle import Candle
 from candle_table import CandleTable
@@ -10,6 +11,7 @@ from operation import Operation
 from trade_logger import TradeLogger
 from trade_table import TradeTable
 from trade import Trade
+from results_logger import ResultsLogger
 
 class TradeSimulator:
 
@@ -22,11 +24,15 @@ class TradeSimulator:
 		self.total_bought = 0
 		self.total_sold = 0
 		self.money_spent = 0
-
-
 		self.candles = []
 
 	def run(self):
+
+		##create results logger
+		currency = CandleTable.get_target_currency(self.table_name)
+		start_time = CandleTable.get_start_time(self.table_name)
+		end_time = time.time() 
+		self.results_logger = ResultsLogger(currency, self.table_name, self.strategy.trends_table_name, start_time, end_time, self.strategy.AVG_SHORT_DAYS, self.strategy.AVG_LONG_DAYS)
 
 		##create trade logger
 		self.trade_table_name = TradeTable.calc_name(self.table_name, self.strategy.get_name())
@@ -42,8 +48,10 @@ class TradeSimulator:
 
 		self.update_net_worth()
 		self.print_results()
+		self.log_results()
 
 	def print_results(self):
+		print ""
 		print "Total Bought: ", self.total_bought
 		print "Total Spent: ", self.money_spent
 		print "Total Sold: ", self.total_sold
@@ -51,6 +59,11 @@ class TradeSimulator:
 		print "Money:" + str(self.bank)
 		print "Bits:" + str(self.bits)
 		print "Net Worth:" + str(self.net_worth)
+		print "Profit Percent: " + str(self.net_worth/self.money_spent)
+	
+	def log_results(self):
+		self.results_logger.log(self.total_bought, self.money_spent, self.total_sold, self.net_worth, self.bits)
+
 
 	## returns net_worth which is equal to money + w/e money you get by selling bits during the last candle 
 	def update_net_worth(self):

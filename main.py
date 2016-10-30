@@ -49,19 +49,25 @@ def main():
 	table_name_ETC = "TREND_ETC_table"
 	
 	
-	##get_candle_data()
-	##get_candle_data()
+	##get_candle_data("XMR")
 	##table_name = "USDT_BTC_1470628800_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
 	##populate_sim_avg_points(table_name_ETH_14400, 10)
 	##populate_sim_roc_points(table_name_ETH_14400)
 	##populate_exp_avg_points(table_name_ETH_14400)
-	grab_trend_all(table_name_litecoin, "litecoin")
+	##grab_trend_all(table_name_monero, "monero")
+	##grab_trend_all(table_name_XMR, "XMR")
 	##simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
 	##simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
-	simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
+	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
+	##simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
+	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
+	##simulate_two_trend_strategy(table_name_LTC, table_name_LTC_14400)
+	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
+	simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
+	simulate_two_trend_strategy(table_name_monero, table_name_XMR_14400)
 	##cut_trend(table_name_XMR_14400, table_name_monero)
 	##print date_to_timestamp("2016-08-01")
 
@@ -77,22 +83,22 @@ def grab_trend(table_name, keyword, date, num_months):
 
 ##grabs google trends data for multiple months
 def grab_trend_all(table_name, keyword):
-	grab_trend(table_name, keyword, "10/2015", 3)
-	time.sleep(3)
-	grab_trend(table_name, keyword, "01/2016", 3)
-	time.sleep(3)
-	grab_trend(table_name, keyword, "04/2016", 3)
-	time.sleep(3)
-	grab_trend(table_name, keyword, "07/2016", 3)
-	time.sleep(3)
+	##grab_trend(table_name, keyword, "10/2015", 3)
+	##time.sleep(3)
+	##grab_trend(table_name, keyword, "01/2016", 3)
+	##time.sleep(3)
+	##grab_trend(table_name, keyword, "04/2016", 3)
+	##time.sleep(3)
+	##grab_trend(table_name, keyword, "07/2016", 3)
+	##time.sleep(3)
 	grab_trend(table_name, keyword, "08/2016", 3)
 
 ##grabs candle data from poloniex and enters it into db
 ##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
-def get_candle_data():
+def get_candle_data(curr_target):
 	##configuration
 	curr_ref = "USDT"
-	curr_target = "LTC"
+	##curr_target = "BTC"
 	start = 1470628800 ## aug 8 2016
 	end = 9999999999 ## present
 	period = 14400 ## in seconds

@@ -69,7 +69,7 @@ class CandleTable:
 	@staticmethod
 	def get_ref_currency(table_name):
 		info = table_name.split("_")
-		return info[0]
+		return info[1]
 
 	@staticmethod
 	def get_target_currency(table_name):
@@ -79,17 +79,17 @@ class CandleTable:
 	@staticmethod
 	def get_start_time(table_name):
 		info = table_name.split("_")
-		return info[1]
+		return info[3]
 	
 	@staticmethod
 	def get_end_time(table_name):
 		info = table_name.split("_")
-		return info[3]
+		return info[4]
 	
 	@staticmethod
 	def get_period(table_name):
 		info = table_name.split("_")
-		return info[4]
+		return info[5]
 
 
 	##create point table using date and mid from candle_table_name, return its name
