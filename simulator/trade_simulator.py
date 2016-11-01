@@ -32,7 +32,7 @@ class TradeSimulator:
 		currency = CandleTable.get_target_currency(self.table_name)
 		start_time = CandleTable.get_start_time(self.table_name)
 		end_time = time.time() 
-		self.results_logger = ResultsLogger(currency, self.table_name, self.strategy.trends_table_name, start_time, end_time, self.strategy.AVG_SHORT_DAYS, self.strategy.AVG_LONG_DAYS)
+		##self.results_logger = ResultsLogger(currency, self.table_name, self.strategy.trends_table_name, start_time, end_time, self.strategy.AVG_SHORT_DAYS, self.strategy.AVG_LONG_DAYS)
 
 		##create trade logger
 		self.trade_table_name = TradeTable.calc_name(self.table_name, self.strategy.get_name())
@@ -48,7 +48,7 @@ class TradeSimulator:
 
 		self.update_net_worth()
 		self.print_results()
-		self.log_results()
+		##self.log_results()
 
 	def print_results(self):
 		print ""

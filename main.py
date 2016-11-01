@@ -10,6 +10,7 @@ from trend_fetcher import TrendFetcher
 from trend_cutter import TrendCutter
 from tools import date_to_timestamp
 from two_avg_trend_strategy import TwoAvgTrendStrategy
+from manual_strategy import ManualStrategy
 import time
 
 ##TODO: move candle array stuff from candle to candle_table
@@ -62,21 +63,26 @@ def main():
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
 	##simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
 	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
-	
-	simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
-	simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
-	simulate_two_trend_strategy(table_name_LTC, table_name_LTC_14400)
-	simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
-	simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
-	simulate_two_trend_strategy(table_name_monero, table_name_XMR_14400)
-	simulate_two_trend_strategy(table_name_ETH, table_name_ETH_14400)
-	simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
-	simulate_two_trend_strategy(table_name_XRP, table_name_XRP_14400)
-	simulate_two_trend_strategy(table_name_ripple, table_name_XRP_14400)
-	
-	
-	##cut_trend(table_name_XMR_14400, table_name_monero)
+	##cut_trend(table_name_BTC_14400, table_name_bitcoin)
 	##print date_to_timestamp("2016-08-01")
+	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
+	simulate_manual_strategy(table_name_bitcoin, table_name_BTC_14400)
+
+	##simulate()
+
+	def simulate():
+		simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
+		simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
+		simulate_two_trend_strategy(table_name_LTC, table_name_LTC_14400)
+		simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
+		simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
+		simulate_two_trend_strategy(table_name_monero, table_name_XMR_14400)
+		simulate_two_trend_strategy(table_name_ETH, table_name_ETH_14400)
+		simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
+		simulate_two_trend_strategy(table_name_XRP, table_name_XRP_14400)
+		simulate_two_trend_strategy(table_name_ripple, table_name_XRP_14400)
+	
+	
 
 ## cut from the trend table to create a new trend table that matches the given candle table
 def cut_trend(c_table_name, t_table_name):
@@ -120,6 +126,7 @@ def get_candle_data(curr_target):
 	ct.save()
 	pc = PoloniexClient(table_name)
 	pc.populate_candle_db(curr_ref, curr_target, start, end, period)
+
 ##drops table that matches the given table name
 def drop_table(table_name):
 	DBManager.drop_table(table_name)
@@ -129,6 +136,11 @@ def simulate_two_trend_strategy(trends_table, candle_table_name):
 	trade_sim = TradeSimulator(candle_table_name, strat)
 	trade_sim.run()
 	
+def simulate_manual_strategy(trends_table, candle_table_name):
+	strat = ManualStrategy(candle_table_name, trends_table)
+	trade_sim = TradeSimulator(candle_table_name, strat)
+	trade_sim.run()
+
 def simulate_test_strategy(table_name):
 	test_strat = TestStrategy()
 	trade_sim = TradeSimulator(table_name, test_strat)

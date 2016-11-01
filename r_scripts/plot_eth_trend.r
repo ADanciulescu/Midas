@@ -4,8 +4,8 @@ library(ggplot2)
 ##par(new=TRUE)
 ##plot(eth_trend[,'date'], eth_trend[,'hits'], type = 'l', col = 'green')
 	g1 =ggplot() + 
-	geom_line(data=eth, aes(x=date, y=close), color='green') +
-	geom_line(data=eth_trend, aes(x=date, y=hits), color='red')
+	geom_line(data=btc, aes(x=date, y=close), color='green') +
+	geom_line(data=btc_trend, aes(x=date, y=hits), color='red')
 
 
  ##p1 <- ggplot_gtable(ggplot_build(p1))
@@ -18,4 +18,4 @@ library(ggplot2)
 
 
 
- ##grid.arrange(p1, p2, heights = c(3, 2))
+##grid.arrange(p1, p2, heights = c(3, 2))

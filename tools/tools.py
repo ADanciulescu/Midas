@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import time
 
 def date_to_timestamp(adr):
@@ -11,7 +11,7 @@ def date_to_timestamp(adr):
 	return ts 
 
 def timestamp_to_date(ts):
-	date = datetime.datetime.fromtimestamp(timestamp)
+	date = datetime.fromtimestamp(ts)
 	return date.strftime('%Y-%m-%d')
 
 

@@ -13,7 +13,7 @@ class TwoAvgTrendStrategy():
 
 	##constants for how many days to use to create the simple avg tables
 	AVG_SHORT_DAYS = 3 
-	AVG_LONG_DAYS = 20 
+	AVG_LONG_DAYS = 25
 
 	DAY = 86400 ## secs in a day
 	DELAY = 1 ## how many days in the past to look at trends to predict when to buy or sell
