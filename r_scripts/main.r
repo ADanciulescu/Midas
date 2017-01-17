@@ -18,17 +18,23 @@ btc_sell = dbGetQuery( con,"select date, price from TRADE_AVG_TREND_BTC_14400 wh
 
 btc = dbGetQuery( con,'select date, close from CANDLE_USDT_BTC_1470628800_9999999999_14400' )
 btc_trend = dbGetQuery( con,'select date, hits from TREND_bitcoin_table_1470628800_1477814400' )
+eth = dbGetQuery( con,'select date, close from CANDLE_USDT_ETH_1470628800_9999999999_14400' )
+eth_trend = dbGetQuery( con,'select date, hits from TREND_ethereum_table_1470628800_1477814400' )
+
+
 
 ##comb1 = merge(x = eth, y = btc, by = "date") 
 
 ##offset btc by a mulitple of 1800
-##eth$date[] <- eth$date[] - 518400 
+eth_trend$date[] <- eth_trend$date[] + 518400 
+##btc$date[] <- btc$date[] - 518400 
 ##eth$close[] <- eth$close[] * 5
 ##eth_roc$value[] <- (eth_roc$value[] * 10) + 30
 
 ##comb2 = merge(x = eth, y = btc, by = "date") 
 
-##comb3 = merge(x = eth, y = eth_trend, by = "date", all = TRUE) 
+comb_btc = merge(x = btc, y = btc_trend, by = "date") 
+comb_eth = merge(x = eth, y = eth_trend, by = "date") 
 
 trend1 =  dbGetQuery( con,'select date, value from POINT_BTC_table___SIMPLE_AVG_3' )
 trend2 =  dbGetQuery( con,'select date, value from POINT_BTC_table___SIMPLE_AVG_25' )
@@ -38,7 +44,8 @@ trend2 =  dbGetQuery( con,'select date, value from POINT_BTC_table___SIMPLE_AVG_
 ##plot(trend2[,'date'], trend2[,'hits'], type = 'l', col = 'green')
 
 
-##reg1 = lm(close.x ~ close.y, data = comb1)
+reg_btc = lm(close ~ hits, data = comb_btc)
+reg_eth = lm(close ~ hits, data = comb_eth)
 ##reg2 = lm(close.x ~ close.y, data = comb2)
 
 ##source("C:\\Users\\andrei\\dev\\Midas\\r_scripts\\btc_eth_corr.r")

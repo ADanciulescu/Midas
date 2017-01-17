@@ -63,10 +63,10 @@ def main():
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
 	##simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
 	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
-	##cut_trend(table_name_BTC_14400, table_name_bitcoin)
+	cut_trend(table_name_ETH_14400, table_name_ethereum)
 	##print date_to_timestamp("2016-08-01")
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
-	simulate_manual_strategy(table_name_bitcoin, table_name_BTC_14400)
+	##simulate_manual_strategy(table_name_ETH, table_name_ETH_14400)
 
 	##simulate()
 
