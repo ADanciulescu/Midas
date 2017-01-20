@@ -1,4 +1,5 @@
-## create a new trend table by cropping existing trend table data to match the given candle table's dates.
+## create a new trend table by creating a trend point for every candle
+## trend point has the same date as the corresponding candle, and the # of hits = # of hits in the trendtable at most recent previous date
 
 from candle_table import CandleTable
 from trend_table import TrendTable
@@ -21,8 +22,6 @@ class TrendCutter:
 		self.first_date = CandleTable.get_first_date(self.candle_table_name)[0]
 		self.last_date = CandleTable.get_last_date(self.candle_table_name)[0]
 		self.cut_trend_table_name = self.get_trend_table_name()
-		print "first", self.first_date
-		print "last", self.last_date
 
 		dbm = DBManager()
 		if dbm.exists_table(self.cut_trend_table_name):
@@ -33,12 +32,24 @@ class TrendCutter:
 		tt.save()
 	
 		dbm = DBManager()
-		cursor = TrendTable.get_section(self.trend_table_name, self.first_date, self.last_date)
-		trend_tuples = cursor.fetchall()
-		for t in trend_tuples:
-			date = t[0]
-			hits = t[1]
+
+		candles = CandleTable.get_candle_array(self.candle_table_name)
+
+		for c in candles:
+			date = c.date
+			hits = TrendTable.get_most_recent_hits(self.trend_table_name, date)
 			trend = Trend(dbm, self.cut_trend_table_name, date, hits)
 			trend.save()
 		dbm.save_and_close()
+			
+		##cursor = TrendTable.get_section(self.trend_table_name, self.first_date, self.last_date)
+		##trend_tuples = cursor.fetchall()
+		##for t in trend_tuples:
+			##date = t[0]
+			##hits = t[1]
+			##trend = Trend(dbm, self.cut_trend_table_name, date, hits)
+			##trend.save()
+		##dbm.save_and_close()
+
+		return tt
 

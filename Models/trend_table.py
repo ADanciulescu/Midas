@@ -53,6 +53,17 @@ class TrendTable:
 			trends.append(t)
 			row = cursor.fetchone()
 		return trends
+
+	##passed in a table_name and date
+	##returns hits of the most recent trend before the given date
+	@staticmethod
+	def get_most_recent_hits(table_name, date):
+		dbm = DBManager()
+		cursor = dbm.get_cursor()
+		query = "SELECT hits FROM '{tn}' WHERE date < {d} ORDER BY date DESC".format(tn = table_name, d = date)
+		cursor.execute(query)
+		return cursor.fetchone()[0]
+
 	
 	##create point table using date and hits from trend_table_name, return its name
 	@staticmethod

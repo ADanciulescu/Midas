@@ -11,64 +11,73 @@ from trend_cutter import TrendCutter
 from tools import date_to_timestamp
 from two_avg_trend_strategy import TwoAvgTrendStrategy
 from manual_strategy import ManualStrategy
+from scipy_trend_model_strategy import ScipyTrendModelStrategy
+from neural_trend_model import NeuralTrendModel
 import time
 
 ##TODO: move candle array stuff from candle to candle_table
 ##TODO: standardize naming convention for tables to clearly specifiy type
 
 def main():
-	##get_candle_data()
-	##drop_table("eth_test")
+	
+	table_name_ETH_14400 = "CANDLE_USDT_ETH_1475280000_9999999999_14400"
+	trend_name_ethereum = "TREND_ethereum_table"
+	trend_name_ETH = "TREND_ETH_table"
+	trend_name_buy_ETH = "TREND_buy_ETH_table"
+
+	table_name_XMR_14400 = "CANDLE_USDT_XMR_1475280000_9999999999_14400"
+	trend_name_monero = "TREND_monero_table"
+	trend_name_XMR = "TREND_XMR_table"
+	
+	table_name_BTC_14400 = "CANDLE_USDT_BTC_1475280000_9999999999_14400"
+	trend_name_bitcoin = "TREND_bitcoin_table"
+	trend_name_BTC = "TREND_BTC_table"
+	
+	table_name_FCT_14400 = "CANDLE_USDT_FCT_1475280000_9999999999_14400"
+	trend_name_factom = "TREND_factom_table"
+	trend_name_FCT = "TREND_FCT_table"
+	
+	table_name_XRP_14400 = "CANDLE_USDT_XRP_1475280000_9999999999_14400"
+	trend_name_ripple = "TREND_ripple_table"
+	trend_name_XRP = "TREND_XRP_table"
+	
+	table_name_LTC_14400 = "CANDLE_USDT_LTC_1475280000_9999999999_14400"
+	trend_name_litecoin = "TREND_litecoin_table"
+	trend_name_LTC = "TREND_LTC_table"
+	
+	table_name_ETC_14400 = "CANDLE_USDT_ETC_1475280000_9999999999_14400"
+	trend_name_ETC = "TREND_ETC_table"
 
 	
-	table_name_ETH_14400 = "CANDLE_USDT_ETH_1470628800_9999999999_14400"
-	table_name_ethereum = "TREND_ethereum_table"
-	table_name_ETH = "TREND_ETH_table"
-	table_name_buy_ETH = "TREND_buy_ETH_table"
-
-	table_name_XMR_14400 = "CANDLE_USDT_XMR_1470628800_9999999999_14400"
-	table_name_monero = "TREND_monero_table"
-	table_name_XMR = "TREND_XMR_table"
-	
-	table_name_BTC_14400 = "CANDLE_USDT_BTC_1470628800_9999999999_14400"
-	table_name_bitcoin = "TREND_bitcoin_table"
-	table_name_BTC = "TREND_BTC_table"
-	
-	table_name_FCT_14400 = "CANDLE_USDT_FCT_1470628800_9999999999_14400"
-	table_name_factom = "TREND_factom_table"
-	table_name_FCT = "TREND_FCT_table"
-	
-	table_name_XRP_14400 = "CANDLE_USDT_XRP_1470628800_9999999999_14400"
-	table_name_ripple = "TREND_ripple_table"
-	table_name_XRP = "TREND_XRP_table"
-	
-	table_name_LTC_14400 = "CANDLE_USDT_LTC_1470628800_9999999999_14400"
-	table_name_litecoin = "TREND_litecoin_table"
-	table_name_LTC = "TREND_LTC_table"
-	
-	table_name_ETC_14400 = "CANDLE_USDT_ETC_1470628800_9999999999_14400"
-	table_name_ETC = "TREND_ETC_table"
-	
-	
-	##get_candle_data("XRP")
-	##table_name = "USDT_BTC_1470628800_9999999999_300"
+	##get_candle_data("BTC")
+	##get_candle_data("ETH")
+	##get_candle_data("XMR")
+	##table_name = "USDT_BTC_1475280000_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
 	##populate_sim_avg_points(table_name_ETH_14400, 10)
 	##populate_sim_roc_points(table_name_ETH_14400)
 	##populate_exp_avg_points(table_name_ETH_14400)
 	##grab_trend_all(table_name_ripple, "ripple")
-	##grab_trend_all(table_name_ETH, "XRP")
+	##grab_trend_all(trend_name_ETH, "ETH")
+	##grab_trend_all(trend_name_BTC, "BTC")
+	##grab_trend_all(trend_name_XMR, "XMR")
 	##simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
 	##simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
 	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
-	cut_trend(table_name_ETH_14400, table_name_ethereum)
+	##cut_trend(table_name_ETH_14400, table_name_ETH)
 	##print date_to_timestamp("2016-08-01")
 	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
 	##simulate_manual_strategy(table_name_ETH, table_name_ETH_14400)
 
 	##simulate()
+	
+	nm = NeuralTrendModel()
+	nm.train_model(table_name_XMR_14400, trend_name_XMR)
+	simulate_scipy_strategy(table_name_XMR_14400, trend_name_XMR, nm)	
+
+
 
 	def simulate():
 		simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
@@ -96,15 +105,16 @@ def grab_trend(table_name, keyword, date, num_months):
 
 ##grabs google trends data for multiple months
 def grab_trend_all(table_name, keyword):
-	##grab_trend(table_name, keyword, "10/2015", 3)
+	##grab_trend(table_name, keyword, "/2015", 3)
 	##time.sleep(3)
 	##grab_trend(table_name, keyword, "01/2016", 3)
 	##time.sleep(3)
 	##grab_trend(table_name, keyword, "04/2016", 3)
 	##time.sleep(3)
 	##grab_trend(table_name, keyword, "07/2016", 3)
-	##time.sleep(3)
 	grab_trend(table_name, keyword, "08/2016", 3)
+	time.sleep(3)
+	grab_trend(table_name, keyword, "11/2016", 3)
 
 ##grabs candle data from poloniex and enters it into db
 ##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
@@ -112,7 +122,8 @@ def get_candle_data(curr_target):
 	##configuration
 	curr_ref = "USDT"
 	##curr_target = "BTC"
-	start = 1470628800 ## aug 8 2016
+	##start = 1475280000 ## aug 8 2016
+	start = 1475280000 ## oct 01 2016
 	end = 9999999999 ## present
 	period = 14400 ## in seconds
 	
@@ -130,6 +141,11 @@ def get_candle_data(curr_target):
 ##drops table that matches the given table name
 def drop_table(table_name):
 	DBManager.drop_table(table_name)
+
+def simulate_scipy_strategy(candle_table_name, trend_table_name, model):
+	strat = ScipyModelStrategy(candle_table_name, trend_table_name, model)
+	trade_sim = TradeSimulator(candle_table_name, strat)
+	trade_sim.run()
 
 def simulate_two_trend_strategy(trends_table, candle_table_name):
 	strat = TwoAvgTrendStrategy(candle_table_name, trends_table)
