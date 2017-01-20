@@ -12,7 +12,9 @@ from tools import date_to_timestamp
 from two_avg_trend_strategy import TwoAvgTrendStrategy
 from manual_strategy import ManualStrategy
 from scipy_trend_model_strategy import ScipyTrendModelStrategy
+from scipy_candle_model_strategy import ScipyCandleModelStrategy
 from neural_trend_model import NeuralTrendModel
+from neural_candle_model import NeuralCandleModel
 import time
 
 ##TODO: move candle array stuff from candle to candle_table
@@ -73,10 +75,15 @@ def main():
 
 	##simulate()
 	
-	nm = NeuralTrendModel()
-	nm.train_model(table_name_XMR_14400, trend_name_XMR)
-	simulate_scipy_strategy(table_name_XMR_14400, trend_name_XMR, nm)	
+	nm = NeuralCandleModel("volume")
+	nm.train_model(table_name_BTC_14400)
+	nm.train_model(table_name_ETH_14400)
+	simulate_scipy_candle_strategy(table_name_XMR_14400, nm)	
 
+	##nm = NeuralCandleModel()
+	##nm.train_model(table_name_BTC_14400)
+	##nm.train_model(table_name_ETH_14400)
+	##simulate_scipy_candle_strategy(table_name_XMR_14400, nm)	
 
 
 	def simulate():
@@ -142,8 +149,13 @@ def get_candle_data(curr_target):
 def drop_table(table_name):
 	DBManager.drop_table(table_name)
 
-def simulate_scipy_strategy(candle_table_name, trend_table_name, model):
+def simulate_scipy_trend_strategy(candle_table_name, trend_table_name, model):
 	strat = ScipyModelStrategy(candle_table_name, trend_table_name, model)
+	trade_sim = TradeSimulator(candle_table_name, strat)
+	trade_sim.run()
+
+def simulate_scipy_candle_strategy(candle_table_name, model):
+	strat = ScipyCandleModelStrategy(candle_table_name, model)
 	trade_sim = TradeSimulator(candle_table_name, strat)
 	trade_sim.run()
 

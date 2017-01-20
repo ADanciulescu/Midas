@@ -1,37 +1,38 @@
 ## creates and allows training of neural network model
-## input is array of close histories of trend hits
+## input is array of close histories of candles
 ## output is array of 1 or 0  or -1 corresponding to buy , nothing, sell
 
 
+
 from candle_table import CandleTable
-from trend_cutter import TrendCutter
-from trend_table import TrendTable
 from sklearn.neural_network import MLPClassifier
 
 TIME_PERIOD = 14400
 FUTURE_DURATION = 5 ##used to determine outputs, how many days in the future is the avg computed
-PAST_DURATION = 5 ##used to determine model inputs, how many days in the past will we look at the trend
+PAST_DURATION = 5 ##used to determine model inputs, how many days in the past will we look at the candle closing history 
 
-class NeuralTrendModel:
+class NeuralCandleModel:
+	
+	##mode of operation, what attribute to use as inputs
+	CLOSE = "close"
+	VOLUME = "volume"
 
-	def __init__(self):
+	def __init__(self, mode):
+		self.mode = mode
 		self.num_future = FUTURE_DURATION * 86400/TIME_PERIOD
 		self.num_past = PAST_DURATION * 86400/TIME_PERIOD
 		self.model = MLPClassifier()
 		self.outputs = []
 		self.inputs = []
 
-	def train_model(self, candle_table_name, trend_table_name):
-		##get trends
-		tc = TrendCutter(candle_table_name, trend_table_name)
-		trend_table = tc.create_cut_table()
-		trends = TrendTable.get_trend_array(trend_table.table_name)
-		
-		##use trends to get inputs
-		self.inputs += self.get_inputs(trends)
+	def train_model(self, candle_table_name):
 		
 		##get candles and use them to calculate outputs
 		candles = CandleTable.get_candle_array(candle_table_name)
+		
+		##use candles to get inputs
+		self.inputs += self.get_inputs(candles)
+		
 		self.outputs += self.get_outputs(candles)
 		
 		self.model.fit(self.inputs, self.outputs)
@@ -39,14 +40,17 @@ class NeuralTrendModel:
 
 	##computes inputs to train the model
 	##this consists of an list of lists of length num_past
-	def get_inputs(self, trends):
+	def get_inputs(self, candles):
 		inputs = []
-		num_trends = len(trends)
+		num_candles = len(candles)
 		i = self.num_past
-		while i < num_trends - self.num_future:
+		while i < num_candles - self.num_future:
 			inp = []
 			for j in range(self.num_past):
-				inp.append(trends[i- (self.num_past - j)].hits)
+				if self.mode == self.CLOSE:
+					inp.append(candles[i- (self.num_past - j)].close)
+				elif self.mode == self.VOLUME:
+					inp.append(candles[i- (self.num_past - j)].volume)
 			inputs.append(inp)
 			i += 1
 		return inputs
