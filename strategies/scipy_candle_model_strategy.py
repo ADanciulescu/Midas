@@ -14,10 +14,10 @@ class ScipyCandleModelStrategy:
 	TIME_PERIOD = 14400
 	NAME = "SCIPY_CANDLEMODEL"
 
-	def __init__(self, candle_table_name, neural_model):
+	def __init__(self, candles, neural_model):
 		self.cur_traded_candles = None
 		self.neural_model = neural_model
-		self.candles = CandleTable.get_candle_array(candle_table_name)
+		self.candles = candles 
 	
 	
 	##simply returns name

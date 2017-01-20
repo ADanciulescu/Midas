@@ -6,10 +6,12 @@
 
 from candle_table import CandleTable
 from sklearn.neural_network import MLPClassifier
+import math
 
 TIME_PERIOD = 14400
 FUTURE_DURATION = 5 ##used to determine outputs, how many days in the future is the avg computed
 PAST_DURATION = 5 ##used to determine model inputs, how many days in the past will we look at the candle closing history 
+PERCENTAGE_TEST = 0.2 ##when cross validating, this is the percentage of candles that are tests, rest are for training
 
 class NeuralCandleModel:
 	
@@ -21,22 +23,52 @@ class NeuralCandleModel:
 		self.mode = mode
 		self.num_future = FUTURE_DURATION * 86400/TIME_PERIOD
 		self.num_past = PAST_DURATION * 86400/TIME_PERIOD
-		self.model = MLPClassifier()
+		self.model = MLPClassifier(random_state = 1)
 		self.outputs = []
 		self.inputs = []
 
-	def train_model(self, candle_table_name):
+	def train_model(self, candles):
 		
 		##get candles and use them to calculate outputs
-		candles = CandleTable.get_candle_array(candle_table_name)
+		##candles = CandleTable.get_candle_array(candle_table_name)
 		
 		##use candles to get inputs
 		self.inputs += self.get_inputs(candles)
 		
 		self.outputs += self.get_outputs(candles)
-		
+		print len(self.inputs)	
+		print len(self.outputs)	
 		self.model.fit(self.inputs, self.outputs)
 
+	def test_model(self, candles):
+		inputs = self.get_inputs(candles)
+		desired_outputs = self.get_outputs(candles)
+		results = self.model.predict(inputs)
+		print results
+		print desired_outputs
+
+		total_wrong = 0
+		total_correct = 0
+
+		for i, r in enumerate(results):
+			if r == desired_outputs[i]:
+				total_correct += 1
+			else:
+				total_wrong += 1
+		
+		print "Total Correct: ", total_correct
+		print "Total Wrong: ", total_wrong
+		print "Performance: ", total_correct/float(total_correct+total_wrong)
+
+	def cross_validate(self, candle_table_name):
+		##get candles and use them to calculate outputs
+		candles = CandleTable.get_candle_array(candle_table_name)
+		num_candles = len(candles)
+
+		##this splits training set from test set
+		last_candle = int(math.floor(num_candles * (1-PERCENTAGE_TEST)))
+		self.train_model(candles[:last_candle])
+		self.test_model(candles[last_candle:])
 
 	##computes inputs to train the model
 	##this consists of an list of lists of length num_past
@@ -54,8 +86,6 @@ class NeuralCandleModel:
 			inputs.append(inp)
 			i += 1
 		return inputs
-
-
 
 
 	##computes and returns the outputs from a list of candles

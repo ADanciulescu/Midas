@@ -35,7 +35,6 @@ class CandleTable:
 		cursor = db_manager.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_id} {ft_i} PRIMARY KEY {nn}, {nf_date} {ft_i} {nn}, {nf_high} {ft_r} {nn}, {nf_low} {ft_r} {nn}, {nf_open} {ft_r} {nn}, {nf_close} {ft_r} {nn}, {nf_mid} {ft_r} {nn}, {nf_volume} {ft_r} {nn}, {nf_qVol} {ft_r} {nn}, {nf_wAvg} {ft_r} {nn})'\
 				.format(tn = self.table_name, nf_id = Candle.ID, nf_date = Candle.DATE, nf_high = Candle.HIGH, nf_low = Candle.LOW, nf_open = Candle.OPEN, nf_close = Candle.CLOSE, nf_mid = Candle.MID, nf_volume = Candle.VOLUME, nf_qVol = Candle.QUOTE_VOLUME, nf_wAvg = Candle.WEIGHTED_AVERAGE, ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, nn = DBManager.NOT_NULL)
-		print exec_string
 		cursor.execute(exec_string)
 		db_manager.save_and_close()
 	
@@ -46,6 +45,15 @@ class CandleTable:
 		db_manager = DBManager()
 		cursor = db_manager.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
+		return cursor
+	
+	##returns cursor to all candles in table_name that are between the dates
+	@staticmethod
+	def get_candle_cursor_by_date(table_name, date_low = 0, date_high = 9999999999):
+		db_manager = DBManager()
+		cursor = db_manager.get_cursor()
+		query = "SELECT * FROM '{tn}' WHERE date >= {dl} AND date <= {dh}".format(tn = table_name, dl = date_low, dh = date_high)
+		cursor.execute(query)
 		return cursor
 
 
@@ -117,6 +125,23 @@ class CandleTable:
 
 		##returns a cursor pointing to all candles linked to the table_name
 		cursor = CandleTable.get_candle_cursor(table_name)
+	
+		candles = []
+
+		##loop through cursor and add all candles to array
+		row = cursor.fetchone()
+		while row is not None:
+			t = Candle.from_tuple(table_name, row) 
+			candles.append(t)
+			row = cursor.fetchone()
+		return candles
+	
+	##returns candle objects for the given table_name
+	@staticmethod
+	def get_candle_array_by_date(table_name, date_low = 0, date_high = 9999999999):
+
+		##returns a cursor pointing to all candles linked to the table_name
+		cursor = CandleTable.get_candle_cursor_by_date(table_name, date_low, date_high)
 	
 		candles = []
 

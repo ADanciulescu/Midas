@@ -15,7 +15,7 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	def __init__(self, table_name, strategy):
+	def __init__(self, table_name, candles, strategy):
 		self.table_name = table_name
 		self.strategy = strategy
 	
@@ -24,7 +24,7 @@ class TradeSimulator:
 		self.total_bought = 0
 		self.total_sold = 0
 		self.money_spent = 0
-		self.candles = []
+		self.candles = candles
 
 	def run(self):
 
@@ -38,9 +38,7 @@ class TradeSimulator:
 		self.trade_table_name = TradeTable.calc_name(self.table_name, self.strategy.get_name())
 		self.trade_logger = TradeLogger(self.trade_table_name, self.table_name)
 		self.strategy.trade_table_name = self.trade_table_name
-
-		self.candles = CandleTable.get_candle_array(self.table_name)
-		self.strategy.cur_traded_candles = self.candles
+		
 
 		for i, t in enumerate(self.candles):
 			operation = self.strategy.decide(i, self.bits)
