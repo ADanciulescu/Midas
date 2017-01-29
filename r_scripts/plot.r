@@ -1,6 +1,6 @@
-plot(xmr[,'date'], xmr[,'close'], type = 'l')
+plot(eth[,'date'], eth[,'close'], type = 'l')
 par(new=TRUE)
-plot(xmr_trend[,'date'], xmr_trend[,'hits'], type = 'l', col = 'green')
+plot(eth_vol[,'date'], eth_vol[,'volume'], type = 'l', col = 'green')
 ##par(new=TRUE)
 ##plot(btc_buy[,'date'], btc_buy[,'price'], col = 'blue')
 ##par(new=TRUE)

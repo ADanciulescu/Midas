@@ -12,6 +12,6 @@ def date_to_timestamp(adr):
 
 def timestamp_to_date(ts):
 	date = datetime.fromtimestamp(ts)
-	return date.strftime('%Y-%m-%d')
+	return date.strftime('%Y-%m-%d %H:%M:%S')
 
 

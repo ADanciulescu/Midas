@@ -14,6 +14,7 @@ class PointPopulator():
 	SIMPLE_AVG = "___SIMPLE_AVG"
 	EXP_AVG = "___EXP_AVG"
 	SIMPLE_ROC = "___SIMPLE_ROC"
+	VOLUME = "___VOLUME"
 
 	##possible values for type of input data
 	CANDLE = "CANDLE"
@@ -30,7 +31,7 @@ class PointPopulator():
 			self.input_point_table_name = self.table_name
 		elif self.TREND in self.table_name:
 			self.input_point_table_name = TrendTable.to_point_table(self.table_name)
-		else:
+		elif self.TREND in self.table_name:
 			self.input_point_table_name = CandleTable.to_point_table(self.table_name)
 
 		self.output_table_name = self.table_name.replace(self.CANDLE, self.POINT)
@@ -42,6 +43,7 @@ class PointPopulator():
 		for p in pt_array:
 			p.save()
 		dbm.save_and_close()
+
 
 	
 	##calculates and inserts simple moving average points in sql table

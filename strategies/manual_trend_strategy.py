@@ -9,7 +9,7 @@ from trade import Trade
 from tools import timestamp_to_date
 from trend_table import TrendTable
 
-class ManualStrategy():
+class ManualTrendStrategy():
 
 	DAY = 86400 ## secs in a day
 	BUY_AMOUNT = 100 ## amount of bits to buy when a buy signal is detected

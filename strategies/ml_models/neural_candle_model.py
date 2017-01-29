@@ -23,7 +23,7 @@ class NeuralCandleModel:
 		self.mode = mode
 		self.num_future = FUTURE_DURATION * 86400/TIME_PERIOD
 		self.num_past = PAST_DURATION * 86400/TIME_PERIOD
-		self.model = MLPClassifier(random_state = 1)
+		self.model = MLPClassifier(verbose = True, random_state = 1)
 		self.outputs = []
 		self.inputs = []
 
@@ -36,8 +36,6 @@ class NeuralCandleModel:
 		self.inputs += self.get_inputs(candles)
 		
 		self.outputs += self.get_outputs(candles)
-		print len(self.inputs)	
-		print len(self.outputs)	
 		self.model.fit(self.inputs, self.outputs)
 
 	def test_model(self, candles):

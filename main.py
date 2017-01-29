@@ -10,7 +10,8 @@ from trend_fetcher import TrendFetcher
 from trend_cutter import TrendCutter
 from tools import date_to_timestamp
 from two_avg_trend_strategy import TwoAvgTrendStrategy
-from manual_strategy import ManualStrategy
+from manual_trend_strategy import ManualTrendStrategy
+from manual_attribute_strategy import ManualAttributeStrategy
 from scipy_trend_model_strategy import ScipyTrendModelStrategy
 from scipy_candle_model_strategy import ScipyCandleModelStrategy
 from neural_trend_model import NeuralTrendModel
@@ -50,7 +51,6 @@ def main():
 	table_name_ETC_14400 = "CANDLE_USDT_ETC_1475280000_9999999999_14400"
 	trend_name_ETC = "TREND_ETC_table"
 
-	
 	##get_candle_data("BTC")
 	##get_candle_data("ETH")
 	##get_candle_data("XMR")
@@ -75,21 +75,18 @@ def main():
 
 	##simulate()
 	
-	nm = NeuralCandleModel("close")
-	##nm.cross_validate(table_name_XMR_14400)
-	##nm.train_model(CandleTable.get_candle_array(table_name_BTC_14400))
-	##nm.train_model(CandleTable.get_candle_array(table_name_BTC_14400))
+	##nm = NeuralCandleModel("volume")
+	##nm.cross_validate(table_name_BTC_14400)
+	##nm.train_model(CandleTable.get_candle_array(table_name_XMR_14400))
+	##nm.train_model(CandleTable.get_candle_array(table_name_ETH_14400))
 	##nm.test_model(CandleTable.get_candle_array(table_name_XMR_14400))
-	train_candles = CandleTable.get_candle_array_by_date(table_name_XMR_14400, date_high = 1482508800)
-	nm.train_model(train_candles)
+	##train_candles = CandleTable.get_candle_array_by_date(table_name_BTC_14400, date_high = 1482508800)
+	##nm.train_model(train_candles)
 	##sim_candles = CandleTable.get_candle_array_by_date(table_name_XMR_14400, date_low = 1482508800)
-	sim_candles = CandleTable.get_candle_array(table_name_XMR_14400)
-	simulate_scipy_candle_strategy(table_name_XMR_14400, sim_candles, nm)	
+	##sim_candles = CandleTable.get_candle_array(table_name_BTC_14400)
+	##simulate_scipy_candle_strategy(table_name_BTC_14400, sim_candles, nm)	
 
-	##nm = NeuralCandleModel()
-	##nm.train_model(table_name_BTC_14400)
-	##nm.train_model(table_name_ETH_14400)
-	##simulate_scipy_candle_strategy(table_name_XMR_14400, nm)	
+	simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
 
 	def simulate():
@@ -170,9 +167,15 @@ def simulate_two_trend_strategy(trends_table, candle_table_name):
 	trade_sim = TradeSimulator(candle_table_name, strat)
 	trade_sim.run()
 	
-def simulate_manual_strategy(trends_table, candle_table_name):
-	strat = ManualStrategy(candle_table_name, trends_table)
+def simulate_manual_trend_strategy(candle_table_name):
+	strat = ManualTrendStrategy(candle_table_name)
 	trade_sim = TradeSimulator(candle_table_name, strat)
+	trade_sim.run()
+
+def simulate_manual_attribute_strategy(candle_table_name, attr_name):
+	sim_candles = CandleTable.get_candle_array(candle_table_name)
+	strat = ManualAttributeStrategy(sim_candles, attr_name)
+	trade_sim = TradeSimulator(candle_table_name, sim_candles, strat)
 	trade_sim.run()
 
 def simulate_test_strategy(table_name):

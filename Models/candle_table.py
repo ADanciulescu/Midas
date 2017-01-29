@@ -102,7 +102,7 @@ class CandleTable:
 
 	##create point table using date and mid from candle_table_name, return its name
 	@staticmethod
-	def to_point_table(candle_table_name):
+	def to_point_table(candle_table_name, attribute):
 		pt_name = CandleTable.TEMP + "_" + candle_table_name
 		
 		##if already exists, drop it first and then recreate
