@@ -13,6 +13,7 @@ class Trade:
 	BUY_TYPE = "BUY_TYPE"
 	SELL_TYPE = "SELL_TYPE"
 	NONE_TYPE = "NONE_TYPE"
+	FAIL_SELL_TYPE = "FAIL_SELL_TYPE"
 
 	def __init__(self, db_manager, table_name, date, amount, price, type):
 		self.table_name = table_name
@@ -29,14 +30,15 @@ class Trade:
 		return Trade(dbm, table_name, tup[0], tup[1], tup[2], tup[3])
 	
 	def pprint(self):
-		print ""
-		print "table_name: ", self.table_name
-		print "date: ", self.date
-		print "amount: ", self.amount
-		print "price: ", self.price
-		print "type: ", self.type
-		print ""
-	
+		if self.type == self.BUY_TYPE:
+			print "Bought: " + str(self.amount) + " at: " + str(self.price)
+		elif self.type == self.SELL_TYPE:
+			print "Sold: " + str(self.amount) + " at: " + str(self.price)
+		elif self.type == self.FAIL_SELL_TYPE:
+			print "Fail to sell: " + str(self.amount) + " at: " + str(self.price)
+
+
+
 	##inserts trade into db
 	def save(self, to_commit = False):
 		cursor = self.db_manager.get_cursor()

@@ -84,4 +84,21 @@ class TradeTable:
 			trades.append(trade)
 			t = cursor.fetchone()
 		return trades
-			
+		
+	##print trade table
+	@staticmethod
+	def pprint(table_name):
+		arr = TradeTable.get_trade_array(table_name)
+		
+		##count how many none operations in a row to compress the results printed
+		none_counter = 0
+		for t in arr:
+			if t.type != Trade.NONE_TYPE:
+				if none_counter > 0:
+					print "***************************No operation for ticks: ", none_counter, " *************************************"
+					none_counter = 0
+			else:
+				none_counter += 1
+			t.pprint()
+		print "***************************No operation for ticks: ", none_counter, " *************************************"
+

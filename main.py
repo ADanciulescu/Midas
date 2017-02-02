@@ -20,42 +20,70 @@ from bollinger_strategy import BollingerStrategy
 from random_strategy import RandomStrategy
 import time
 
-##TODO: move candle array stuff from candle to candle_table
-##TODO: standardize naming convention for tables to clearly specifiy type
+##TODO: investigate modifying candle_length to something smaller than 14400
+##TODO: look into finding a parameter optimizer
+##TODO: keep testing with more data and keep adjusting parameters
+##TODO: buy btc
+##TODO: write automated platform
+##TODO: setup a aws server
+##TODO: keep thinking of possible biases
 
 def main():
 	
+	table_name_BTC_14400 = "CANDLE_USDT_BTC_1475280000_9999999999_14400"
+	table_name_BTC2_14400 = "CANDLE_USDT_BTC_1467331200_1475280000_14400"
+	table_name_BTC3_14400 = "CANDLE_USDT_BTC_1459468800_1467331200_14400"
+	table_name_BTC4_14400 = "CANDLE_USDT_BTC_1451606400_1459468800_14400"
+	table_name_BTC_1800 = "CANDLE_USDT_BTC_1475280000_9999999999_1800"
+	trend_name_bitcoin = "TREND_bitcoin_table"
+	trend_name_BTC = "TREND_BTC_table"
+	
 	table_name_ETH_14400 = "CANDLE_USDT_ETH_1475280000_9999999999_14400"
 	table_name_ETH2_14400 = "CANDLE_USDT_ETH_1467331200_1475280000_14400"
+	table_name_ETH3_14400 = "CANDLE_USDT_ETH_1459468800_1467331200_14400"
+	table_name_ETH4_14400 = "CANDLE_USDT_ETH_1451606400_1459468800_14400"
 	trend_name_ethereum = "TREND_ethereum_table"
 	trend_name_ETH = "TREND_ETH_table"
 	trend_name_buy_ETH = "TREND_buy_ETH_table"
 
 	table_name_XMR_14400 = "CANDLE_USDT_XMR_1475280000_9999999999_14400"
 	table_name_XMR2_14400 = "CANDLE_USDT_XMR_1467331200_1475280000_14400"
+	table_name_XMR3_14400 = "CANDLE_USDT_XMR_1459468800_1467331200_14400"
+	table_name_XMR4_14400 = "CANDLE_USDT_XMR_1451606400_1459468800_14400"
 	trend_name_monero = "TREND_monero_table"
 	trend_name_XMR = "TREND_XMR_table"
 	
-	table_name_BTC_14400 = "CANDLE_USDT_BTC_1475280000_9999999999_14400"
-	table_name_BTC2_14400 = "CANDLE_USDT_BTC_1467331200_1475280000_14400"
-	table_name_BTC_1800 = "CANDLE_USDT_BTC_1475280000_9999999999_1800"
-	trend_name_bitcoin = "TREND_bitcoin_table"
-	trend_name_BTC = "TREND_BTC_table"
-	
-	table_name_FCT_14400 = "CANDLE_USDT_FCT_1475280000_9999999999_14400"
-	trend_name_factom = "TREND_factom_table"
-	trend_name_FCT = "TREND_FCT_table"
 	
 	table_name_XRP_14400 = "CANDLE_USDT_XRP_1475280000_9999999999_14400"
+	table_name_XRP2_14400 = "CANDLE_USDT_XRP_1467331200_1475280000_14400"
+	table_name_XRP3_14400 = "CANDLE_USDT_XRP_1459468800_1467331200_14400"
+	table_name_XRP4_14400 = "CANDLE_USDT_XRP_1451606400_1459468800_14400"
 	trend_name_ripple = "TREND_ripple_table"
 	trend_name_XRP = "TREND_XRP_table"
 	
 	table_name_LTC_14400 = "CANDLE_USDT_LTC_1475280000_9999999999_14400"
+	table_name_LTC2_14400 = "CANDLE_USDT_LTC_1467331200_1475280000_14400"
+	table_name_LTC3_14400 = "CANDLE_USDT_LTC_1459468800_1467331200_14400"
+	table_name_LTC4_14400 = "CANDLE_USDT_LTC_1451606400_1459468800_14400"
 	trend_name_litecoin = "TREND_litecoin_table"
 	trend_name_LTC = "TREND_LTC_table"
 	
 	table_name_ETC_14400 = "CANDLE_USDT_ETC_1475280000_9999999999_14400"
+	table_name_ETC2_14400 = "CANDLE_USDT_ETC_1467331200_1475280000_14400"
+	table_name_ETC3_14400 = "CANDLE_USDT_ETC_1459468800_1467331200_14400"
 	trend_name_ETC = "TREND_ETC_table"
+	
+	table_name_DASH_14400 = "CANDLE_USDT_DASH_1475280000_9999999999_14400"
+	table_name_DASH2_14400 = "CANDLE_USDT_DASH_1467331200_1475280000_14400"
+	table_name_DASH3_14400 = "CANDLE_USDT_DASH_1459468800_1467331200_14400"
+	##table_name_ETC3_14400 = "CANDLE_USDT_ETC_1459468800_1467331200_14400"
+	trend_name_DASH = "TREND_DASH_table"
+	
+	table_name_REP_14400 = "CANDLE_USDT_REP_1475280000_9999999999_14400"
+	##table_name_REP2_14400 = "CANDLE_USDT_DASH_1467331200_1475280000_14400"
+	##table_name_REP3_14400 = "CANDLE_USDT_DASH_1459468800_1467331200_14400"
+	##table_name_ETC3_14400 = "CANDLE_USDT_ETC_1459468800_1467331200_14400"
+	trend_name_REP = "TREND_REP_table"
 
 	##get_candle_data("BTC")
 	##get_candle_data("ETH")
@@ -63,6 +91,8 @@ def main():
 	##get_candle_data("LTC")
 	##get_candle_data("ETC")
 	##get_candle_data("XMR")
+	##get_candle_data("DASH")
+	##get_candle_data("REP")
 	##table_name = "USDT_BTC_1475280000_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
@@ -73,16 +103,8 @@ def main():
 	##grab_trend_all(trend_name_ETH, "ETH")
 	##grab_trend_all(trend_name_BTC, "BTC")
 	##grab_trend_all(trend_name_XMR, "XMR")
-	##simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
-	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
-	##simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
-	##simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
 	##cut_trend(table_name_ETH_14400, table_name_ETH)
-	##print date_to_timestamp("2016-08-01")
-	##simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
-	##simulate_manual_strategy(table_name_ETH, table_name_ETH_14400)
 
-	##simulate()
 	
 	##nm = NeuralCandleModel("volume")
 	##nm.cross_validate(table_name_BTC_14400)
@@ -96,33 +118,42 @@ def main():
 	##simulate_scipy_candle_strategy(table_name_BTC_14400, sim_candles, nm)	
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
-	simulate_bollinger_strategy(table_name_ETH_14400)
-	##simulate_random_strategy(table_name_ETH_14400)
+
+	##simulate_bollinger_strategy(table_name_REP_14400)
+	##simulate_bollinger_strategy(table_name_ETH4_14400)
+	##simulate_bollinger_strategy(table_name_XMR4_14400)
+	##simulate_bollinger_strategy(table_name_XRP4_14400)
+	##simulate_bollinger_strategy(table_name_LTC4_14400)
+	##simulate_bollinger_strategy(table_name_ETH2_14400)
+	#simulate_bollinger_strategy(table_name_ETC_14400)
+	##simulate_bollinger_strategy(table_name_ETC2_14400)
+	##simulate_bollinger_strategy(table_name_XMR_14400)
+	##simulate_bollinger_strategy(table_name_XMR2_14400)
+	##simulate_bollinger_strategy(table_name_LTC_14400)
+	##simulate_bollinger_strategy(table_name_LTC2_14400)
+	##simulate_random_strategy(table_name_ETH2_14400)
 	##simulate_bollinger_strategy(table_name_LTC_14400)
 	##simulate_bollinger_strategy(table_name_ETC_14400)
 
+	##simulate(table_name_BTC_14400)
+	##simulate(table_name_LTC_14400)
 
-##grabs candle data from poloniex and enters it into db
-##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
-def get_candle_data(curr_target):
-	##configuration
-	curr_ref = "USDT"
-	##curr_target = "BTC"
-	##start = 1475280000 ## aug 8 2016
-	start = 1467331200 ## july 01 2016
-	end =  1475280000## oct 01 2016 
-	period = 14400 ## in seconds
+
+##find best parameter setting
+def simulate(candle_table_name):
+	candles = CandleTable.get_candle_array(candle_table_name)
 	
-	table_name = CandleTable.calc_table_name(curr_ref, curr_target, start, end, period)
+	past_sell = 0
+	while past_sell <= 10:
+		print "******************************************************************************************"
+		print "PAST_SELL: ", past_sell
+		print ""
+		strat = BollingerStrategy(candles, num_past_sell = past_sell)
+		trade_sim = TradeSimulator(candle_table_name, candles, strat)
+		trade_sim.run()
+		print "******************************************************************************************"
+		past_sell += 2
 	
-	##if exists drop firt and recreate
-	if DBManager.exists_table(table_name):
-		print "table with same configuration already exists, deleting it and rebuilding..."
-		drop_table(table_name)
-	ct = CandleTable(curr_ref, curr_target, start, end, period)
-	ct.save()
-	pc = PoloniexClient(table_name)
-	pc.populate_candle_db(curr_ref, curr_target, start, end, period)
 
 
 def simulate_random_strategy(candle_table_name):
@@ -179,17 +210,34 @@ def simulate_trailer_strategy(tn_reference, tn_target):
 	trade_sim = TradeSimulator(tn_target, strat)
 	trade_sim.run()
 
-def simulate():
-	simulate_two_trend_strategy(table_name_BTC, table_name_BTC_14400)
-	simulate_two_trend_strategy(table_name_bitcoin, table_name_BTC_14400)
-	simulate_two_trend_strategy(table_name_LTC, table_name_LTC_14400)
-	simulate_two_trend_strategy(table_name_litecoin, table_name_LTC_14400)
-	simulate_two_trend_strategy(table_name_XMR, table_name_XMR_14400)
-	simulate_two_trend_strategy(table_name_monero, table_name_XMR_14400)
-	simulate_two_trend_strategy(table_name_ETH, table_name_ETH_14400)
-	simulate_two_trend_strategy(table_name_ethereum, table_name_ETH_14400)
-	simulate_two_trend_strategy(table_name_XRP, table_name_XRP_14400)
-	simulate_two_trend_strategy(table_name_ripple, table_name_XRP_14400)
+
+##grabs candle data from poloniex and enters it into db
+##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
+def get_candle_data(curr_target):
+	##configuration
+	curr_ref = "USDT"
+	##curr_target = "BTC"
+	##start = 1451606400 ## Jan 01 2016
+	##end = 1459468800## Apr 1 2016
+	##start = 1459468800## Apr 1 2016
+	##end = 1467331200 ## july 01 2016
+	##start = 1467331200 ## july 01 2016
+	##end =  1475280000## oct 01 2016 
+	start = 1475280000 ## aug 8 2016
+	end = 9999999999 ## present
+	period = 14400 ## in seconds
+	
+	table_name = CandleTable.calc_table_name(curr_ref, curr_target, start, end, period)
+	
+	##if exists drop firt and recreate
+	if DBManager.exists_table(table_name):
+		print "table with same configuration already exists, deleting it and rebuilding..."
+		drop_table(table_name)
+	ct = CandleTable(curr_ref, curr_target, start, end, period)
+	ct.save()
+	pc = PoloniexClient(table_name)
+	pc.populate_candle_db(curr_ref, curr_target, start, end, period)
+
 
 ##drops table that matches the given table name
 def drop_table(table_name):

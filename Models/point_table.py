@@ -18,7 +18,6 @@ class PointTable:
 		cursor = db_manager.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_id} {ft_i} PRIMARY KEY {nn}, {nf_date} {ft_i} {nn}, {nf_val} {ft_r} {nn})'\
 				.format(tn = self.table_name, nf_id = Point.ID, nf_date = Point.DATE, nf_val = Point.VALUE, ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, nn = DBManager.NOT_NULL)
-		print exec_string
 		cursor.execute(exec_string)
 		db_manager.save_and_close()
 	

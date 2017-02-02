@@ -17,23 +17,28 @@ from trade_plan import TradePlan
 
 class BollingerStrategy:
 
-	BUY_LIMIT = 86400 ##how long to wait until another buy signal can be accepted 
 	AMOUNT = 10
 	NAME = "BOLLINGER"
-	AVG_PERIODS = 30 ## how many candles to use to make avg
-	STDDEV_PERIODS = 30 ##how many past candles to use to compute stddeviation
-	##number of standard deviations of difference between bollinger bands and avg
-	BB_FACTOR = 2.5
-
-	NUM_PAST_BUY = 2 ## how long to plan buying before actually buying
-	NUM_PAST_SELL = 3 ## how long to plan selling before actually selling
 
 
 	##constant string used to specifiy type of bollinger band
 	LOW = "LOW"
 	HIGH = "HIGH"
 
-	def __init__(self, candles):
+	def __init__(self, candles, bb_factor = 2, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 2):
+		
+		##model parameters
+		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
+		self.stddev_adjust = stddev_adjust ## if rue adjust amount bought/sold by how much it deviates from the bollinger band, if false use constant amount
+		self.avg_period = avg_period ## how many candles to use to make avg
+		self.num_past_buy = num_past_buy ## how long to plan buying before actually buying
+		self.num_past_sell = num_past_sell ## how long to plan selling before actually selling
+
+
+
+		##NOTE: removed extra parameter for stddev_period, currently same as avg_period
+		##self.stddev_period = stddev_period ##how many past candles to use to compute stddeviation
+
 		self.candles = candles
 		self.trade_table = None
 		self.trade_plan_array = []
@@ -52,23 +57,22 @@ class BollingerStrategy:
 		## create mid avg table
 		pp = PointPopulator(self.candle_table_name)
 		pp.setup()
-		self.middle_avg_table_name = pp.create_moving_avg_simple(self.AVG_PERIODS)
+		self.middle_avg_table_name = pp.create_moving_avg_simple(self.avg_period)
+		self.avg_pts = PointTable.get_point_array(self.middle_avg_table_name)
 		
 		##create standard deviation line
 		pp = PointPopulator(self.candle_table_name)
 		pp.setup()
-		self.stddev_table_name = pp.create_stddev(self.AVG_PERIODS)
+		self.stddev_table_name = pp.create_stddev(self.avg_period)
+		self.stddev_pts = PointTable.get_point_array(self.stddev_table_name)
 
 		##create bollinger band tables
-		self.bb_low_name = self.create_bb(self.LOW, self.middle_avg_table_name, self.stddev_table_name)
-		self.bb_high_name = self.create_bb(self.HIGH, self.middle_avg_table_name, self.stddev_table_name)
+		self.bb_low_name = self.create_bb(self.LOW)
+		self.bb_high_name = self.create_bb(self.HIGH)
 
 		self.bb_low_pts = PointTable.get_point_array(self.bb_low_name)
 		self.bb_high_pts = PointTable.get_point_array(self.bb_high_name)
 
-		for i in range(len(self.bb_low_pts)):
-			if self.bb_low_pts[i] >= self.bb_high_pts[i]:
-				print "*********************************************************************************"
 
 	##delete tables that were created
 	def cleanup(self):
@@ -79,8 +83,8 @@ class BollingerStrategy:
 
 	##creates bollinger band table
 	##type is either low or high
-	def create_bb(self, type, avg_table_name, stddev_table_name):
-		bb_table_name = avg_table_name + "_" + type
+	def create_bb(self, type):
+		bb_table_name = self.middle_avg_table_name + "_" + type
 		
 		##if already exists, drop it first and then recreate
 		if DBManager.exists_table(bb_table_name):
@@ -89,18 +93,16 @@ class BollingerStrategy:
 		bb_pt_table = PointTable(bb_table_name)
 		bb_pt_table.save()
 
-		avg_pts = PointTable.get_point_array(avg_table_name)
-		stddev_pts = PointTable.get_point_array(stddev_table_name)
 
-		for i, avg in enumerate(avg_pts):
-			if i < self.AVG_PERIODS:
+		for i, avg in enumerate(self.avg_pts):
+			if i < self.avg_period:
 				pass
 			else:
 				date = avg.date
 				if type == self.LOW:
-					value = avg.value - (self.BB_FACTOR * stddev_pts[i-self.AVG_PERIODS].value) 
+					value = avg.value - (self.bb_factor * self.stddev_pts[i-self.avg_period].value) 
 				elif type == self.HIGH:
-					value = avg.value + (self.BB_FACTOR * stddev_pts[i-self.AVG_PERIODS].value)
+					value = avg.value + (self.bb_factor * self.stddev_pts[i-self.avg_period].value)
 
 				new_pt = Point(self.dbm, bb_table_name, date, value)
 				new_pt.save()
@@ -110,37 +112,51 @@ class BollingerStrategy:
 
 	##returns market operation
 	def decide(self, candle_num, bits):
-
 		date = self.candles[candle_num].date
 		amount = self.AMOUNT
 		price = self.candles[candle_num].close
 
 		##don't trade for first period that does not have adequate history
-		if candle_num <= self.AVG_PERIODS:
-			self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.NONE))
+		if candle_num <= self.avg_period:
+			self.trade_plan_array.append(TradePlan(date, 0, price, TradePlan.NONE))
 			return Operation(Operation.NONE_OP, 0)
 		else:
-			##if current price exceeds high bollinger band -> buy
-			if self.candles[candle_num].close > self.bb_high_pts[candle_num - self.AVG_PERIODS -1].value:
-				##thinking of selling, before actually selling make sure selling was planned for at least NUM_PAST_SELL
-				if TradePlan.check_past(self.trade_plan_array, candle_num, self.NUM_PAST_SELL, TradePlan.PLAN_SELL):
+			##if current price exceeds high bollinger band -> sell
+			if self.candles[candle_num].close > self.bb_high_pts[candle_num - self.avg_period -1].value:
+				##thinking of selling, before actually selling make sure selling was planned for at least num_past_sell
+				if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_sell, TradePlan.PLAN_SELL):
+					
+					if self.stddev_adjust:
+						##scale amount sold by factor determined by how much price is deviating from the bollinger band
+						price_difference = self.candles[candle_num].close - self.bb_high_pts[candle_num - self.avg_period -1].value
+						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period- 1].value
+						amount = self.AMOUNT * factor 
+
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_SELL))
-					return Operation(Operation.SELL_OP, self.AMOUNT)
+					return Operation(Operation.SELL_OP, amount)
 				else:
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_SELL))
 					return Operation(Operation.NONE_OP, 0)
 
-			##if current price is below low bollinger band -> sell
-			elif self.candles[candle_num].close < self.bb_low_pts[candle_num - self.AVG_PERIODS -1].value:
-				##thinking of buying, before actually buying make sure buying was planned for at least NUM_PAST_BUY
-				if TradePlan.check_past(self.trade_plan_array, candle_num, self.NUM_PAST_BUY, TradePlan.PLAN_BUY):
+			##if current price is below low bollinger band -> buy
+			elif self.candles[candle_num].close < self.bb_low_pts[candle_num - self.avg_period -1].value:
+				##thinking of buying, before actually buying make sure buying was planned for at least num_past_buy
+				if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_buy, TradePlan.PLAN_BUY):
+					
+					if self.stddev_adjust:
+						##scale amount bought by factor determined by how much price is deviating from the bollinger band
+						price_difference = self.bb_low_pts[candle_num - self.avg_period -1].value - self.candles[candle_num].close
+						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period- 1].value
+						amount = self.AMOUNT * factor
+					
+
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_BUY))
-					return Operation(Operation.BUY_OP, self.AMOUNT)
+					return Operation(Operation.BUY_OP, amount)
 				else:
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_BUY))
 					return Operation(Operation.NONE_OP, 0)
 
 			else:
-				self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.NONE))
+				self.trade_plan_array.append(TradePlan(date, 0, price, TradePlan.NONE))
 				return Operation(Operation.NONE_OP, 0)
 

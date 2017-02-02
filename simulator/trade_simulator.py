@@ -15,6 +15,8 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
+	SUPPRESS_PRINT_HISTORY = False 
+
 	def __init__(self, table_name, candles, strategy):
 		self.table_name = table_name
 		self.strategy = strategy
@@ -49,19 +51,28 @@ class TradeSimulator:
 		##self.log_results()
 
 	def print_results(self):
+
+		if not self.SUPPRESS_PRINT_HISTORY:
+			print "History: "
+			TradeTable.pprint(self.trade_table_name)
+
+		##last price that any unsold bits are finally sold
 		last_price = self.candles[-1].close
-		
+	
 		print ""
 		print "Total Bought: ", self.total_bought
 		print "Total Spent: ", self.money_spent
-		print "Total Sold: ", self.total_sold
-		print "Ended with: "
-		print "Money:" + str(self.bank)
+		##print "Total Sold: ", self.total_sold
+		##print "Ended with: "
+		##print "Money:" + str(self.bank)
 		print "Bits:" + str(self.bits)
 		print "Final Price: ",  last_price 
 		print "Net Worth:" + str(self.net_worth)
-		print "Profit Percent: " + str(self.net_worth/self.money_spent)
-	
+		if self.money_spent > 0:
+			print "Profit Percent: " + str(self.net_worth/self.money_spent)
+		else:
+			print "NO MONEY SPENT"
+
 	def log_results(self):
 		self.results_logger.log(self.total_bought, self.money_spent, self.total_sold, self.net_worth, self.bits)
 
@@ -80,18 +91,20 @@ class TradeSimulator:
 		
 		if operation.op == Operation.NONE_OP or operation.amount == 0:
 			pass
+			##print "Nothing at: ", str(price)
 		elif operation.op == Operation.BUY_OP:
 			self.perform_buy(candle.date, amount, price)
 		elif operation.op == Operation.SELL_OP:
 			if self.bits >= amount: ##if there are enough bits to sell
 				self.perform_sell(candle.date, amount, price)
-			else:
-				print "Sell operation failed because not enough bits are owned"
-				print "Bits: " , self.bits
-				print "Sold Amount Attempted: " , amount
+			elif self.bits == 0:
+				self.fail_sell(candle.date, amount, price)
+			elif self.bits < amount:
+				amount = self.bits
+				self.perform_sell(candle.date, amount, price)
+
 	
 	def perform_buy(self, date, amount, price):
-		print "Bought: " + str(amount) + " at: " + str(price)
 		self.bank -= amount*price
 		self.money_spent += amount*price
 		self.bits += amount
@@ -99,14 +112,13 @@ class TradeSimulator:
 		self.trade_logger.log_trade(date, amount, price, Trade.BUY_TYPE)
 	
 	def perform_sell(self, date, amount, price):
-		print "Sold: " + str(amount) + " at: " + str(price)
-		##print "Sold: ", amount
 		self.bank += amount*price
 		self.bits -= amount
 		self.total_sold += amount
 		self.trade_logger.log_trade(date, amount, price, Trade.SELL_TYPE)
 	
-
+	def fail_sell(self, date, amount, price):	
+		self.trade_logger.log_trade(date, amount, price, Trade.FAIL_SELL_TYPE)
 
 
 		
