@@ -114,7 +114,7 @@ class CandleTable:
 		candles = CandleTable.get_candle_array(candle_table_name)
 		dbm = DBManager()
 		for c in candles:
-			p = Point(dbm, pt_name, c.date, c.mid)
+			p = Point(dbm, pt_name, c.date, c.close)
 			p.save()
 		dbm.save_and_close()
 		return pt_name

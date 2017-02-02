@@ -25,6 +25,9 @@ eth_trend = dbGetQuery( con,'select date, hits from TREND_ETH_table_1475280000_1
 xmr = dbGetQuery(con,'select date, close from CANDLE_USDT_XMR_1475280000_9999999999_14400')
 xmr_trend = dbGetQuery( con,'select date, hits from TREND_XMR_table_1475280000_1484899200' )
 
+btc_boll_low = dbGetQuery(con,'select date, value from POINT_USDT_BTC_1475280000_9999999999_14400___SIMPLE_AVG_20_LOW')
+btc_boll_high = dbGetQuery(con,'select date, value from POINT_USDT_BTC_1475280000_9999999999_14400___SIMPLE_AVG_20_HIGH')
+
 ##plot(btc[,'date'], btc[,'close'], type = 'l') 
 ##plot(eth[,'date'], eth[,'close'], type = 'l') 
 

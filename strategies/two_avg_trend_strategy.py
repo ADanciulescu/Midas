@@ -50,8 +50,6 @@ class TwoAvgTrendStrategy():
 			## if cur_date is too early to have valid trend data return no operation
 			if not self.is_valid_date(cur_date):
 				return Operation(Operation.NONE_OP, 0)
-
-			
 		
 			trend_date_present = cur_date - self.DELAY * self.DAY ##date to lookup in trend table
 			trend_date_past = trend_date_present - self.DAY ##date to lookup in trend table
