@@ -26,7 +26,8 @@ class BollingerStrategy:
 	BB_FACTOR = 2.5
 
 	NUM_PAST_BUY = 2 ## how long to plan buying before actually buying
-	NUM_PAST_SELL = 86400 ## how long to plan selling before actually selling
+	NUM_PAST_SELL = 3 ## how long to plan selling before actually selling
+
 
 	##constant string used to specifiy type of bollinger band
 	LOW = "LOW"
@@ -64,6 +65,10 @@ class BollingerStrategy:
 
 		self.bb_low_pts = PointTable.get_point_array(self.bb_low_name)
 		self.bb_high_pts = PointTable.get_point_array(self.bb_high_name)
+
+		for i in range(len(self.bb_low_pts)):
+			if self.bb_low_pts[i] >= self.bb_high_pts[i]:
+				print "*********************************************************************************"
 
 	##delete tables that were created
 	def cleanup(self):
@@ -104,7 +109,7 @@ class BollingerStrategy:
 		return bb_table_name
 
 	##returns market operation
-	def decide2(self, candle_num, bits):
+	def decide(self, candle_num, bits):
 
 		date = self.candles[candle_num].date
 		amount = self.AMOUNT
@@ -112,59 +117,30 @@ class BollingerStrategy:
 
 		##don't trade for first period that does not have adequate history
 		if candle_num <= self.AVG_PERIODS:
-			type = TradePlan.NONE
-			tp = TradePlan(date, amount, price, type)
-			self.trade_plan_array.append(tp)
+			self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.NONE))
 			return Operation(Operation.NONE_OP, 0)
 		else:
 			##if current price exceeds high bollinger band -> buy
 			if self.candles[candle_num].close > self.bb_high_pts[candle_num - self.AVG_PERIODS -1].value:
-				type = TradePlan.SELL
-				tp = TradePlan(date, amount, price, type)
-				self.trade_plan_array.append(tp)
-				return Operation(Operation.SELL_OP, self.AMOUNT)
+				##thinking of selling, before actually selling make sure selling was planned for at least NUM_PAST_SELL
+				if TradePlan.check_past(self.trade_plan_array, candle_num, self.NUM_PAST_SELL, TradePlan.PLAN_SELL):
+					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_SELL))
+					return Operation(Operation.SELL_OP, self.AMOUNT)
+				else:
+					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_SELL))
+					return Operation(Operation.NONE_OP, 0)
+
 			##if current price is below low bollinger band -> sell
 			elif self.candles[candle_num].close < self.bb_low_pts[candle_num - self.AVG_PERIODS -1].value:
+				##thinking of buying, before actually buying make sure buying was planned for at least NUM_PAST_BUY
 				if TradePlan.check_past(self.trade_plan_array, candle_num, self.NUM_PAST_BUY, TradePlan.PLAN_BUY):
-					type = TradePlan.BUY
-					tp = TradePlan(date, amount, price, type)
-					self.trade_plan_array.append(tp)
+					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_BUY))
 					return Operation(Operation.BUY_OP, self.AMOUNT)
 				else:
-					type = TradePlan.PLAN_BUY
-					tp = TradePlan(date, amount, price, type)
-					self.trade_plan_array.append(tp)
+					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_BUY))
 					return Operation(Operation.NONE_OP, 0)
 
 			else:
-				type = TradePlan.NONE
-				tp = TradePlan(date, amount, price, type)
-				self.trade_plan_array.append(tp)
+				self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.NONE))
 				return Operation(Operation.NONE_OP, 0)
 
-	##returns market operation
-	def decide(self, candle_num, bits):
-		##don't trade for first period that does not have adequate history
-		if candle_num <= self.AVG_PERIODS:
-			return Operation(Operation.NONE_OP, 0)
-		else:
-			##if current price exceeds high bollinger band -> buy
-			if self.candles[candle_num].close > self.bb_high_pts[candle_num - self.AVG_PERIODS -1].value:
-				return Operation(Operation.SELL_OP, self.AMOUNT)
-			##if current price is below low bollinger band -> sell
-			elif self.candles[candle_num].close < self.bb_low_pts[candle_num - self.AVG_PERIODS -1].value:
-				date = self.candles[candle_num].date
-				##if self.is_valid_buy(date):
-				return Operation(Operation.BUY_OP, self.AMOUNT)
-				##else:
-					##return Operation(Operation.NONE_OP, 0)
-			else:
-				return Operation(Operation.NONE_OP, 0)
-
-	##makes sure that a buy signal is not duplicated before a sufficient time has passed 
-	##def is_valid_buy(self, date):
-		##trades = TradeTable.get_trades_in_range(self.trade_table_name, date - self.BUY_LIMIT, date, Trade.BUY_TYPE)
-		##if len(trades) > 0:
-			##return False
-		##else:
-			return True

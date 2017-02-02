@@ -97,7 +97,7 @@ def main():
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 	simulate_bollinger_strategy(table_name_ETH_14400)
-	##simulate_random_strategy(table_name_ETH2_14400)
+	##simulate_random_strategy(table_name_ETH_14400)
 	##simulate_bollinger_strategy(table_name_LTC_14400)
 	##simulate_bollinger_strategy(table_name_ETC_14400)
 

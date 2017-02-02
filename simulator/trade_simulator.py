@@ -49,6 +49,8 @@ class TradeSimulator:
 		##self.log_results()
 
 	def print_results(self):
+		last_price = self.candles[-1].close
+		
 		print ""
 		print "Total Bought: ", self.total_bought
 		print "Total Spent: ", self.money_spent
@@ -56,6 +58,7 @@ class TradeSimulator:
 		print "Ended with: "
 		print "Money:" + str(self.bank)
 		print "Bits:" + str(self.bits)
+		print "Final Price: ",  last_price 
 		print "Net Worth:" + str(self.net_worth)
 		print "Profit Percent: " + str(self.net_worth/self.money_spent)
 	
