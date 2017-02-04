@@ -85,7 +85,7 @@ class CandleFetcher():
 	##updates the big tables for all the currencies with any new candles
 	@staticmethod
 	def update_all():
-		for tn in table_names.to_update:
+		for tn in table_names.complete_tables:
 			last_date_updated = CandleTable.get_last_date(tn)
 			target_curr = CandleTable.get_target_currency(tn)
 			period = CandleTable.get_period(tn)

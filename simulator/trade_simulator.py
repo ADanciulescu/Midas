@@ -15,7 +15,7 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	SUPPRESS_PRINT_HISTORY = False 
+	SUPPRESS_PRINT_HISTORY = True 
 
 	def __init__(self, table_name, candles, strategy):
 		self.table_name = table_name
@@ -24,6 +24,8 @@ class TradeSimulator:
 		self.bank = 0 ##keeps track of money spent and made
 		self.bits = 0 ##keeps track of bits owned
 		self.total_bought = 0
+		self.balance = 0
+		self.max_debt = 0
 		self.total_sold = 0
 		self.money_spent = 0
 		self.candles = candles
@@ -62,6 +64,7 @@ class TradeSimulator:
 		print ""
 		print "Total Bought: ", self.total_bought
 		print "Total Spent: ", self.money_spent
+		print "Max Debt: ", self.max_debt
 		##print "Total Sold: ", self.total_sold
 		##print "Ended with: "
 		##print "Money:" + str(self.bank)
@@ -69,7 +72,7 @@ class TradeSimulator:
 		print "Final Price: ",  last_price 
 		print "Net Worth:" + str(self.net_worth)
 		if self.money_spent > 0:
-			print "Profit Percent: " + str(self.net_worth/self.money_spent)
+			print "Profit Percent: " + str(self.net_worth/(-1*self.max_debt))
 		else:
 			print "NO MONEY SPENT"
 
@@ -109,12 +112,19 @@ class TradeSimulator:
 		self.money_spent += amount*price
 		self.bits += amount
 		self.total_bought += amount
+		self.balance -= amount*price
+		if self.balance < self.max_debt:
+			self.max_debt = self.balance
+		
+		
 		self.trade_logger.log_trade(date, amount, price, Trade.BUY_TYPE)
 	
 	def perform_sell(self, date, amount, price):
 		self.bank += amount*price
 		self.bits -= amount
 		self.total_sold += amount
+		self.balance += amount*price
+		
 		self.trade_logger.log_trade(date, amount, price, Trade.SELL_TYPE)
 	
 	def fail_sell(self, date, amount, price):	
