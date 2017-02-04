@@ -14,7 +14,10 @@ class CandleParser:
 		db_manager = DBManager()
 		for c in self.data:
 			ct = Candle(db_manager, self.table_name, c['date'], c['high'], c['low'], c['open'], c['close'], c['volume'], c['quoteVolume'], c['weightedAverage'])
-			ct.save()
+			try:
+				ct.save()
+			except:
+					"Duplicate candle, cannot insert"
 		db_manager.conn.commit()
 		db_manager.conn.close()
 

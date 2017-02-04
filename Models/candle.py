@@ -1,13 +1,12 @@
 ## Model for a chart currency data candle 
 ## can be created from tuple data or from db
 
-##attributes: id, date, high, low, open, close, mid, volume, quoteVolume, weightedAverage
+##attributes: date, high, low, open, close, mid, volume, quoteVolume, weightedAverage
 
 import sqlite3
 from db_manager import DBManager
 
 class Candle:
-	ID = "id"
 	DATE = "date"
 	HIGH = "high"
 	LOW = "low"
@@ -51,7 +50,7 @@ class Candle:
 	@staticmethod
 	def from_tuple(table_name, tup):
 		dbm = DBManager()
-		c = Candle(dbm, table_name, tup[1], tup[2], tup[3], tup[4], tup[5], tup[7], tup[8], tup[9])
+		c = Candle(dbm, table_name, tup[0], tup[1], tup[2], tup[3], tup[4], tup[6], tup[7], tup[8])
 		return c
 
 	def save(self):

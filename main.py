@@ -4,6 +4,7 @@ from trade_simulator import TradeSimulator
 from test_strategy import TestStrategy
 from currency_trailer_strategy import CurrencyTrailerStrategy
 from candle_table import CandleTable
+from candle_fetcher import CandleFetcher
 from point_populator import PointPopulator
 from simple_buyer_strategy import SimpleBuyerStrategy
 from trend_fetcher import TrendFetcher
@@ -30,6 +31,8 @@ import table_names
 ##TODO: keep thinking of possible biases
 
 def main():
+
+	CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 14400)
 	
 
 	##get_candle_data("ETH")
@@ -67,7 +70,7 @@ def main():
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
 	##present_bollinger(table_names.ETH_14400)
-	simulate_bollinger_strategy(table_names.ETH_14400)
+	##simulate_bollinger_strategy(table_names.ETH_14400)
 	##simulate_bollinger_strategy(table_name_ETH4_14400)
 	##simulate_bollinger_strategy(table_name_XMR4_14400)
 	##simulate_bollinger_strategy(table_name_XRP4_14400)
