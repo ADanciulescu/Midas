@@ -19,6 +19,7 @@ from neural_candle_model import NeuralCandleModel
 from bollinger_strategy import BollingerStrategy
 from random_strategy import RandomStrategy
 import time
+import table_names
 
 ##TODO: investigate modifying candle_length to something smaller than 14400
 ##TODO: look into finding a parameter optimizer
@@ -30,62 +31,8 @@ import time
 
 def main():
 	
-	table_name_BTC_14400 = "CANDLE_USDT_BTC_1475280000_9999999999_14400"
-	table_name_BTC2_14400 = "CANDLE_USDT_BTC_1467331200_1475280000_14400"
-	table_name_BTC3_14400 = "CANDLE_USDT_BTC_1459468800_1467331200_14400"
-	table_name_BTC4_14400 = "CANDLE_USDT_BTC_1451606400_1459468800_14400"
-	table_name_BTC_1800 = "CANDLE_USDT_BTC_1475280000_9999999999_1800"
-	trend_name_bitcoin = "TREND_bitcoin_table"
-	trend_name_BTC = "TREND_BTC_table"
-	
-	table_name_ETH_14400 = "CANDLE_USDT_ETH_1475280000_9999999999_14400"
-	table_name_ETH2_14400 = "CANDLE_USDT_ETH_1467331200_1475280000_14400"
-	table_name_ETH3_14400 = "CANDLE_USDT_ETH_1459468800_1467331200_14400"
-	table_name_ETH4_14400 = "CANDLE_USDT_ETH_1451606400_1459468800_14400"
-	trend_name_ethereum = "TREND_ethereum_table"
-	trend_name_ETH = "TREND_ETH_table"
-	trend_name_buy_ETH = "TREND_buy_ETH_table"
 
-	table_name_XMR_14400 = "CANDLE_USDT_XMR_1475280000_9999999999_14400"
-	table_name_XMR2_14400 = "CANDLE_USDT_XMR_1467331200_1475280000_14400"
-	table_name_XMR3_14400 = "CANDLE_USDT_XMR_1459468800_1467331200_14400"
-	table_name_XMR4_14400 = "CANDLE_USDT_XMR_1451606400_1459468800_14400"
-	trend_name_monero = "TREND_monero_table"
-	trend_name_XMR = "TREND_XMR_table"
-	
-	
-	table_name_XRP_14400 = "CANDLE_USDT_XRP_1475280000_9999999999_14400"
-	table_name_XRP2_14400 = "CANDLE_USDT_XRP_1467331200_1475280000_14400"
-	table_name_XRP3_14400 = "CANDLE_USDT_XRP_1459468800_1467331200_14400"
-	table_name_XRP4_14400 = "CANDLE_USDT_XRP_1451606400_1459468800_14400"
-	trend_name_ripple = "TREND_ripple_table"
-	trend_name_XRP = "TREND_XRP_table"
-	
-	table_name_LTC_14400 = "CANDLE_USDT_LTC_1475280000_9999999999_14400"
-	table_name_LTC2_14400 = "CANDLE_USDT_LTC_1467331200_1475280000_14400"
-	table_name_LTC3_14400 = "CANDLE_USDT_LTC_1459468800_1467331200_14400"
-	table_name_LTC4_14400 = "CANDLE_USDT_LTC_1451606400_1459468800_14400"
-	trend_name_litecoin = "TREND_litecoin_table"
-	trend_name_LTC = "TREND_LTC_table"
-	
-	table_name_ETC_14400 = "CANDLE_USDT_ETC_1475280000_9999999999_14400"
-	table_name_ETC2_14400 = "CANDLE_USDT_ETC_1467331200_1475280000_14400"
-	table_name_ETC3_14400 = "CANDLE_USDT_ETC_1459468800_1467331200_14400"
-	trend_name_ETC = "TREND_ETC_table"
-	
-	table_name_DASH_14400 = "CANDLE_USDT_DASH_1475280000_9999999999_14400"
-	table_name_DASH2_14400 = "CANDLE_USDT_DASH_1467331200_1475280000_14400"
-	table_name_DASH3_14400 = "CANDLE_USDT_DASH_1459468800_1467331200_14400"
-	##table_name_ETC3_14400 = "CANDLE_USDT_ETC_1459468800_1467331200_14400"
-	trend_name_DASH = "TREND_DASH_table"
-	
-	table_name_REP_14400 = "CANDLE_USDT_REP_1475280000_9999999999_14400"
-	##table_name_REP2_14400 = "CANDLE_USDT_DASH_1467331200_1475280000_14400"
-	##table_name_REP3_14400 = "CANDLE_USDT_DASH_1459468800_1467331200_14400"
-	##table_name_ETC3_14400 = "CANDLE_USDT_ETC_1459468800_1467331200_14400"
-	trend_name_REP = "TREND_REP_table"
-
-	##get_candle_data("BTC")
+	##get_candle_data("ETH")
 	##get_candle_data("ETH")
 	##get_candle_data("XRP")
 	##get_candle_data("LTC")
@@ -119,7 +66,8 @@ def main():
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
-	##simulate_bollinger_strategy(table_name_REP_14400)
+	##present_bollinger(table_names.ETH_14400)
+	simulate_bollinger_strategy(table_names.ETH_14400)
 	##simulate_bollinger_strategy(table_name_ETH4_14400)
 	##simulate_bollinger_strategy(table_name_XMR4_14400)
 	##simulate_bollinger_strategy(table_name_XRP4_14400)
@@ -155,6 +103,10 @@ def simulate(candle_table_name):
 		past_sell += 2
 	
 
+def present_bollinger(candle_table_name):
+	candles = CandleTable.get_candle_array(candle_table_name)
+	strat = BollingerStrategy(candles)
+	print strat.get_present_bollinger_diff()
 
 def simulate_random_strategy(candle_table_name):
 	candles = CandleTable.get_candle_array(candle_table_name)

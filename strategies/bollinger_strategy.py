@@ -25,11 +25,11 @@ class BollingerStrategy:
 	LOW = "LOW"
 	HIGH = "HIGH"
 
-	def __init__(self, candles, bb_factor = 2, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 2):
+	def __init__(self, candles, bb_factor = 2, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 0):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
-		self.stddev_adjust = stddev_adjust ## if rue adjust amount bought/sold by how much it deviates from the bollinger band, if false use constant amount
+		self.stddev_adjust = stddev_adjust ## if true adjust amount bought/sold by how much it deviates from the bollinger band, if false use constant amount
 		self.avg_period = avg_period ## how many candles to use to make avg
 		self.num_past_buy = num_past_buy ## how long to plan buying before actually buying
 		self.num_past_sell = num_past_sell ## how long to plan selling before actually selling
@@ -72,6 +72,16 @@ class BollingerStrategy:
 
 		self.bb_low_pts = PointTable.get_point_array(self.bb_low_name)
 		self.bb_high_pts = PointTable.get_point_array(self.bb_high_name)
+
+	## return difference in terms of standard deviations between last candle value and bollinger bands
+	## 0 means on avg, positive value is how many standard deviations above average, negative value is for below average
+	def get_present_bollinger_diff(self):
+		cur_value = self.candles[-1].close
+		last_candle_index = len(self.candles) - 1
+		avg = self.avg_pts[last_candle_index - 1].value
+		stddev = self.stddev_pts[last_candle_index - self.avg_period - 1].value
+		return (cur_value-avg)/stddev
+
 
 
 	##delete tables that were created
