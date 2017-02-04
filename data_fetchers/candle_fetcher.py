@@ -4,6 +4,7 @@ from poloniex_client import PoloniexClient
 from tools import timestamp_to_date
 from db_manager import DBManager
 from candle_table import CandleTable
+from candle import Candle
 from time import time
 
 class CandleFetcher():
@@ -50,3 +51,34 @@ class CandleFetcher():
 			date_end = date_start + CandleFetcher.FETCH_WINDOW_LENGTH
 			CandleFetcher.get_candle_data(curr_target, date_start, date_end, period)
 			date_start = date_end
+	
+	##cuts a big candle table up and creates a currency table that only contains candles between 2 given dates
+	##returns new candle_table name
+	@staticmethod
+	def cut_table(orig_table_name, date_start, date_end):
+		print "Cutting table: ", orig_table_name, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
+		
+		##create new table
+		curr_ref = CandleTable.get_ref_currency(orig_table_name)	
+		curr_target = CandleTable.get_target_currency(orig_table_name)	
+		period = CandleTable.get_period(orig_table_name)
+		new_table = CandleTable(curr_ref, curr_target, date_start, date_end, period)
+		new_table_name = new_table.table_name
+		
+		if DBManager.exists_table(new_table_name):
+			DBManager.drop_table(new_table_name)
+		
+		new_table.save()
+
+		
+		##populate new table with candles from orig_table that lie between the 2 dates
+		dbm = DBManager()
+		candle_array = CandleTable.get_candle_array_by_date(orig_table_name, date_start, date_end)
+		for c in candle_array:
+			new_c = Candle(dbm, new_table_name, c.date, c.high, c.low, c.open, c.close, c.volume, c.quoteVolume, c.weightedAverage)
+			new_c.save()
+		dbm.conn.commit()
+		dbm.conn.close()
+
+		return new_table_name 
+			

@@ -100,7 +100,10 @@ class CandleTable:
 	@staticmethod
 	def get_period(table_name):
 		info = table_name.split("_")
-		return info[5]
+		if len(info) == 6:
+			return info[5]
+		else:
+			return info[3]
 
 
 	##create point table using date and mid from candle_table_name, return its name

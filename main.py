@@ -32,17 +32,9 @@ import table_names
 
 def main():
 
-	CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 14400)
-	
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 14400)
+	##btc_jun_jan = CandleFetcher.cut_table(table_names.BTC_14400, date_to_timestamp("2016-6-1"), date_to_timestamp("2017-1-1"))
 
-	##get_candle_data("ETH")
-	##get_candle_data("ETH")
-	##get_candle_data("XRP")
-	##get_candle_data("LTC")
-	##get_candle_data("ETC")
-	##get_candle_data("XMR")
-	##get_candle_data("DASH")
-	##get_candle_data("REP")
 	##table_name = "USDT_BTC_1475280000_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
 	##simulate_trailer_strategy(tn_reference = table_name_BTC_14400, tn_target = table_name_ETH_14400)
@@ -69,6 +61,7 @@ def main():
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
+	simulate_bollinger_strategy(table_names.BTC_14400)
 	##present_bollinger(table_names.ETH_14400)
 	##simulate_bollinger_strategy(table_names.ETH_14400)
 	##simulate_bollinger_strategy(table_name_ETH4_14400)
