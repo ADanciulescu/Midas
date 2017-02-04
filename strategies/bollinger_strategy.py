@@ -25,7 +25,7 @@ class BollingerStrategy:
 	LOW = "LOW"
 	HIGH = "HIGH"
 
-	def __init__(self, candles, bb_factor = 2, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 2):
+	def __init__(self, candles, bb_factor = 2.5, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 2):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg

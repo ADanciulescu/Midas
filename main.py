@@ -19,6 +19,7 @@ from neural_trend_model import NeuralTrendModel
 from neural_candle_model import NeuralCandleModel
 from bollinger_strategy import BollingerStrategy
 from random_strategy import RandomStrategy
+from hold_strategy import HoldStrategy
 from signaler import Signaler 
 import table_names
 import time
@@ -33,12 +34,12 @@ import time
 
 def main():
 
-	##signaler = Signaler()
-	##signaler.print_all_signals()
+	signaler = Signaler()
+	signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-1-1"), 14400)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-1-1"), 14400)
-	##btc_jun_jan = CandleFetcher.cut_table(table_names.BTC_14400, date_to_timestamp("2016-6-1"), date_to_timestamp("2017-1-1"))
+	##btc_jun = CandleFetcher.cut_table(table_names.BTC_14400, date_to_timestamp("2016-6-1"))
 
 	##table_name = "USDT_BTC_1475280000_9999999999_300"
 	##simulate_test_strategy(table_name_BTC_14400)
@@ -54,23 +55,25 @@ def main():
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
-	##simulate_bollinger_strategy(table_names.BTC_14400)
-	##present_bollinger(table_names.ETH_14400)
-	##simulate_bollinger_strategy(table_names.ETH_14400)
-	##simulate_bollinger_strategy(table_name_ETH4_14400)
-	##simulate_bollinger_strategy(table_name_XMR4_14400)
-	##simulate_bollinger_strategy(table_name_XRP4_14400)
-	##simulate_bollinger_strategy(table_name_LTC4_14400)
-	##simulate_bollinger_strategy(table_name_ETH2_14400)
-	#simulate_bollinger_strategy(table_name_ETC_14400)
-	##simulate_bollinger_strategy(table_name_ETC2_14400)
-	##simulate_bollinger_strategy(table_name_XMR_14400)
-	##simulate_bollinger_strategy(table_name_XMR2_14400)
-	##simulate_bollinger_strategy(table_name_LTC_14400)
-	##simulate_bollinger_strategy(table_name_LTC2_14400)
-	##simulate_random_strategy(table_name_ETH2_14400)
-	##simulate_bollinger_strategy(table_name_LTC_14400)
-	##simulate_bollinger_strategy(table_name_ETC_14400)
+	##simulate_bollinger_strategy(table_names.BTC_HALF)
+	##simulate_bollinger_strategy(table_names.ETH_HALF)
+	##simulate_bollinger_strategy(table_names.XMR_HALF)
+	##simulate_bollinger_strategy(table_names.XRP_HALF)
+	##simulate_bollinger_strategy(table_names.LTC_HALF)
+	##simulate_bollinger_strategy(table_names.ETC_HALF)
+	##simulate_bollinger_strategy(table_names.DASH_HALF)
+	##simulate_bollinger_strategy(table_names.REP_HALF)
+	
+	##simulate_hold_strategy(table_names.BTC_HALF)
+	##simulate_hold_strategy(table_names.ETH_HALF)
+	##simulate_hold_strategy(table_names.XMR_HALF)
+	##simulate_hold_strategy(table_names.XRP_HALF)
+	##simulate_hold_strategy(table_names.LTC_HALF)
+	##simulate_hold_strategy(table_names.ETC_HALF)
+	##simulate_hold_strategy(table_names.DASH_HALF)
+	##simulate_hold_strategy(table_names.REP_HALF)
+	
+	##present_bollinger(table_names.BTC_14400)
 
 	##simulate(table_name_BTC_14400)
 	##simulate(table_name_LTC_14400)
@@ -101,7 +104,7 @@ def simulate_bollinger_strategy(candle_table_name):
 def present_bollinger(candle_table_name):
 	candles = CandleTable.get_candle_array(candle_table_name)
 	strat = BollingerStrategy(candles)
-	print strat.get_present_bollinger_diff()
+	print "# of stddev from mean: ", strat.get_present_bollinger_diff()
 
 def simulate_scipy_trend_strategy(candle_table_name, trend_table_name, model):
 	strat = ScipyModelStrategy(candle_table_name, trend_table_name, model)
@@ -147,6 +150,12 @@ def simulate_trailer_strategy(tn_reference, tn_target):
 def simulate_random_strategy(candle_table_name):
 	candles = CandleTable.get_candle_array(candle_table_name)
 	strat = RandomStrategy(candles)
+	trade_sim = TradeSimulator(candle_table_name, candles, strat)
+	trade_sim.run()
+
+def simulate_hold_strategy(candle_table_name):
+	candles = CandleTable.get_candle_array(candle_table_name)
+	strat = HoldStrategy(candles)
 	trade_sim = TradeSimulator(candle_table_name, candles, strat)
 	trade_sim.run()
 
