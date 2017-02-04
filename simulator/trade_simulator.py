@@ -15,19 +15,22 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	SUPPRESS_PRINT_HISTORY = True 
+	SUPPRESS_PRINT_HISTORY = True
+	##poloniex fees
+	SELL_FEE = 0.0015
+	BUY_FEE = 0.0025
 
 	def __init__(self, table_name, candles, strategy):
 		self.table_name = table_name
 		self.strategy = strategy
 	
-		self.bank = 0 ##keeps track of money spent and made
 		self.bits = 0 ##keeps track of bits owned
-		self.total_bought = 0
-		self.balance = 0
-		self.max_debt = 0
-		self.total_sold = 0
-		self.money_spent = 0
+		self.bits_at_end = 0 ##keeps track of bits owned when algorithm ends(before they are all finally sold)
+		self.total_bought = 0 ##total bits ever bought
+		self.total_sold = 0 ## total bits ever sold 
+		self.balance = 0 ##money balance
+		self.max_debt = 0 ##lowest balance ever incurred
+		self.money_spent = 0 ##total money spent
 		self.candles = candles
 
 	def run(self):
@@ -48,7 +51,7 @@ class TradeSimulator:
 			operation = self.strategy.decide(i, self.bits)
 			self.process_operation(operation, t)
 
-		self.update_net_worth()
+		self.finalize_balance()
 		self.print_results()
 		##self.log_results()
 
@@ -62,31 +65,32 @@ class TradeSimulator:
 		last_price = self.candles[-1].close
 	
 		print ""
-		print "Total Bought: ", self.total_bought
+		print "Total Bits Bought: ", self.total_bought
 		print "Total Spent: ", self.money_spent
 		print "Max Debt: ", self.max_debt
 		##print "Total Sold: ", self.total_sold
 		##print "Ended with: "
-		##print "Money:" + str(self.bank)
-		print "Bits:" + str(self.bits)
+		print "Bits at end:" + str(self.bits_at_end)
 		print "Final Price: ",  last_price 
-		print "Net Worth:" + str(self.net_worth)
+		print "Balance:" + str(self.balance)
 		if self.money_spent > 0:
-			print "Profit Percent: " + str(self.net_worth/(-1*self.max_debt))
+			print "Profit Percent: " + str(self.balance/(-1*self.max_debt))
 		else:
 			print "NO MONEY SPENT"
 
 	def log_results(self):
-		self.results_logger.log(self.total_bought, self.money_spent, self.total_sold, self.net_worth, self.bits)
+		self.results_logger.log(self.total_bought, self.money_spent, self.total_sold, self.balance, self.bits)
 
 
-	## returns net_worth which is equal to money + w/e money you get by selling bits during the last candle 
-	def update_net_worth(self):
-		self.net_worth = self.bank
-		last_price = self.candles[-1].close
-		self.net_worth += self.bits*last_price
+	## returns balance which is equal to money + w/e money you get by selling bits during the last candle 
+	def finalize_balance(self):
+		if self.bits > 0:
+			self.bits_at_end = self.bits
+			last_date = self.candles[-1].date
+			last_price = self.candles[-1].close
+			self.perform_sell(last_date, self.bits, last_price)
 
-	##performs market operation updating bits and bank
+	##performs market operation updating bits and balance 
 	def process_operation(self, operation, candle):
 		
 		amount = operation.amount
@@ -108,11 +112,13 @@ class TradeSimulator:
 
 	
 	def perform_buy(self, date, amount, price):
-		self.bank -= amount*price
-		self.money_spent += amount*price
+		cost = amount*price
+		self.balance -= cost 
+		self.balance -= cost * TradeSimulator.BUY_FEE 
+		self.money_spent += cost 
+		self.money_spent += cost * TradeSimulator.BUY_FEE 
 		self.bits += amount
 		self.total_bought += amount
-		self.balance -= amount*price
 		if self.balance < self.max_debt:
 			self.max_debt = self.balance
 		
@@ -120,10 +126,11 @@ class TradeSimulator:
 		self.trade_logger.log_trade(date, amount, price, Trade.BUY_TYPE)
 	
 	def perform_sell(self, date, amount, price):
-		self.bank += amount*price
+		cost = amount*price
+		self.balance += amount*price
+		self.balance -= cost * TradeSimulator.SELL_FEE
 		self.bits -= amount
 		self.total_sold += amount
-		self.balance += amount*price
 		
 		self.trade_logger.log_trade(date, amount, price, Trade.SELL_TYPE)
 	

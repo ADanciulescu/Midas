@@ -19,8 +19,9 @@ from neural_trend_model import NeuralTrendModel
 from neural_candle_model import NeuralCandleModel
 from bollinger_strategy import BollingerStrategy
 from random_strategy import RandomStrategy
-import time
+from signaler import Signaler 
 import table_names
+import time
 
 ##TODO: investigate modifying candle_length to something smaller than 14400
 ##TODO: look into finding a parameter optimizer
@@ -32,8 +33,10 @@ import table_names
 
 def main():
 
+	##signaler = Signaler()
+	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
-	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-1-1"), 14400)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-1-1"), 14400)
 	##btc_jun_jan = CandleFetcher.cut_table(table_names.BTC_14400, date_to_timestamp("2016-6-1"), date_to_timestamp("2017-1-1"))
 
@@ -49,21 +52,9 @@ def main():
 	##grab_trend_all(trend_name_XMR, "XMR")
 	##cut_trend(table_name_ETH_14400, table_name_ETH)
 
-	
-	##nm = NeuralCandleModel("volume")
-	##nm.cross_validate(table_name_BTC_14400)
-	##nm.train_model(CandleTable.get_candle_array(table_name_XMR_14400))
-	##nm.train_model(CandleTable.get_candle_array(table_name_ETH_14400))
-	##nm.test_model(CandleTable.get_candle_array(table_name_XMR_14400))
-	##train_candles = CandleTable.get_candle_array_by_date(table_name_BTC_14400, date_high = 1482508800)
-	##nm.train_model(train_candles)
-	##sim_candles = CandleTable.get_candle_array_by_date(table_name_XMR_14400, date_low = 1482508800)
-	##sim_candles = CandleTable.get_candle_array(table_name_BTC_14400)
-	##simulate_scipy_candle_strategy(table_name_BTC_14400, sim_candles, nm)	
-
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
-	simulate_bollinger_strategy(table_names.BTC_14400)
+	##simulate_bollinger_strategy(table_names.BTC_14400)
 	##present_bollinger(table_names.ETH_14400)
 	##simulate_bollinger_strategy(table_names.ETH_14400)
 	##simulate_bollinger_strategy(table_name_ETH4_14400)
@@ -99,18 +90,6 @@ def simulate(candle_table_name):
 		trade_sim.run()
 		print "******************************************************************************************"
 		past_sell += 2
-	
-
-def present_bollinger(candle_table_name):
-	candles = CandleTable.get_candle_array(candle_table_name)
-	strat = BollingerStrategy(candles)
-	print strat.get_present_bollinger_diff()
-
-def simulate_random_strategy(candle_table_name):
-	candles = CandleTable.get_candle_array(candle_table_name)
-	strat = RandomStrategy(candles)
-	trade_sim = TradeSimulator(candle_table_name, candles, strat)
-	trade_sim.run()
 
 
 def simulate_bollinger_strategy(candle_table_name):
@@ -118,6 +97,11 @@ def simulate_bollinger_strategy(candle_table_name):
 	strat = BollingerStrategy(candles)
 	trade_sim = TradeSimulator(candle_table_name, candles, strat)
 	trade_sim.run()
+
+def present_bollinger(candle_table_name):
+	candles = CandleTable.get_candle_array(candle_table_name)
+	strat = BollingerStrategy(candles)
+	print strat.get_present_bollinger_diff()
 
 def simulate_scipy_trend_strategy(candle_table_name, trend_table_name, model):
 	strat = ScipyModelStrategy(candle_table_name, trend_table_name, model)
@@ -160,6 +144,11 @@ def simulate_trailer_strategy(tn_reference, tn_target):
 	trade_sim = TradeSimulator(tn_target, strat)
 	trade_sim.run()
 
+def simulate_random_strategy(candle_table_name):
+	candles = CandleTable.get_candle_array(candle_table_name)
+	strat = RandomStrategy(candles)
+	trade_sim = TradeSimulator(candle_table_name, candles, strat)
+	trade_sim.run()
 
 ##grabs candle data from poloniex and enters it into db
 ##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)

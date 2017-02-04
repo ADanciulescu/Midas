@@ -55,7 +55,7 @@ class CandleFetcher():
 	##cuts a big candle table up and creates a currency table that only contains candles between 2 given dates
 	##returns new candle_table name
 	@staticmethod
-	def cut_table(orig_table_name, date_start, date_end):
+	def cut_table(orig_table_name, date_start, date_end = 9999999999):
 		print "Cutting table: ", orig_table_name, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
 		
 		##create new table
