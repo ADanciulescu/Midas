@@ -19,8 +19,8 @@ class TrendCutter:
 		
 	## creates a new table with a section from trend table	
 	def create_cut_table(self):
-		self.first_date = CandleTable.get_first_date(self.candle_table_name)[0]
-		self.last_date = CandleTable.get_last_date(self.candle_table_name)[0]
+		self.first_date = CandleTable.get_first_date(self.candle_table_name)
+		self.last_date = CandleTable.get_last_date(self.candle_table_name)
 		self.cut_trend_table_name = self.get_trend_table_name()
 
 		dbm = DBManager()

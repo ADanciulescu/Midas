@@ -6,6 +6,7 @@ from db_manager import DBManager
 from candle_table import CandleTable
 from candle import Candle
 from time import time
+import table_names
 
 class CandleFetcher():
 
@@ -46,7 +47,6 @@ class CandleFetcher():
 	def fetch_candles_after_date(curr_target, orig_date_start, period):
 		date_start = orig_date_start
 		cur_time = time()
-
 		while(date_start < cur_time):
 			date_end = date_start + CandleFetcher.FETCH_WINDOW_LENGTH
 			CandleFetcher.get_candle_data(curr_target, date_start, date_end, period)
@@ -80,5 +80,16 @@ class CandleFetcher():
 		dbm.conn.commit()
 		dbm.conn.close()
 
-		return new_table_name 
+		return new_table_name
+
+	##updates the big tables for all the currencies with any new candles
+	@staticmethod
+	def update_all():
+		for tn in table_names.to_update:
+			last_date_updated = CandleTable.get_last_date(tn)
+			target_curr = CandleTable.get_target_currency(tn)
+			period = CandleTable.get_period(tn)
+			CandleFetcher.fetch_candles_after_date(target_curr, last_date_updated, period)
+		
+
 			

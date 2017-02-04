@@ -66,7 +66,7 @@ class CandleTable:
 		dbm = DBManager()
 		cursor = dbm.get_cursor()
 		cursor.execute(" SELECT date FROM '{tn}' WHERE date = ( SELECT MIN(date) FROM '{tn}' )".format(tn = table_name))
-		return cursor.fetchone()
+		return cursor.fetchone()[0]
 
 	## return first date
 	@staticmethod
@@ -74,7 +74,7 @@ class CandleTable:
 		dbm = DBManager()
 		cursor = dbm.get_cursor()
 		cursor.execute(" SELECT date FROM '{tn}' WHERE date = ( SELECT MAX(date) FROM '{tn}' )".format(tn = table_name))
-		return cursor.fetchone()
+		return cursor.fetchone()[0]
 
 	##returns currency name of the reference currency that the other is measured in terms of
 	@staticmethod
