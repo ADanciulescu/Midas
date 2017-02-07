@@ -27,6 +27,21 @@ class DBManager:
 		cursor = db_manager.get_cursor()
 		cursor.execute('DROP TABLE ' + table_name)
 		db_manager.save_and_close()
+	
+	## drops all tables that contain the given string
+	@staticmethod	
+	def drop_matching_tables(s):
+		db_manager = DBManager()
+
+		##fetch all tables
+		cursor = db_manager.get_cursor()
+		cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+		all_table_names = cursor.fetchall()
+
+		for tn in all_table_names:
+			if s in tn[0]:
+				cursor.execute('DROP TABLE ' + tn[0])
+		db_manager.save_and_close()
 
 	##returns true if table exists otherwise false
 	@staticmethod	

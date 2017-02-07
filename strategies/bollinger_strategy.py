@@ -14,10 +14,10 @@ from db_manager import DBManager
 from trade import Trade
 from trade_table import TradeTable
 from trade_plan import TradePlan
+from trade_simulator import TradeSimulator
 
 class BollingerStrategy:
 
-	AMOUNT = 10
 	NAME = "BOLLINGER"
 
 
@@ -25,7 +25,7 @@ class BollingerStrategy:
 	LOW = "LOW"
 	HIGH = "HIGH"
 
-	def __init__(self, candles, bb_factor = 2.5, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 2):
+	def __init__(self, table_name, bb_factor = 2.5, stddev_adjust = True, avg_period = 40, num_past_buy = 0, num_past_sell = 2):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
@@ -39,13 +39,16 @@ class BollingerStrategy:
 		##NOTE: removed extra parameter for stddev_period, currently same as avg_period
 		##self.stddev_period = stddev_period ##how many past candles to use to compute stddeviation
 
-		self.candles = candles
+		self.amount = TradeSimulator.get_currency_amount(table_name)
+		self.candles = CandleTable.get_candle_array(table_name)
 		self.trade_table = None
 		self.trade_plan_array = []
 		self.dbm = DBManager()
-		self.candle_table_name = candles[0].table_name	
+		self.candle_table_name = table_name
 		self.create_tables()
 		self.cleanup()
+
+	##set core price traded based on currency
 
 	##simply returns name
 	def get_name(self):
@@ -123,7 +126,7 @@ class BollingerStrategy:
 	##returns market operation
 	def decide(self, candle_num, bits):
 		date = self.candles[candle_num].date
-		amount = self.AMOUNT
+		amount = self.amount
 		price = self.candles[candle_num].close
 
 		##don't trade for first period that does not have adequate history
@@ -140,7 +143,7 @@ class BollingerStrategy:
 						##scale amount sold by factor determined by how much price is deviating from the bollinger band
 						price_difference = self.candles[candle_num].close - self.bb_high_pts[candle_num - self.avg_period -1].value
 						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period- 1].value
-						amount = self.AMOUNT * factor 
+						amount = self.amount * factor 
 
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_SELL))
 					return Operation(Operation.SELL_OP, amount)
@@ -157,7 +160,7 @@ class BollingerStrategy:
 						##scale amount bought by factor determined by how much price is deviating from the bollinger band
 						price_difference = self.bb_low_pts[candle_num - self.avg_period -1].value - self.candles[candle_num].close
 						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period- 1].value
-						amount = self.AMOUNT * factor
+						amount = self.amount * factor
 					
 
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_BUY))

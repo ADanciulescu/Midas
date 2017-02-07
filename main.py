@@ -34,10 +34,12 @@ import time
 
 def main():
 
-	signaler = Signaler()
-	signaler.print_all_signals()
+	##signaler = Signaler()
+	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
-	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("ZEC", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("NXT", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("STR", date_to_timestamp("2016-1-1"), 14400)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-1-1"), 14400)
 	##btc_jun = CandleFetcher.cut_table(table_names.BTC_14400, date_to_timestamp("2016-6-1"))
 
@@ -55,7 +57,8 @@ def main():
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
-	##simulate_bollinger_strategy(table_names.BTC_HALF)
+	##DBManager.drop_matching_tables("TRADE")
+	simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF])
 	##simulate_bollinger_strategy(table_names.ETH_HALF)
 	##simulate_bollinger_strategy(table_names.XMR_HALF)
 	##simulate_bollinger_strategy(table_names.XRP_HALF)
@@ -63,6 +66,9 @@ def main():
 	##simulate_bollinger_strategy(table_names.ETC_HALF)
 	##simulate_bollinger_strategy(table_names.DASH_HALF)
 	##simulate_bollinger_strategy(table_names.REP_HALF)
+	##simulate_bollinger_strategy(table_names.ZEC_HALF)
+	##simulate_bollinger_strategy(table_names.NXT_HALF)
+	##simulate_bollinger_strategy(table_names.STR_HALF)
 	
 	##simulate_hold_strategy(table_names.BTC_HALF)
 	##simulate_hold_strategy(table_names.ETH_HALF)
@@ -72,8 +78,12 @@ def main():
 	##simulate_hold_strategy(table_names.ETC_HALF)
 	##simulate_hold_strategy(table_names.DASH_HALF)
 	##simulate_hold_strategy(table_names.REP_HALF)
+	##simulate_hold_strategy(table_names.ZEC_HALF)
+	##simulate_hold_strategy(table_names.NXT_HALF)
+	##simulate_hold_strategy(table_names.STR_HALF)
 	
-	##present_bollinger(table_names.BTC_14400)
+	##present_bollinger(table_names.ETC_14400)
+	##present_bollinger(table_names.DASH_14400)
 
 	##simulate(table_name_BTC_14400)
 	##simulate(table_name_LTC_14400)
@@ -95,10 +105,12 @@ def simulate(candle_table_name):
 		past_sell += 2
 
 
-def simulate_bollinger_strategy(candle_table_name):
-	candles = CandleTable.get_candle_array(candle_table_name)
-	strat = BollingerStrategy(candles)
-	trade_sim = TradeSimulator(candle_table_name, candles, strat)
+def simulate_bollinger_strategy(candle_table_name_array):
+	strat_array = []
+	for tn in candle_table_name_array:
+		strat = BollingerStrategy(tn)
+		strat_array.append(strat)
+	trade_sim = TradeSimulator(candle_table_name_array, strat_array, limit = -30000)
 	trade_sim.run()
 
 def present_bollinger(candle_table_name):

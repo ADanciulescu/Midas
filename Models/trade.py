@@ -14,6 +14,7 @@ class Trade:
 	SELL_TYPE = "SELL_TYPE"
 	NONE_TYPE = "NONE_TYPE"
 	FAIL_SELL_TYPE = "FAIL_SELL_TYPE"
+	FAIL_BUY_TYPE = "FAIL_BUY_TYPE"
 
 	def __init__(self, db_manager, table_name, date, amount, price, type):
 		self.table_name = table_name
@@ -36,6 +37,8 @@ class Trade:
 			print "Sold: " + str(self.amount) + " at: " + str(self.price)
 		elif self.type == self.FAIL_SELL_TYPE:
 			print "Fail to sell: " + str(self.amount) + " at: " + str(self.price)
+		elif self.type == self.FAIL_BUY_TYPE:
+			print "Fail to buy: " + str(self.amount) + " at: " + str(self.price)
 
 
 
@@ -53,7 +56,8 @@ class Trade:
 				self.db_manager.conn.commit()
 
 		except sqlite3.IntegrityError:
-			    print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
+			pass 
+			##print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
 
 	##updates an already existing trade
 	def update(self):
