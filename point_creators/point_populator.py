@@ -23,10 +23,12 @@ class PointPopulator():
 	POINT = "POINT"
 	TREND = "TREND"
 
-	def __init__(self, table_name):
+	def __init__(self, table_name, to_save = False):
 		self.table_name = table_name
-		self.setup()
 		self.dbm = DBManager()
+		self.to_save = to_save
+
+		self.setup()
 
 	## prepare to calculate point table
 	def setup(self):
@@ -55,31 +57,33 @@ class PointPopulator():
 		self.output_table_name = self.output_table_name.replace("CANDLE", "POINT")
 		self.output_table_name = self.output_table_name + self.STDDEV + "_" + str(num_history_pts)
 
-
-		##if already exists, drop it first and then recreate
-		if DBManager.exists_table(self.output_table_name):
-			DBManager.drop_table(self.output_table_name)
-		
-		pt = PointTable(self.output_table_name)
-		pt.save()
+		if self.to_save:
+			##if already exists, drop it first and then recreate
+			if DBManager.exists_table(self.output_table_name):
+				DBManager.drop_table(self.output_table_name)
+			
+			pt = PointTable(self.output_table_name)
+			pt.save()
 
 		orig_pt_array = PointTable.get_point_array(self.input_point_table_name)
 		stddev_pt_array = []
 
 		for i, pt in enumerate(orig_pt_array):
-			if i < num_history_pts: ##don't calculate stddev for first points since there is not enough history available
+			if i < (num_history_pts-1): ##don't calculate stddev for first points since there is not enough history available
 				pass
 			else:
 				date = pt.date
-				stddev = StandardDeviation.simple(orig_pt_array[i-num_history_pts:i])
+				stddev = StandardDeviation.simple(orig_pt_array[i-num_history_pts + 1: i+ 1])
 				stddev_pt = Point(self.dbm, self.output_table_name, date, stddev)
 				stddev_pt_array.append(stddev_pt)
-		self.save_pts(self.dbm, stddev_pt_array)
+		
+		if self.to_save:
+			self.save_pts(self.dbm, stddev_pt_array)
 
 		if CandleTable.TEMP in self.input_point_table_name:
 			DBManager.drop_table(self.input_point_table_name)
 		
-		return self.output_table_name
+		return stddev_pt_array
 	
 	
 	##calculates and inserts simple moving average points in sql table
@@ -88,23 +92,26 @@ class PointPopulator():
 		self.output_table_name = self.output_table_name.replace("CANDLE", "POINT")
 		self.output_table_name = self.output_table_name + self.SIMPLE_AVG + "_" + str(num_history_pts)
 		
-		##if already exists, drop it first and then recreate
-		if DBManager.exists_table(self.output_table_name):
-			DBManager.drop_table(self.output_table_name)
-		
-		pt = PointTable(self.output_table_name)
-		pt.save()
+		if self.to_save:
+			##if already exists, drop it first and then recreate
+			if DBManager.exists_table(self.output_table_name):
+				DBManager.drop_table(self.output_table_name)
+			
+			pt = PointTable(self.output_table_name)
+			pt.save()
 		
 		points = PointTable.get_point_array(self.input_point_table_name)
-		dbm = DBManager()
-		mv = MovingAverage(dbm, self.output_table_name, points)
+		mv = MovingAverage(self.dbm, self.output_table_name, points)
 		pt_array = mv.simple(num_history_pts)
-		self.save_pts(dbm, pt_array)
+		
+		if self.to_save:
+			self.save_pts(dbm, pt_array)
 		
 		## possible delete the temporary point table created from candle
 		if CandleTable.TEMP in self.input_point_table_name:
 			DBManager.drop_table(self.input_point_table_name)
-		return self.output_table_name
+		
+		return pt_array
 
 
 	##calculates and inserts exponential moving average points in sql table

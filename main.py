@@ -32,6 +32,7 @@ import time
 ##TODO: write automated platform
 ##TODO: setup a aws server
 ##TODO: keep thinking of possible biases
+## verify stddev and avg are calculated properly( no off by one errors)
 
 def main():
 
@@ -59,9 +60,9 @@ def main():
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
 	##DBManager.drop_matching_tables("TRADE")
-	##simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF])
-	optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	##optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy(table_names.ETH_HALF)
 	##simulate_bollinger_strategy(table_names.XMR_HALF)
 	##simulate_bollinger_strategy(table_names.XRP_HALF)

@@ -14,6 +14,33 @@ class MovingAverage:
 	POINTS_SIMPLE = 10
 
 	##returns array of pts corresponding to moving average of points 
+	def simple_slow(self, num_history_pts):
+		
+		##will eventually be returned
+		pt_array = []
+
+		for point_index, c in enumerate(self.points):
+
+			total = 0
+			avg = 0
+
+			##special case with less points
+			if point_index < (num_history_pts):
+				for i in range(0, point_index + 1):
+					total += self.points[i].value
+				avg = total/(point_index + 1)
+			else:
+				for i in range(point_index - num_history_pts + 1, point_index + 1):
+					total += self.points[i].value
+				avg = total/(num_history_pts)
+
+			date = self.points[point_index].date
+
+			pt = Point(self.dbm, self.output_table_name, date, avg)
+			pt_array.append(pt)
+		return pt_array
+	
+	##returns array of pts corresponding to moving average of points 
 	def simple(self, num_history_pts):
 		
 		##will eventually be returned
@@ -30,12 +57,16 @@ class MovingAverage:
 					total += self.points[i].value
 				avg = total/(point_index + 1)
 			else:
-				for i in range(point_index - num_history_pts, point_index):
-					total += self.points[i].value
-				avg = total/(num_history_pts)
-
+				old_avg = pt_array[-1].value
+				old_total = old_avg * num_history_pts 
+				##substract the oldest point contained in old_avg
+				new_total = old_total - self.points[point_index- num_history_pts].value
+				##add newest point
+				new_total += self.points[point_index].value
+				new_avg = new_total/num_history_pts
+				avg = new_avg
+			
 			date = self.points[point_index].date
-
 			pt = Point(self.dbm, self.output_table_name, date, avg)
 			pt_array.append(pt)
 		return pt_array
