@@ -25,7 +25,7 @@ class BollingerStrategy:
 	LOW = "LOW"
 	HIGH = "HIGH"
 
-	def __init__(self, table_name, bb_factor = 2.5, stddev_adjust = False, avg_period = 40, num_past_buy = 1, num_past_sell = 3):
+	def __init__(self, table_name, bb_factor = 2.5, stddev_adjust = True, avg_period = 80, num_past_buy = 0, num_past_sell = 6):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
@@ -138,8 +138,8 @@ class BollingerStrategy:
 			self.trade_plan_array.append(TradePlan(date, 0, price, TradePlan.NONE))
 			return Operation(Operation.NONE_OP, 0)
 		else:
-			bb_low_val = self.avg_pts[candle_num  - 1].value - self.bb_factor*(self.stddev_pts[candle_num-self.avg_period - 1]).value
-			bb_high_val = self.avg_pts[candle_num - 1].value + self.bb_factor*(self.stddev_pts[candle_num-self.avg_period - 1]).value
+			bb_low_val = self.avg_pts[candle_num  ].value - self.bb_factor*(self.stddev_pts[candle_num-self.avg_period ]).value
+			bb_high_val = self.avg_pts[candle_num ].value + self.bb_factor*(self.stddev_pts[candle_num-self.avg_period ]).value
 			
 			##if current price exceeds high bollinger band -> sell
 			if self.candles[candle_num].close > bb_high_val:
@@ -149,7 +149,7 @@ class BollingerStrategy:
 					if self.stddev_adjust:
 						##scale amount sold by factor determined by how much price is deviating from the bollinger band
 						price_difference = self.candles[candle_num].close - bb_high_val
-						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period- 1].value
+						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period].value
 						amount = self.amount * factor 
 
 					self.trade_plan_array.append(TradePlan(date, amount, price, TradePlan.PLAN_SELL))
@@ -166,7 +166,7 @@ class BollingerStrategy:
 					if self.stddev_adjust:
 						##scale amount bought by factor determined by how much price is deviating from the bollinger band
 						price_difference =  bb_low_val - self.candles[candle_num].close
-						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period- 1].value
+						factor = price_difference/ self.stddev_pts[candle_num - self.avg_period].value
 						amount = self.amount * factor
 					
 

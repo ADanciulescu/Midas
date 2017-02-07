@@ -16,16 +16,27 @@ class ParameterOptimizer:
 	def optimize_bollinger(self):
 		
 		##values to test out
+		
+		##14400
 		##self.bb_factor = [2, 2.5, 3]
-		##self.stddev_adjust = [True]
-		##self.avg_period = [30]
-		##self.num_past_buy = [0]
-		##self.num_past_sell = [0 , 1]
+		##self.stddev_adjust = [True, False]
+		##self.avg_period = [30, 40, 50, 60]
+		##self.num_past_buy = [0, 1]
+		##self.num_past_sell = [0 , 1, 2, 3]
+
+		##7200
+		##self.bb_factor = [2, 2.5, 3]
+		##self.stddev_adjust = [True, False]
+		##self.avg_period = [60, 80, 100, 120]
+		##self.num_past_buy = [0, 2]
+		##self.num_past_sell = [0 , 2, 4, 6]
+		
+		##1800
 		self.bb_factor = [2, 2.5, 3]
 		self.stddev_adjust = [True, False]
-		self.avg_period = [30, 40, 50, 60]
-		self.num_past_buy = [0, 1]
-		self.num_past_sell = [0 , 1, 2, 3]
+		self.avg_period = [240, 320, 400, 480]
+		self.num_past_buy = [0, 8]
+		self.num_past_sell = [0 , 8, 16, 24]
 
 		self.parameters_array = []
 
@@ -49,26 +60,28 @@ class ParameterOptimizer:
 							p.set_percent_profit(trade_sim.profit_percent)
 							self.parameters_array.append(p)
 
-		self.print_summary("stddev_adjust")
+		self.print_summary(["bb_factor", "stddev_adjust", "avg_period", "num_past_buy", "num_past_sell"])
 	
 	##print summary for a particular parameter
-	def print_summary(self, parameter_attr):
+	def print_summary(self, parameter_attr_array):
 		print "**********************************************************************************"
-		##avgs out performance keeping parameter attr fixed and varying all possible combinations of the other parameters 
-		for v in getattr(self, parameter_attr):
-			total_balance = 0
-			total_pp = 0
-			count = 0
-			for p in self.parameters_array:
-				if getattr(p, parameter_attr) == v:
-					total_balance += p.balance
-					total_pp += p.percent_profit
-					count += 1
-			avg_balance = total_balance/count
-			avg_pp = total_pp/count
-			print parameter_attr, ": ", v
-			print "Balance Avg: ", avg_balance
-			print "Profit Percent Avg: ", avg_pp
+		for pa in parameter_attr_array:
+			##avgs out performance keeping parameter attr fixed and varying all possible combinations of the other parameters 
+			for v in getattr(self, pa):
+				total_balance = 0
+				total_pp = 0
+				count = 0
+				for p in self.parameters_array:
+					if getattr(p, pa) == v:
+						total_balance += p.balance
+						total_pp += p.percent_profit
+						count += 1
+				avg_balance = total_balance/count
+				avg_pp = total_pp/count
+				print pa, ": ", v
+				print "Balance Avg: ", avg_balance
+				print "Profit Percent Avg: ", avg_pp
+			print ""
 
 
 		print "**********************************************************************************"
