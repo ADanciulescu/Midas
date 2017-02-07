@@ -17,8 +17,7 @@ class Sig:
 	PRICE = "price"
 	TYPE = "type"
 
-	def __init__(self, db_manager, table_name, date, amount, price, type):
-		self.dbm = db_manager
+	def __init__(self, table_name, date, amount, price, type):
 		self.table_name = table_name
 		self.date = date ## candle date that set off the signal
 		self.amount = amount
@@ -28,20 +27,21 @@ class Sig:
 	##uses cursor tuple to create a Sig object and return it
 	@staticmethod
 	def from_tuple(table_name, tup):
-		dbm = DBManager()
-		return Sig(dbm, table_name, tup[0], tup[1], tup[2], tup[3])
+		return Sig(table_name, tup[0], tup[1], tup[2], tup[3])
 	
 	def pprint(self):
 		print self.type, " ", timestamp_to_date(self.date), " ", self.amount, " at $", self.price  
 	
 	##inserts point into db
 	def save(self):
-		cursor = self.dbm.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		try:
-			cursor.execute("INSERT INTO {tn} ({nf_date}, {nf_amount}, {nf_price}, {nf_type}) VALUES\
+			exec_string = "INSERT INTO {tn} ({nf_date}, {nf_amount}, {nf_price}, {nf_type}) VALUES\
 					({v_date}, {v_amount}, {v_price} , \"{v_type}\")"\
 				.format(tn = self.table_name, nf_date = Sig.DATE, nf_amount = Sig.AMOUNT, nf_price = Sig.PRICE,
-					nf_type = Sig.TYPE, v_date = self.date, v_amount = self.amount, v_price = self.price, v_type = self.type))
+					nf_type = Sig.TYPE, v_date = self.date, v_amount = self.amount, v_price = self.price, v_type = self.type)
+			cursor.execute(exec_string)
 			
 		except sqlite3.IntegrityError:
 			    print('ERROR: Something went wrong inserting signal into {tn}'.format(tn = table_name))

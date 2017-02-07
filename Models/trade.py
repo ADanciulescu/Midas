@@ -16,9 +16,8 @@ class Trade:
 	FAIL_SELL_TYPE = "FAIL_SELL_TYPE"
 	FAIL_BUY_TYPE = "FAIL_BUY_TYPE"
 
-	def __init__(self, db_manager, table_name, date, amount, price, type):
+	def __init__(self, table_name, date, amount, price, type):
 		self.table_name = table_name
-		self.db_manager = db_manager
 		self.date = date
 		self.amount = amount
 		self.price = price
@@ -44,7 +43,8 @@ class Trade:
 
 	##inserts trade into db
 	def save(self, to_commit = False):
-		cursor = self.db_manager.get_cursor()
+		db_manager = DBManager.get_instance()
+		cursor = db_manager.get_cursor()
 		try:
 			exec_string = "INSERT INTO {tn} ({nf_date}, {nf_amount}, {nf_price}, {nf_type}) VALUES\
 					({v_date}, {v_amount}, {v_price}, '{v_type}')"\
@@ -53,7 +53,7 @@ class Trade:
 			
 			##for speed purposes only commit when changing one at a time
 			if to_commit:
-				self.db_manager.conn.commit()
+				db_manager.conn.commit()
 
 		except sqlite3.IntegrityError:
 			pass 
@@ -61,7 +61,8 @@ class Trade:
 
 	##updates an already existing trade
 	def update(self):
-		cursor = self.db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		try:
 			exec_string = "UPDATE {tn} SET {nf_amount} = {v_amount}, {nf_price} = {v_price}, {nf_type} = '{v_type}'\
 					WHERE {nf_date} = {v_date}"\
@@ -69,7 +70,7 @@ class Trade:
 			cursor.execute(exec_string)
 			
 			##for speed purposes only commit when changing one at a time
-			self.db_manager.conn.commit()
+			dbm.conn.commit()
 
 		except sqlite3.IntegrityError:
 			    print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))

@@ -10,17 +10,15 @@ class Point:
 	DATE = "date"
 	VALUE = "value"
 
-	def __init__(self, db_manager, table_name, date, value):
+	def __init__(self, table_name, date, value):
 		self.table_name = table_name
-		self.db_manager = db_manager
 		self.date = date
 		self.value = value
 
 	##uses cursor tuple to create a Point object and return it
 	@staticmethod
 	def from_tuple(table_name, tup):
-		dbm = DBManager()
-		return Point(dbm, table_name, tup[1], tup[2])
+		return Point(table_name, tup[1], tup[2])
 	
 	def pprint(self):
 		print ""
@@ -31,7 +29,8 @@ class Point:
 	
 	##inserts point into db
 	def save(self):
-		cursor = self.db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		try:
 			cursor.execute("INSERT INTO {tn} ({nf_date}, {nf_value}) VALUES\
 					({v_date}, {v_value})"\

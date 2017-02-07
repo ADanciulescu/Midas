@@ -18,9 +18,8 @@ class Candle:
 	WEIGHTED_AVERAGE = "weightedAverage"
 	
 	##created Candle object from passed in data
-	def __init__(self,db_manager, table_name, date, high, low, open, close, volume, quoteVolume, weightedAverage):
+	def __init__(self, table_name, date, high, low, open, close, volume, quoteVolume, weightedAverage):
 		self.table_name = table_name
-		self.db_manager = db_manager
 		self.date = date
 		self.high = high
 		self.low = low
@@ -49,12 +48,12 @@ class Candle:
 	##uses cursor tuple to create a Candle and return it
 	@staticmethod
 	def from_tuple(table_name, tup):
-		dbm = DBManager()
-		c = Candle(dbm, table_name, tup[0], tup[1], tup[2], tup[3], tup[4], tup[6], tup[7], tup[8])
+		c = Candle(table_name, tup[0], tup[1], tup[2], tup[3], tup[4], tup[6], tup[7], tup[8])
 		return c
 
 	def save(self):
-		cursor = self.db_manager.get_cursor()
+		db_manager = DBManager.get_instance()
+		cursor = db_manager.get_cursor()
 		try:
 			cursor.execute("INSERT INTO {tn} ({nf_date}, {nf_high}, {nf_low}, {nf_open}, {nf_close}, {nf_mid}, {nf_volume}, {nf_qVol}, {nf_wAvg}) VALUES\
 					({v_date}, {v_high}, {v_low}, {v_open}, {v_close}, {v_mid}, {v_volume}, {v_qVol}, {v_wAvg})"\

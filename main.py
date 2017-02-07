@@ -25,6 +25,7 @@ from parameter_optimizer import ParameterOptimizer
 import table_names
 import time
 
+
 ##TODO: investigate modifying candle_length to something smaller than 14400
 ##TODO: look into finding a parameter optimizer
 ##TODO: keep testing with more data and keep adjusting parameters
@@ -58,9 +59,9 @@ def main():
 	##cut_trend(table_name_ETH_14400, table_name_ETH)
 
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
-
+	
 	##DBManager.drop_matching_tables("TRADE")
-	simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	##simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF])
 	##optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy(table_names.ETH_HALF)

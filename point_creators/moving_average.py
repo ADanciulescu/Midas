@@ -4,10 +4,9 @@ from point_table import PointTable
 from point import Point
 
 class MovingAverage:
-	def __init__(self, dbm, output_table_name, points):
+	def __init__(self, output_table_name, points):
 		self.points = points
 		self.output_table_name = output_table_name
-		self.dbm = dbm
 	
 	##number of points considered in moving average
 	##TODO: possibly change later to adjust number of points used based on time between points(effectively holding time for average constant and not the # of points)
@@ -36,7 +35,7 @@ class MovingAverage:
 
 			date = self.points[point_index].date
 
-			pt = Point(self.dbm, self.output_table_name, date, avg)
+			pt = Point(self.output_table_name, date, avg)
 			pt_array.append(pt)
 		return pt_array
 	
@@ -67,7 +66,7 @@ class MovingAverage:
 				avg = new_avg
 			
 			date = self.points[point_index].date
-			pt = Point(self.dbm, self.output_table_name, date, avg)
+			pt = Point(self.output_table_name, date, avg)
 			pt_array.append(pt)
 		return pt_array
 
@@ -85,7 +84,7 @@ class MovingAverage:
 				past_avg = pt_array[point_index - 1].value
 				avg =  (self.ALPHA * cur_close) + (1 - self.ALPHA)*past_avg
 			date = self.points[point_index].date
-			pt = Point(self.dbm, self.output_table_name, date, avg)
+			pt = Point(self.output_table_name, date, avg)
 			pt_array.append(pt)
 		return pt_array
 

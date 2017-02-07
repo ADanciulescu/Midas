@@ -9,17 +9,15 @@ class Trend:
 	DATE = "date"
 	HITS = "hits"
 
-	def __init__(self, db_manager, table_name, date, hits):
+	def __init__(self, table_name, date, hits):
 		self.table_name = table_name
-		self.db_manager = db_manager
 		self.date = date
 		self.hits = hits 
 
 	##uses cursor tuple to create a Trend object and return it
 	@staticmethod
 	def from_tuple(table_name, tup):
-		dbm = DBManager()
-		return Trend(dbm, table_name, tup[0], tup[1])
+		return Trend(table_name, tup[0], tup[1])
 	
 	def pprint(self):
 		print ""
@@ -30,7 +28,8 @@ class Trend:
 	
 	##inserts trend into db
 	def save(self):
-		cursor = self.db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = "INSERT INTO {tn} ({nf_date}, {nf_hits}) VALUES\
 				(\"{v_date}\", {v_hits})"\
 			.format(tn = self.table_name, nf_date = self.DATE, nf_hits = self.HITS, v_date = self.date, v_hits = self.hits)

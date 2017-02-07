@@ -39,7 +39,6 @@ class TradeSimulator:
 		self.to_print = to_print
 		self.to_log = to_log
 				
-		self.dbm = DBManager()
 		self.num_currencies = len(table_name_array)
 		self.symbol_array = [] ##array of symbols where each symbol signifies current for example BTC, ETH ...
 		self.last_price_array = [] ##array of the last price of a bit of each currency

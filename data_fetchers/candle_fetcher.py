@@ -72,13 +72,12 @@ class CandleFetcher():
 
 		
 		##populate new table with candles from orig_table that lie between the 2 dates
-		dbm = DBManager()
 		candle_array = CandleTable.get_candle_array_by_date(orig_table_name, date_start, date_end)
 		for c in candle_array:
-			new_c = Candle(dbm, new_table_name, c.date, c.high, c.low, c.open, c.close, c.volume, c.quoteVolume, c.weightedAverage)
+			new_c = Candle(new_table_name, c.date, c.high, c.low, c.open, c.close, c.volume, c.quoteVolume, c.weightedAverage)
 			new_c.save()
-		dbm.conn.commit()
-		dbm.conn.close()
+		dbm = DBManager.get_instance()
+		dbm.save_and_close()
 
 		return new_table_name
 
@@ -91,5 +90,3 @@ class CandleFetcher():
 			period = CandleTable.get_period(tn)
 			CandleFetcher.fetch_candles_after_date(target_curr, last_date_updated, period)
 		
-
-			

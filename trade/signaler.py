@@ -51,14 +51,12 @@ class Signaler:
 		##run a bollinger strategy on the candles and store the resulting operations returned
 		signals = []
 
-		dbm = DBManager()
 		for i in range(len(candles)):
 			o = strat.decide(i, 0)
-			sig = Sig(dbm, signal_table_name, candles[i].date, o.amount, candles[i].close, o.op)
+			sig = Sig(signal_table_name, candles[i].date, o.amount, candles[i].close, o.op)
 			sig.save()
 			signals.append(sig)
-		dbm.conn.commit()
-		dbm.conn.close()
-		
+		dbm = DBManager.get_instance()
+		dbm.save_and_close()	
 		return signals
 			

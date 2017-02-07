@@ -4,7 +4,6 @@ import urllib
 import urllib2
 import json
 import sqlite3
-from db_manager import DBManager
 from candle_parser import CandleParser
 
 

@@ -11,7 +11,7 @@ class SignalTable:
 	
 	##creates point table in db
 	def save(self):
-		db_manager = DBManager()
+		db_manager = DBManager.get_instance()
 		cursor = db_manager.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_date} {ft_i} PRIMARY KEY {nn}, {nf_amount} {ft_r} {nn}, {nf_price} {ft_r} {nn}, {nf_type} {ft_t} {nn})'\
 				.format(tn = self.table_name, nf_date = Sig.DATE, nf_amount = Sig.AMOUNT, nf_price = Sig.PRICE, nf_type = Sig.TYPE,
@@ -22,7 +22,7 @@ class SignalTable:
 	##returns cursor to all signals in table_name
 	@staticmethod
 	def get_signal_cursor(table_name):
-		db_manager = DBManager()
+		db_manager = DBManager.get_instance()
 		cursor = db_manager.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor

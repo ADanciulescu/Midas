@@ -25,7 +25,6 @@ class PointPopulator():
 
 	def __init__(self, table_name, to_save = False):
 		self.table_name = table_name
-		self.dbm = DBManager()
 		self.to_save = to_save
 
 		self.setup()
@@ -33,20 +32,21 @@ class PointPopulator():
 	## prepare to calculate point table
 	def setup(self):
 		if self.POINT in self.table_name:
-			self.input_point_table_name = self.table_name
+			self.input_points = PointTable.to_point_array(self.table_name)
 		elif self.TREND in self.table_name:
-			self.input_point_table_name = TrendTable.to_point_table(self.table_name)
+			self.input_points = TrendTable.to_point_array(self.table_name)
 		else:
-			self.input_point_table_name = CandleTable.to_point_table(self.table_name, "close")
+			self.input_points = CandleTable.to_point_array(self.table_name, "close")
 
 		self.output_table_name = self.table_name.replace(self.CANDLE, self.POINT)
 
 
 
 	##passed in an array of pts, save each point
-	def save_pts(self, dbm, pt_array):
+	def save_pts(self, pt_array):
 		for p in pt_array:
 			p.save()
+		dbm = DBManager.get_instance()
 		dbm.save_and_close()
 
 
@@ -65,7 +65,7 @@ class PointPopulator():
 			pt = PointTable(self.output_table_name)
 			pt.save()
 
-		orig_pt_array = PointTable.get_point_array(self.input_point_table_name)
+		orig_pt_array = self.input_points
 		stddev_pt_array = []
 
 		for i, pt in enumerate(orig_pt_array):
@@ -74,14 +74,14 @@ class PointPopulator():
 			else:
 				date = pt.date
 				stddev = StandardDeviation.simple(orig_pt_array[i-num_history_pts + 1: i+ 1])
-				stddev_pt = Point(self.dbm, self.output_table_name, date, stddev)
+				stddev_pt = Point(self.output_table_name, date, stddev)
 				stddev_pt_array.append(stddev_pt)
 		
 		if self.to_save:
-			self.save_pts(self.dbm, stddev_pt_array)
+			self.save_pts(stddev_pt_array)
 
-		if CandleTable.TEMP in self.input_point_table_name:
-			DBManager.drop_table(self.input_point_table_name)
+		##if CandleTable.TEMP in self.input_point_table_name:
+		##	DBManager.drop_table(self.input_point_table_name)
 		
 		return stddev_pt_array
 	
@@ -100,16 +100,16 @@ class PointPopulator():
 			pt = PointTable(self.output_table_name)
 			pt.save()
 		
-		points = PointTable.get_point_array(self.input_point_table_name)
-		mv = MovingAverage(self.dbm, self.output_table_name, points)
+		points = self.input_points 
+		mv = MovingAverage(self.output_table_name, points)
 		pt_array = mv.simple(num_history_pts)
 		
 		if self.to_save:
-			self.save_pts(dbm, pt_array)
+			self.save_pts(pt_array)
 		
 		## possible delete the temporary point table created from candle
-		if CandleTable.TEMP in self.input_point_table_name:
-			DBManager.drop_table(self.input_point_table_name)
+		##if CandleTable.TEMP in self.input_point_table_name:
+		##	DBManager.drop_table(self.input_point_table_name)
 		
 		return pt_array
 
@@ -126,15 +126,14 @@ class PointPopulator():
 		pt = PointTable(self.output_table_name)
 		pt.save()
 
-		points = PointTable.get_point_array(self.input_point_table_name)
-		dbm = DBManager()
-		mv = MovingAverage(dbm, self.output_table_name, points)
+		points = self.input_points 
+		mv = MovingAverage(self.output_table_name, points)
 		pt_array = mv.exponential()
-		self.save_pts(dbm, pt_array)
+		self.save_pts(pt_array)
 		
 		## possible delete the temporary point table created from candle
-		if CandleTable.TEMP in self.input_point_table_name:
-			DBManager.drop_table(self.input_point_table_name)
+		##if CandleTable.TEMP in self.input_point_table_name:
+		##	DBManager.drop_table(self.input_point_table_name)
 		
 		return self.output_table_name
 
@@ -152,14 +151,13 @@ class PointPopulator():
 		pt = PointTable(self.output_table_name)
 		pt.save()
 
-		points = PointTable.get_point_array(self.input_point_table_name)
-		dbm = DBManager()
-		r = ROCCalculator(dbm, self.output_table_name, points)
+		points = self.input_points 
+		r = ROCCalculator(self.output_table_name, points)
 		pt_array = r.simple()
-		self.save_pts(dbm, pt_array)
+		self.save_pts(pt_array)
 		
 		## possible delete the temporary point table created from candle
-		if CandleTable.TEMP in self.input_point_table_name:
-			DBManager.drop_table(self.input_point_table_name)
+		##if CandleTable.TEMP in self.input_point_table_name:
+		##	DBManager.drop_table(self.input_point_table_name)
 		
 		return self.output_table_name

@@ -43,7 +43,6 @@ class BollingerStrategy:
 		self.candles = CandleTable.get_candle_array(table_name)
 		self.trade_table = None
 		self.trade_plan_array = []
-		self.dbm = DBManager()
 		self.candle_table_name = table_name
 		self.create_tables()
 		self.cleanup()
@@ -91,11 +90,12 @@ class BollingerStrategy:
 
 	##delete tables that were created
 	def cleanup(self):
+		pass
 		##self.dbm.drop_table(self.middle_avg_table_name)
 		##self.dbm.drop_table(self.stddev_table_name)
 		##self.dbm.drop_table(self.bb_low_name)
 		##self.dbm.drop_table(self.bb_high_name)
-		self.dbm.save_and_close()
+		##self.dbm.save_and_close()
 
 	##creates bollinger band table
 	##type is either low or high
@@ -120,10 +120,10 @@ class BollingerStrategy:
 				elif type == self.HIGH:
 					value = avg.value + (self.bb_factor * self.stddev_pts[i-self.avg_period].value)
 
-				new_pt = Point(self.dbm, bb_table_name, date, value)
+				new_pt = Point(bb_table_name, date, value)
 				new_pt.save()
-		self.dbm.save_and_close()
-		self.dbm = DBManager()
+		dbm = DBManager.get_instance()	
+		dbm.save_and_close()
 		return bb_table_name
 
 	##returns market operation
