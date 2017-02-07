@@ -58,5 +58,8 @@ class Signaler:
 			signals.append(sig)
 		dbm = DBManager.get_instance()
 		dbm.save_and_close()	
+
+		##delete created table when done
+		DBManager.drop_table(cut_table_name)
 		return signals
 			

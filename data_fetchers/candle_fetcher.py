@@ -37,7 +37,7 @@ class CandleFetcher():
 		if not DBManager.exists_table(table_name):
 			ct = CandleTable(curr_ref, curr_target, date_start, date_end, period, table_name)
 			ct.save()
-
+		
 		pc = PoloniexClient(table_name)
 		pc.populate_candle_db(curr_ref, curr_target, date_start, date_end, period)
 		

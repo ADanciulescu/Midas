@@ -26,8 +26,7 @@ class Trade:
 	##uses cursor tuple to create a Point object and return it
 	@staticmethod
 	def from_tuple(table_name, tup):
-		dbm = DBManager()
-		return Trade(dbm, table_name, tup[0], tup[1], tup[2], tup[3])
+		return Trade(table_name, tup[0], tup[1], tup[2], tup[3])
 	
 	def pprint(self):
 		if self.type == self.BUY_TYPE:

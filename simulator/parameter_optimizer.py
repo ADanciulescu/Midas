@@ -16,16 +16,16 @@ class ParameterOptimizer:
 	def optimize_bollinger(self):
 		
 		##values to test out
-		self.bb_factor = [2, 2.5, 3]
-		self.stddev_adjust = [True]
-		self.avg_period = [30]
-		self.num_past_buy = [0]
-		self.num_past_sell = [0 , 1]
 		##self.bb_factor = [2, 2.5, 3]
-		##self.stddev_adjust = [True, False]
-		##self.avg_period = [30, 40, 50, 60]
-		##self.num_past_buy = [0, 1]
-		##self.num_past_sell = [0 , 1, 2, 3]
+		##self.stddev_adjust = [True]
+		##self.avg_period = [30]
+		##self.num_past_buy = [0]
+		##self.num_past_sell = [0 , 1]
+		self.bb_factor = [2, 2.5, 3]
+		self.stddev_adjust = [True, False]
+		self.avg_period = [30, 40, 50, 60]
+		self.num_past_buy = [0, 1]
+		self.num_past_sell = [0 , 1, 2, 3]
 
 		self.parameters_array = []
 
@@ -49,7 +49,7 @@ class ParameterOptimizer:
 							p.set_percent_profit(trade_sim.profit_percent)
 							self.parameters_array.append(p)
 
-		self.print_summary("bb_factor")
+		self.print_summary("stddev_adjust")
 	
 	##print summary for a particular parameter
 	def print_summary(self, parameter_attr):

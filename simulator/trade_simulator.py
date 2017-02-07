@@ -14,7 +14,7 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	SUPPRESS_PRINT_HISTORY = True 
+	SUPPRESS_PRINT_HISTORY = False 
 	##poloniex fees
 	SELL_FEE = 0.0015
 	BUY_FEE = 0.0025
@@ -239,14 +239,15 @@ class TradeSimulator:
 	##creates a trade and adds it to the appropriate array of trades
 	def log_trade(self, currency_index, date, amount, price , type):
 		if self.to_log:
-			t = Trade(self.dbm, self.trade_table_name_array[currency_index], date, amount, price, type)
+			t = Trade(self.trade_table_name_array[currency_index], date, amount, price, type)
 			self.trades_array[currency_index].append(t)	
 
 	def save_all_trades(self):
 		for ta in self.trades_array:
 			for t in ta:
 				t.save()
-		self.dbm.save_and_close()
+		dbm = DBManager.get_instance()
+		dbm.save_and_close()
 
 	##returns core amount of bits to trade based on table name
 	@staticmethod

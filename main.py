@@ -40,6 +40,9 @@ def main():
 	##signaler = Signaler()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-1-1"), 14400)
 	##CandleFetcher.fetch_candles_after_date("ZEC", date_to_timestamp("2016-1-1"), 14400)
 	##CandleFetcher.fetch_candles_after_date("NXT", date_to_timestamp("2016-1-1"), 14400)
 	##CandleFetcher.fetch_candles_after_date("STR", date_to_timestamp("2016-1-1"), 14400)
@@ -62,8 +65,10 @@ def main():
 	
 	##DBManager.drop_matching_tables("TRADE")
 	##simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
-	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF])
-	optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF, table_names.REP_HALF, table_names.DASH_HALF])
+	##optimize([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF, table_names.REP_HALF, table_names.DASH_HALF])
+	##optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	##optimize([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF])
 	##simulate_bollinger_strategy(table_names.ETH_HALF)
 	##simulate_bollinger_strategy(table_names.XMR_HALF)
 	##simulate_bollinger_strategy(table_names.XRP_HALF)
@@ -119,7 +124,7 @@ def simulate_bollinger_strategy(candle_table_name_array):
 	for tn in candle_table_name_array:
 		strat = BollingerStrategy(tn)
 		strat_array.append(strat)
-	trade_sim = TradeSimulator(candle_table_name_array, strat_array, to_log = False)
+	trade_sim = TradeSimulator(candle_table_name_array, strat_array, to_log = True)
 	trade_sim.run()
 
 def present_bollinger(candle_table_name):
