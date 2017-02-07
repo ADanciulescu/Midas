@@ -16,19 +16,24 @@ class ParameterOptimizer:
 	def optimize_bollinger(self):
 		
 		##values to test out
-		bb_vals = [2, 2.5, 3]
-		std_vals = [True, False]
-		period_vals = [30, 40, 50, 60]
-		num_buy_vals = [0, 1]
-		num_sell_vals = [0 , 1, 2, 3]
+		self.bb_factor = [2, 2.5, 3]
+		self.stddev_adjust = [True]
+		self.avg_period = [30]
+		self.num_past_buy = [0]
+		self.num_past_sell = [0 , 1]
+		##self.bb_factor = [2, 2.5, 3]
+		##self.stddev_adjust = [True, False]
+		##self.avg_period = [30, 40, 50, 60]
+		##self.num_past_buy = [0, 1]
+		##self.num_past_sell = [0 , 1, 2, 3]
 
 		self.parameters_array = []
 
-		for bb in bb_vals:
-			for std in std_vals:
-				for period in period_vals:
-					for num_buy in num_buy_vals:
-						for num_sell in num_sell_vals:
+		for bb in self.bb_factor:
+			for std in self.stddev_adjust:
+				for period in self.avg_period:
+					for num_buy in self.num_past_buy:
+						for num_sell in self.num_past_sell:
 							p = Parameters(bb, std, period, num_buy, num_sell)
 							strat_array = []
 							for tn in self.test_table_array:
@@ -41,18 +46,44 @@ class ParameterOptimizer:
 							print "*************************************************************************************************************************"
 							
 							p.set_balance(trade_sim.balance)
+							p.set_percent_profit(trade_sim.profit_percent)
 							self.parameters_array.append(p)
 
-		self.print_best()
+		self.print_summary("bb_factor")
+	
+	##print summary for a particular parameter
+	def print_summary(self, parameter_attr):
+		print "**********************************************************************************"
+		##avgs out performance keeping parameter attr fixed and varying all possible combinations of the other parameters 
+		for v in getattr(self, parameter_attr):
+			total_balance = 0
+			total_pp = 0
+			count = 0
+			for p in self.parameters_array:
+				if getattr(p, parameter_attr) == v:
+					total_balance += p.balance
+					total_pp += p.percent_profit
+					count += 1
+			avg_balance = total_balance/count
+			avg_pp = total_pp/count
+			print parameter_attr, ": ", v
+			print "Balance Avg: ", avg_balance
+			print "Profit Percent Avg: ", avg_pp
+
+
+		print "**********************************************************************************"
+		self.print_best("balance")
+		print "**********************************************************************************"
+		self.print_best("percent_profit")
 
 	##print the paramater combination with the best balance
-	def print_best(self):
-		max_p = self.parameter_array[0]
-		for p in self.parameter_array:
-			if p.balance > max_p.balance:
+	def print_best(self, attr):
+		max_p = self.parameters_array[0]
+		for p in self.parameters_array:
+			if getattr(p, attr) > getattr(max_p, attr):
 				max_p = p
-		
-		print "Best:"
+	
+		print "Best ", attr, ": "
 		max_p.pprint()
 
 						

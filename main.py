@@ -63,7 +63,7 @@ def main():
 	##DBManager.drop_matching_tables("TRADE")
 	##simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF])
-	##optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy(table_names.ETH_HALF)
 	##simulate_bollinger_strategy(table_names.XMR_HALF)
 	##simulate_bollinger_strategy(table_names.XRP_HALF)

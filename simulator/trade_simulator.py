@@ -140,7 +140,7 @@ class TradeSimulator:
 		print "Bits at end: ", bits_summary 
 		print "Balance:" + str(self.balance)
 		if self.money_spent > 0:
-			print "Profit Percent: " + str(self.balance/(-1*self.max_debt))
+			print "Profit Percent: ", self.profit_percent 
 		else:
 			print "NO MONEY SPENT"
 
@@ -167,6 +167,9 @@ class TradeSimulator:
 			self.bits_end_array.append(self.bits_array[i])
 			if self.bits_array[i] > 0:
 				self.attempt_sell(i, last_date, self.bits_array[i], last_price)
+		
+		if self.money_spent > 0:
+			self.profit_percent = self.balance/(-1*self.max_debt)
 
 	##performs market operation updating bits and balance 
 	def process_operation(self, currency_index, operation, candle):

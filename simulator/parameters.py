@@ -11,8 +11,12 @@ class Parameters:
 	
 	def set_balance(self, balance):
 		self.balance = balance
+	
+	def set_percent_profit(self, pp):
+		self.percent_profit = pp
 							
 							
 	def pprint(self):
 		print "bb: ", self.bb_factor, " std: ", self.stddev_adjust, " period: ", self.avg_period, " num_buy: ", self.num_past_buy, " num_sell: ", self.num_past_sell
 		print "Balance: ", self.balance
+		print "Percent Profit: ", self.percent_profit
