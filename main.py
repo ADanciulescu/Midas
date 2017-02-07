@@ -20,7 +20,8 @@ from neural_candle_model import NeuralCandleModel
 from bollinger_strategy import BollingerStrategy
 from random_strategy import RandomStrategy
 from hold_strategy import HoldStrategy
-from signaler import Signaler 
+from signaler import Signaler
+from parameter_optimizer import ParameterOptimizer
 import table_names
 import time
 
@@ -58,7 +59,9 @@ def main():
 	##simulate_manual_attribute_strategy(table_name_BTC_14400, "volume")
 
 	##DBManager.drop_matching_tables("TRADE")
-	simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF])
+	##simulate_bollinger_strategy([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
+	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF])
+	optimize([table_names.BTC_HALF, table_names.ETH_HALF, table_names.XMR_HALF])
 	##simulate_bollinger_strategy(table_names.ETH_HALF)
 	##simulate_bollinger_strategy(table_names.XMR_HALF)
 	##simulate_bollinger_strategy(table_names.XRP_HALF)
@@ -88,6 +91,10 @@ def main():
 	##simulate(table_name_BTC_14400)
 	##simulate(table_name_LTC_14400)
 
+## optimize parameters
+def optimize(table_name_array):
+	po = ParameterOptimizer(table_name_array)
+	po.optimize_bollinger()
 
 ##find best parameter setting
 def simulate(candle_table_name):
@@ -110,7 +117,7 @@ def simulate_bollinger_strategy(candle_table_name_array):
 	for tn in candle_table_name_array:
 		strat = BollingerStrategy(tn)
 		strat_array.append(strat)
-	trade_sim = TradeSimulator(candle_table_name_array, strat_array, limit = -30000)
+	trade_sim = TradeSimulator(candle_table_name_array, strat_array, to_log = False)
 	trade_sim.run()
 
 def present_bollinger(candle_table_name):

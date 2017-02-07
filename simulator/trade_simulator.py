@@ -14,7 +14,7 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	SUPPRESS_PRINT_HISTORY = True
+	SUPPRESS_PRINT_HISTORY = True 
 	##poloniex fees
 	SELL_FEE = 0.0015
 	BUY_FEE = 0.0025
@@ -32,10 +32,15 @@ class TradeSimulator:
 	ZEC_AMOUNT = 3
 	DEFAULT_AMOUNT = 10
 
-	def __init__(self, table_name_array, strategy_array, limit = -12345):
+	def __init__(self, table_name_array, strategy_array, limit = -12345, to_print = True, to_log = True):
 		self.table_name_array = table_name_array
-		self.num_currencies = len(table_name_array)
 		self.strategy_array = strategy_array
+		self.balance_limit = limit ##limits how low max_debt can go before buying fails
+		self.to_print = to_print
+		self.to_log = to_log
+				
+		self.dbm = DBManager()
+		self.num_currencies = len(table_name_array)
 		self.symbol_array = [] ##array of symbols where each symbol signifies current for example BTC, ETH ...
 		self.last_price_array = [] ##array of the last price of a bit of each currency
 		self.bits_array = [] ##keeps track of bits owned
@@ -45,9 +50,8 @@ class TradeSimulator:
 		self.balance = 0 ##money balance
 		self.max_debt = 0 ##lowest balance ever incurred
 		self.money_spent = 0 ##total money spent
-		self.balance_limit = limit ##limits how low max_debt can go before buying fails
+		
 		self.preprocess()
-		self.dbm = DBManager()
 
 	##create neccesary data structures before simulator actually runs
 	def preprocess(self):
@@ -67,16 +71,17 @@ class TradeSimulator:
 
 
 		##create trade tables 
-		for i, tn in enumerate(self.table_name_array):
-			trade_table_name = TradeTable.calc_name(tn, self.strategy_array[i].get_name())
-			trade_table = TradeTable(trade_table_name)
-			if DBManager.exists_table(trade_table_name):
-				DBManager.drop_table(trade_table_name)
-			trade_table.save()
-			self.trade_table_name_array.append(trade_table_name)
-			
-			self.strategy_array[i].trade_table_name = trade_table_name
-			self.trades_array.append([])
+		if self.to_log:
+			for i, tn in enumerate(self.table_name_array):
+				trade_table_name = TradeTable.calc_name(tn, self.strategy_array[i].get_name())
+				trade_table = TradeTable(trade_table_name)
+				if DBManager.exists_table(trade_table_name):
+					DBManager.drop_table(trade_table_name)
+				trade_table.save()
+				self.trade_table_name_array.append(trade_table_name)
+				
+				self.strategy_array[i].trade_table_name = trade_table_name
+				self.trades_array.append([])
 
 	##returns index of the most candle_table
 	def most_candles_index(self):
@@ -89,43 +94,6 @@ class TradeSimulator:
 				max_index = i
 		return max_index
 	
-	BTC_AMOUNT = 1
-	ETH_AMOUNT = 80
-	XMR_AMOUNT = 70
-	XRP_AMOUNT = 3000
-	ETC_AMOUNT = 300
-	LTC_AMOUNT = 100
-	DASH_AMOUNT = 10
-	REP_AMOUNT = 30
-	STR_AMOUNT = 3000
-	ZEC_AMOUNT = 3
-	DEFAULT_AMOUNT = 10
-
-	##returns core amount of bits to trade based on table name
-	@staticmethod
-	def get_currency_amount(tn):
-		if "BTC" in tn:
-			return TradeSimulator.BTC_AMOUNT
-		elif "ETH" in tn:
-			return TradeSimulator.ETH_AMOUNT
-		elif "XMR" in tn:
-			return TradeSimulatorXMR_AMOUNT
-		elif "XRP" in tn:
-			return TradeSimulator.XRP_AMOUNT
-		elif "ETC" in tn:
-			return TradeSimulator.ETC_AMOUNT
-		elif "LTC" in tn:
-			return TradeSimulator.LTC_AMOUNT
-		elif "DASH" in tn:
-			return TradeSimulator.DASH_AMOUNT
-		elif "REP" in tn:
-			return TradeSimulator.REP_AMOUNT
-		elif "STR" in tn:
-			return TradeSimulator.STR_AMOUNT
-		elif "ZEC" in tn:
-			return TradeSimulator.ZEC_AMOUNT
-		else:
-			return TradeSimulator.DEFAULT_AMOUNT
 
 
 	def run(self):
@@ -147,9 +115,13 @@ class TradeSimulator:
 					##too early to trade these candles
 					pass
 
-		self.save_all_trades()
 		self.finalize_balance()
-		self.print_results()
+		
+		if self.to_log:
+			self.save_all_trades()
+		
+		if self.to_print:
+			self.print_results()
 
 	def print_results(self):
 		
@@ -264,8 +236,9 @@ class TradeSimulator:
 		
 	##creates a trade and adds it to the appropriate array of trades
 	def log_trade(self, currency_index, date, amount, price , type):
-		t = Trade(self.dbm, self.trade_table_name_array[currency_index], date, amount, price, type)
-		self.trades_array[currency_index].append(t)	
+		if self.to_log:
+			t = Trade(self.dbm, self.trade_table_name_array[currency_index], date, amount, price, type)
+			self.trades_array[currency_index].append(t)	
 
 	def save_all_trades(self):
 		for ta in self.trades_array:
@@ -273,4 +246,28 @@ class TradeSimulator:
 				t.save()
 		self.dbm.save_and_close()
 
-
+	##returns core amount of bits to trade based on table name
+	@staticmethod
+	def get_currency_amount(tn):
+		if "BTC" in tn:
+			return TradeSimulator.BTC_AMOUNT
+		elif "ETH" in tn:
+			return TradeSimulator.ETH_AMOUNT
+		elif "XMR" in tn:
+			return TradeSimulator.XMR_AMOUNT
+		elif "XRP" in tn:
+			return TradeSimulator.XRP_AMOUNT
+		elif "ETC" in tn:
+			return TradeSimulator.ETC_AMOUNT
+		elif "LTC" in tn:
+			return TradeSimulator.LTC_AMOUNT
+		elif "DASH" in tn:
+			return TradeSimulator.DASH_AMOUNT
+		elif "REP" in tn:
+			return TradeSimulator.REP_AMOUNT
+		elif "STR" in tn:
+			return TradeSimulator.STR_AMOUNT
+		elif "ZEC" in tn:
+			return TradeSimulator.ZEC_AMOUNT
+		else:
+			return TradeSimulator.DEFAULT_AMOUNT

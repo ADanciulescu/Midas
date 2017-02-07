@@ -46,7 +46,7 @@ class Signaler:
 		cut_table_name = CandleFetcher.cut_table(table_name, cur_date - Signaler.HISTORY_LENGTH)
 		candles = CandleTable.get_candle_array(table_name)
 		
-		strat = BollingerStrategy(candles)
+		strat = BollingerStrategy(table_name)
 
 		##run a bollinger strategy on the candles and store the resulting operations returned
 		signals = []
