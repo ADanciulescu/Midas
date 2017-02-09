@@ -18,11 +18,11 @@ class ParameterOptimizer:
 		##values to test out
 		
 		##14400
-		##self.bb_factor = [2, 2.5, 3]
-		##self.stddev_adjust = [True, False]
-		##self.avg_period = [30, 40, 50, 60]
-		##self.num_past_buy = [0, 1]
-		##self.num_past_sell = [0 , 1, 2, 3]
+		self.bb_factor = [1.5, 2, 2.5]
+		self.stddev_adjust = [True, False]
+		self.avg_period = [20, 30, 40, 50, 60]
+		self.num_past_buy = [0]
+		self.num_past_sell = [2, 3, 4, 5]
 
 		##7200
 		##self.bb_factor = [2, 2.5, 3]
@@ -32,11 +32,11 @@ class ParameterOptimizer:
 		##self.num_past_sell = [0 , 2, 4, 6]
 		
 		##1800
-		self.bb_factor = [2, 2.5, 3]
-		self.stddev_adjust = [True, False]
-		self.avg_period = [240, 320, 400, 480]
-		self.num_past_buy = [0, 8]
-		self.num_past_sell = [0 , 8, 16, 24]
+		##self.bb_factor = [2, 2.5, 3]
+		##self.stddev_adjust = [True, False]
+		##self.avg_period = [240, 320, 400, 480]
+		##self.num_past_buy = [0, 8]
+		##self.num_past_sell = [0 , 8, 16, 24]
 
 		self.parameters_array = []
 
