@@ -24,7 +24,7 @@ class BollingerStrategy:
 	##constant string used to specifiy type of bollinger band
 	LOW = "LOW"
 	HIGH = "HIGH"
-	ONE_OP_DELAY = 10
+	ONE_OP_DELAY = 20 
 
 	def __init__(self, table_name, bb_factor = 2.5, to_carry = True, one_op = True, stddev_adjust = True, avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False):
 		
@@ -142,8 +142,8 @@ class BollingerStrategy:
 			return True
 	
 	## recalc amount based on whether stddev is set or not 
-	def stddev_calc_amount(self, candle_num, bb_val, type):
-		amount  = self.amount
+	def stddev_calc_amount(self, old_amount, candle_num, bb_val, type):
+		amount  = old_amount
 		if self.stddev_adjust:
 			##scale amount sold by factor determined by how much price is deviating from the bollinger band
 			if type == "SELL":
@@ -155,8 +155,8 @@ class BollingerStrategy:
 		return amount
 
 	## recalc amount based on whether carry is set or not 
-	def carry_calc_amount(self, candle_num, type):
-		amount = self.amount
+	def carry_calc_amount(self, old_amount, candle_num, type):
+		amount = old_amount
 		if self.to_carry:
 			if type == "SELL":
 				amount += TradePlan.sum_past(self.trade_plan_array, candle_num, TradePlan.PLAN_SELL)
@@ -180,24 +180,24 @@ class BollingerStrategy:
 		else:
 			##if current price exceeds high bollinger band -> sell
 			if self.candles[candle_num].close > bb_high_val:
-				amount = self.stddev_calc_amount(candle_num, bb_high_val, "SELL")
+				amount = self.stddev_calc_amount(amount, candle_num, bb_high_val, "SELL")
 				if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_sell, TradePlan.PLAN_SELL):
 					if self.check_one_op(candle_num, TradePlan.SELL):
-						amount = self.carry_calc_amount(candle_num, "SELL")
+						amount = self.carry_calc_amount(amount, candle_num, "SELL")
 						type = TradePlan.SELL
 					else:
-						type = TradePlan.NONE
+						type = TradePlan.PLAN_SELL
 				else:
 					type = TradePlan.PLAN_SELL
 			##if current price is below low bollinger band -> buy
 			elif self.candles[candle_num].close < bb_low_val:
-				amount = self.stddev_calc_amount(candle_num, bb_low_val, "BUY")
+				amount = self.stddev_calc_amount(amount, candle_num, bb_low_val, "BUY")
 				if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_buy, TradePlan.PLAN_BUY):
 					if self.check_one_op(candle_num, TradePlan.BUY):
-						amount = self.carry_calc_amount(candle_num, "BUY")
+						amount = self.carry_calc_amount(amount, candle_num, "BUY")
 						type = TradePlan.BUY
 					else:
-						type = TradePlan.NONE
+						type = TradePlan.PLAN_BUY
 				else:
 					type = TradePlan.PLAN_BUY
 			##if between bollinger bands do nothing 
@@ -216,11 +216,11 @@ class BollingerStrategy:
 	def set_defaults(self):
 		if CandleTable.get_period(self.table_name) == "14400":
 			self.bb_factor = 2.5
-			self.stddev_adjust = True 
+			self.stddev_adjust = False 
 			self.avg_period = 40 
-			self.num_past_buy = 0 
-			self.num_past_sell = 3
-			self.one_op = False
+			self.num_past_buy = 1 
+			self.num_past_sell = 3 
+			self.one_op = False 
 			self.to_carry = True 
 		if CandleTable.get_period(self.table_name) == "7200":
 			self.bb_factor = 2.5

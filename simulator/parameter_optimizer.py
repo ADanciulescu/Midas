@@ -18,18 +18,24 @@ class ParameterOptimizer:
 		##values to test out
 		
 		##14400
-		self.bb_factor = [1.5, 2, 2.5]
-		self.stddev_adjust = [True, False]
-		self.avg_period = [20, 30, 40, 50, 60]
-		self.num_past_buy = [0]
-		self.num_past_sell = [2, 3, 4, 5]
+		if "14400" in self.test_table_array[0]:
+			self.bb_factor = [2.5]
+			self.stddev_adjust = [True, False]
+			self.avg_period = [40]
+			self.num_past_buy = [0, 1 , 2]
+			self.num_past_sell = [2, 3, 4]
+			self.one_op = [False]
+			self.to_carry = [True, False]
 
 		##7200
-		##self.bb_factor = [2, 2.5, 3]
-		##self.stddev_adjust = [True, False]
-		##self.avg_period = [60, 80, 100, 120]
-		##self.num_past_buy = [0, 2]
-		##self.num_past_sell = [0 , 2, 4, 6]
+		elif "7200" in self.test_table_array[0]:
+			self.bb_factor = [2, 2.5]
+			self.stddev_adjust = [False]
+			self.avg_period = [80, 100]
+			self.num_past_buy = [0, 1, 2]
+			self.num_past_sell = [6]
+			self.one_op = [False]
+			self.to_carry = [False]
 		
 		##1800
 		##self.bb_factor = [2, 2.5, 3]
@@ -45,22 +51,24 @@ class ParameterOptimizer:
 				for period in self.avg_period:
 					for num_buy in self.num_past_buy:
 						for num_sell in self.num_past_sell:
-							p = Parameters(bb, std, period, num_buy, num_sell)
-							strat_array = []
-							for tn in self.test_table_array:
-								strat = BollingerStrategy(tn, bb_factor = bb, stddev_adjust = std, avg_period = period, num_past_buy = num_buy, num_past_sell = num_sell)
-								strat_array.append(strat)
-							trade_sim = TradeSimulator(self.test_table_array, strat_array, to_log = False)
-							print "*************************************************************************************************************************"
-							print "bb: ", bb, " std: ", std, " period: ", period, " num_buy: ", num_buy, " num_sell: ", num_sell
-							trade_sim.run()
-							print "*************************************************************************************************************************"
-							
-							p.set_balance(trade_sim.balance)
-							p.set_percent_profit(trade_sim.profit_percent)
-							self.parameters_array.append(p)
+							for oo in self.one_op:
+								for tc in self.to_carry:
+									p = Parameters(bb, std, period, num_buy, num_sell, oo, tc)
+									strat_array = []
+									for tn in self.test_table_array:
+										strat = BollingerStrategy(tn, bb_factor = bb, stddev_adjust = std, avg_period = period, num_past_buy = num_buy, num_past_sell = num_sell, one_op = oo, to_carry = tc)
+										strat_array.append(strat)
+									trade_sim = TradeSimulator(self.test_table_array, strat_array, to_log = False)
+									print "*************************************************************************************************************************"
+									print "bb: ", bb, " std: ", std, " period: ", period, " num_buy: ", num_buy, " num_sell: ", num_sell, " one_op: ", oo, " to_carry: ", tc
+									trade_sim.run()
+									print "*************************************************************************************************************************"
+									
+									p.set_balance(trade_sim.balance)
+									p.set_percent_profit(trade_sim.profit_percent)
+									self.parameters_array.append(p)
 
-		self.print_summary(["bb_factor", "stddev_adjust", "avg_period", "num_past_buy", "num_past_sell"])
+		self.print_summary(["bb_factor", "stddev_adjust", "avg_period", "num_past_buy", "num_past_sell", "to_carry", "one_op"])
 	
 	##print summary for a particular parameter
 	def print_summary(self, parameter_attr_array):
