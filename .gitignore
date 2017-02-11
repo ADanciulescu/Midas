@@ -2,4 +2,5 @@
 *.swp
 *.swn
 *.swo
+*.pem
 /results/*

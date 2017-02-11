@@ -218,7 +218,7 @@ class BollingerStrategy:
 			self.bb_factor = 2.5
 			self.stddev_adjust = False 
 			self.avg_period = 40 
-			self.num_past_buy = 1 
+			self.num_past_buy = 0 
 			self.num_past_sell = 3 
 			self.one_op = False 
 			self.to_carry = True 

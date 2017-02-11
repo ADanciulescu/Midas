@@ -18,6 +18,7 @@ from scipy_candle_model_strategy import ScipyCandleModelStrategy
 from neural_trend_model import NeuralTrendModel
 from neural_candle_model import NeuralCandleModel
 from bollinger_strategy import BollingerStrategy
+from oscil_strategy import OscilStrategy
 from random_strategy import RandomStrategy
 from hold_strategy import HoldStrategy
 from signaler import Signaler
@@ -72,6 +73,9 @@ def main():
 	##grab_trend_all(trend_name_XMR, "XMR")
 	##cut_trend(table_name_ETH_14400, table_name_ETH)
 
+	##DBManager.drop_matching_tables("OSCIL")
+	##simulate_oscil_strategy(table_names.BIG_HALF1_14400)
+	##simulate_bollinger_strategy(table_names.BIG_HALF2_14400)
 	##simulate_bollinger_strategy(table_names.BIG_HALF2_14400)
 	##simulate_hold_strategy(table_names.SMALL_HALF2_14400)
 	##simulate_bollinger_strategy(tn_HALF_7200)
@@ -100,21 +104,13 @@ def optimize(table_name_array):
 	po = ParameterOptimizer(table_name_array)
 	po.optimize_bollinger()
 
-##find best parameter setting
-def simulate(candle_table_name):
-	candles = CandleTable.get_candle_array(candle_table_name)
-	
-	past_sell = 0
-	while past_sell <= 10:
-		print "******************************************************************************************"
-		print "PAST_SELL: ", past_sell
-		print ""
-		strat = BollingerStrategy(candles, num_past_sell = past_sell)
-		trade_sim = TradeSimulator(candle_table_name, candles, strat)
-		trade_sim.run()
-		print "******************************************************************************************"
-		past_sell += 2
-
+def simulate_oscil_strategy(candle_table_name_array):
+	strat_array = []
+	for tn in candle_table_name_array:
+		strat = OscilStrategy(tn)
+		strat_array.append(strat)
+	trade_sim = TradeSimulator(candle_table_name_array, strat_array, to_log = True)
+	trade_sim.run()
 
 def simulate_bollinger_strategy(candle_table_name_array):
 	strat_array = []

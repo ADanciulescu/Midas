@@ -17,6 +17,7 @@ class PointPopulator():
 	SIMPLE_ROC = "___SIMPLE_ROC"
 	VOLUME = "___VOLUME"
 	STDDEV = "___STDDEV"
+	OSCIL = "___OSCIL"
 
 	##possible values for type of input data
 	CANDLE = "CANDLE"
@@ -84,6 +85,38 @@ class PointPopulator():
 		##	DBManager.drop_table(self.input_point_table_name)
 		
 		return stddev_pt_array
+	
+	## calculates and returns an array of points representing oscillator
+	## oscillator point is the difference between candle_close now - candle_close period ago 
+	def create_oscil(self, period):
+		self.output_table_name = self.output_table_name.replace("TREND", "POINT")
+		self.output_table_name = self.output_table_name.replace("CANDLE", "POINT")
+		self.output_table_name = self.output_table_name + self.OSCIL + "_" + str(period)
+		
+		if self.to_save:
+			##if already exists, drop it first and then recreate
+			if DBManager.exists_table(self.output_table_name):
+				DBManager.drop_table(self.output_table_name)
+			
+			pt = PointTable(self.output_table_name)
+			pt.save()
+		
+		oscil_pt_array = []
+
+		for i, pt in enumerate(self.input_points):
+			if i < (period-1): ##don't calculate stddev for first points since there is not enough history available
+				pass
+			else:
+				date = pt.date
+				oscil_value = pt.value - self.input_points[i-period].value
+				oscil_pt = Point(self.output_table_name, date, oscil_value)
+				oscil_pt_array.append(oscil_pt)
+		
+		
+		if self.to_save:
+			self.save_pts(oscil_pt_array)
+		
+		return oscil_pt_array
 	
 	
 	##calculates and inserts simple moving average points in sql table
