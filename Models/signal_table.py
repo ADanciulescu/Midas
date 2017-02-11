@@ -33,12 +33,20 @@ class SignalTable:
 
 		##returns a cursor pointing to all candles linked to the table_name
 		cursor = SignalTable.get_signal_cursor(table_name)
-		signalss = []
+		signals = []
 
 		##loop through cursor and add all candles to array
 		row = cursor.fetchone()
 		while row is not None:
-			s= Sig.from_tuple(table_name, row) 
-			signals.append(t)
+			s = Sig.from_tuple(table_name, row) 
+			signals.append(s)
 			row = cursor.fetchone()
 		return signals 
+	
+	## return date of last signal entry in the table
+	@staticmethod
+	def get_last_date(table_name):
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
+		cursor.execute(" SELECT date FROM '{tn}' WHERE date = ( SELECT MAX(date) FROM '{tn}' )".format(tn = table_name))
+		return cursor.fetchone()[0]

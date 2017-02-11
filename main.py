@@ -1,4 +1,5 @@
 from poloniex_client import PoloniexClient
+from poloniex import Poloniex
 from db_manager import DBManager
 from trade_simulator import TradeSimulator
 from test_strategy import TestStrategy
@@ -37,9 +38,11 @@ import time
 ## verify stddev and avg are calculated properly( no off by one errors)
 
 def main():
-
+	##DBManager.drop_matching_tables("SIGNAL")
+	##p = Poloniex()
 	signaler = Signaler()
-	signaler.print_all_signals()
+	signaler.run()
+	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 1800)
 	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-1-1"), 1800)
