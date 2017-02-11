@@ -3,4 +3,6 @@
 *.swn
 *.swo
 *.pem
+*.sqlite
+Makefile
 /results/*
