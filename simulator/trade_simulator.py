@@ -6,7 +6,6 @@ import time
 from db_manager import DBManager
 from candle import Candle
 from candle_table import CandleTable
-from test_strategy import TestStrategy
 from operation import Operation
 from trade_table import TradeTable
 from trade import Trade

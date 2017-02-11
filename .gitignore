@@ -4,4 +4,6 @@
 *.swo
 *.pem
 *.bat
+*.sqlite
+Makefile
 /results/*
