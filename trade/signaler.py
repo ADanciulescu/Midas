@@ -25,7 +25,7 @@ class Signaler:
 		if to_print:
 			self.print_all_signals()
 
-	def handle_all_signals(self):
+	def handle_new_signals(self):
 		emailer = Emailer()
 		for a in self.new_signals_array:
 			if len(a) > 0:

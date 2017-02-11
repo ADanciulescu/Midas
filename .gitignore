@@ -7,5 +7,6 @@
 *.bat
 *.sqlite
 *.key
+tick.sh
 Makefile
 /results/*

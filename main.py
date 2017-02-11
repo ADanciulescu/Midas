@@ -41,12 +41,12 @@ import time
 ## verify stddev and avg are calculated properly( no off by one errors)
 
 def main():
-	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
+	##test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
 	##om.get_top_buy_price("USDT_BTC")
-	##DBManager.drop_matching_tables("SIGNAL")
+	DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
 	##signaler = Signaler()
 	##signaler.run()
