@@ -3,4 +3,5 @@
 *.swn
 *.swo
 *.pem
+*.bat
 /results/*
