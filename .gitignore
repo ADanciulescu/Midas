@@ -1,6 +1,7 @@
 *.pyc
 *.swp
 *.swn
+*.swl
 *.swo
 *.pem
 *.bat

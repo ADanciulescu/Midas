@@ -25,8 +25,9 @@ class BollingerStrategy:
 	LOW = "LOW"
 	HIGH = "HIGH"
 	ONE_OP_DELAY = 20 
+	STANDARD_AMOUNT = 1
 
-	def __init__(self, table_name, bb_factor = 2.5, to_carry = True, one_op = True, stddev_adjust = True, avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False):
+	def __init__(self, table_name, std_amount = False, bb_factor = 2.5, to_carry = True, one_op = True, stddev_adjust = True, avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
@@ -42,7 +43,13 @@ class BollingerStrategy:
 		##NOTE: removed extra parameter for stddev_period, currently same as avg_period
 		##self.stddev_period = stddev_period ##how many past candles to use to compute stddeviation
 		self.table_name = table_name
-		self.amount = TradeSimulator.get_currency_amount(table_name)
+		
+		if std_amount:
+			##used by actual trader that does it's own amount standardization
+			self.amount = self.STANDARD_AMOUNT
+		else:
+			##used by simulator, adjusts amount based on currency
+			self.amount = TradeSimulator.get_currency_amount(table_name)
 		self.candles = CandleTable.get_candle_array(table_name)
 		self.trade_table = None
 		self.trade_plan_array = []
@@ -224,9 +231,9 @@ class BollingerStrategy:
 			self.to_carry = True 
 		if CandleTable.get_period(self.table_name) == "7200":
 			self.bb_factor = 2.5
-			self.stddev_adjust = True
-			self.avg_period = 40
-			self.num_past_buy = 0
+			self.stddev_adjust = False
+			self.avg_period = 80 
+			self.num_past_buy = 0 
 			self.num_past_sell = 6
 			self.one_op = False
-			self.to_carry = True
+			self.to_carry =False 

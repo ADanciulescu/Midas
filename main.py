@@ -23,7 +23,10 @@ from oscil_strategy import OscilStrategy
 from random_strategy import RandomStrategy
 from hold_strategy import HoldStrategy
 from signaler import Signaler
+from sig import Sig
 from parameter_optimizer import ParameterOptimizer
+from order_maker import OrderMaker
+from emailer import Emailer
 import table_names
 import time
 
@@ -38,10 +41,15 @@ import time
 ## verify stddev and avg are calculated properly( no off by one errors)
 
 def main():
+	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
+	##e = Emailer()
+	##e.email_signal(test)
+	##om = OrderMaker([])
+	##om.get_top_buy_price("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	signaler = Signaler()
-	signaler.run()
+	##signaler = Signaler()
+	##signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 1800)
@@ -91,7 +99,7 @@ def main():
 	##simulate_bollinger_strategy(tn2_7200)
 	##simulate_bollinger_strategy([table_names.XMR_HALF])
 	
-	##optimize(table_names.BIG_HALF2_14400)
+	optimize(table_names.BIG_HALF2_7200)
 	
 	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF, table_names.REP_HALF, table_names.DASH_HALF])
 	

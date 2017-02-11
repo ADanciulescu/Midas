@@ -29,11 +29,11 @@ class ParameterOptimizer:
 
 		##7200
 		elif "7200" in self.test_table_array[0]:
-			self.bb_factor = [2, 2.5]
+			self.bb_factor = [2, 2.5, 3]
 			self.stddev_adjust = [False]
-			self.avg_period = [80, 100]
-			self.num_past_buy = [0, 1, 2]
-			self.num_past_sell = [6]
+			self.avg_period = [60, 80, 100, 120]
+			self.num_past_buy = [0, 1]
+			self.num_past_sell = [2, 4, 6, 8]
 			self.one_op = [False]
 			self.to_carry = [False]
 		

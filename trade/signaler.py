@@ -6,6 +6,7 @@ from db_manager import DBManager
 from bollinger_strategy import BollingerStrategy
 from candle_fetcher import CandleFetcher 
 from candle_table import CandleTable
+from emailer import Emailer
 import table_names
 from time import time
 
@@ -23,7 +24,15 @@ class Signaler:
 		self.handle_new_signals()
 		if to_print:
 			self.print_all_signals()
-	
+
+	def handle_all_signals(self):
+		emailer = Emailer()
+		for a in self.new_signals_array:
+			if len(a) > 0:
+				sig = a[-1]
+				if sig.type == Sig.BUY or sig.type == Sig.SELL:
+					emailer.email_signal(sig)
+
 	##push the newly created signals to db
 	def push_to_db(self):
 		for i, tn in enumerate(self.signal_table_names):
@@ -74,10 +83,10 @@ class Signaler:
 		new_signals = []
 
 		##run a bollinger strategy on the candles and store the resulting operations returned
-		strat = BollingerStrategy(table_name, set_default = True)
+		strat = BollingerStrategy(table_name, std_amount = True, set_default = True)
 		for i in range(len(candles)):
 			o = strat.decide(i, 0)
-			sig = Sig(signal_table_name, candles[i].date, o.amount, candles[i].close, o.op)
+			sig = Sig(signal_table_name, candles[i].date, SignalTable.get_sym(signal_table_name), o.amount, candles[i].close, o.op)
 			
 			##if after last_date it means the signal is new
 			if sig.date > last_date:
