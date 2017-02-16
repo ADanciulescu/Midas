@@ -41,15 +41,15 @@ import time
 ## verify stddev and avg are calculated properly( no off by one errors)
 
 def main():
-	##test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
+	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
 	##om.get_top_buy_price("USDT_BTC")
-	DBManager.drop_matching_tables("SIGNAL")
+	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	##signaler = Signaler()
-	##signaler.run()
+	signaler = Signaler()
+	signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 1800)
@@ -99,12 +99,19 @@ def main():
 	##simulate_bollinger_strategy(tn2_7200)
 	##simulate_bollinger_strategy([table_names.XMR_HALF])
 	
-	optimize(table_names.BIG_HALF2_7200)
+	##optimize(table_names.BIG_HALF2_7200)
 	
 	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF, table_names.REP_HALF, table_names.DASH_HALF])
 	
 	
-	##present_bollinger(table_names.ETC_14400)
+	##present_bollinger(table_names.BTC_7200)
+	present_bollinger(table_names.BTC_7200)
+	present_bollinger(table_names.ETH_7200)
+	present_bollinger(table_names.XMR_7200)
+	present_bollinger(table_names.XRP_7200)
+	present_bollinger(table_names.DASH_7200)
+	present_bollinger(table_names.ETC_7200)
+	present_bollinger(table_names.REP_7200)
 	##present_bollinger(table_names.DASH_14400)
 
 	##simulate(table_name_BTC_14400)
@@ -140,8 +147,7 @@ def simulate_hold_strategy(candle_table_name_array):
 	trade_sim.run()
 
 def present_bollinger(candle_table_name):
-	candles = CandleTable.get_candle_array(candle_table_name)
-	strat = BollingerStrategy(candles)
+	strat = BollingerStrategy(candle_table_name)
 	print "# of stddev from mean: ", strat.get_present_bollinger_diff()
 
 def simulate_scipy_trend_strategy(candle_table_name, trend_table_name, model):

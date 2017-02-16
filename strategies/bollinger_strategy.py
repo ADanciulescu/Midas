@@ -230,10 +230,10 @@ class BollingerStrategy:
 			self.one_op = False 
 			self.to_carry = True 
 		if CandleTable.get_period(self.table_name) == "7200":
-			self.bb_factor = 2.5
+			self.bb_factor = 2
 			self.stddev_adjust = False
 			self.avg_period = 80 
 			self.num_past_buy = 0 
-			self.num_past_sell = 6
+			self.num_past_sell = 6 
 			self.one_op = False
 			self.to_carry =False 
