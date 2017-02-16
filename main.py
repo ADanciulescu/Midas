@@ -42,14 +42,14 @@ import time
 
 def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
-	##e = Emailer()
-	##e.email_signal(test)
+	e = Emailer()
+	e.email_signal(test)
 	##om = OrderMaker([])
 	##om.get_top_buy_price("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	signaler = Signaler()
-	signaler.run()
+	##signaler = Signaler()
+	##signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 1800)

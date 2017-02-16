@@ -1,0 +1,1 @@
+make -C "~/midas/" tick >> ~/midas/tick.log 2>&1
