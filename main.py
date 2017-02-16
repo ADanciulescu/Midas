@@ -86,7 +86,9 @@ def main():
 
 	##DBManager.drop_matching_tables("OSCIL")
 	##simulate_oscil_strategy(table_names.BIG_HALF1_14400)
-	##simulate_bollinger_strategy(table_names.BIG_HALF2_14400)
+	##simulate_bollinger_strategy(table_names.BIG_HALF2_7200)
+	##simulate_bollinger_strategy(table_names.BIG_HALF2_7200)
+	##simulate_bollinger_strategy([table_names.ETH_HALF1_7200])
 	##simulate_bollinger_strategy(table_names.BIG_HALF2_14400)
 	##simulate_hold_strategy(table_names.SMALL_HALF2_14400)
 	##simulate_bollinger_strategy(tn_HALF_7200)
@@ -107,6 +109,7 @@ def main():
 	##present_bollinger(table_names.BTC_7200)
 	present_bollinger(table_names.BTC_7200)
 	present_bollinger(table_names.ETH_7200)
+	present_bollinger(table_names.ETC_7200)
 	present_bollinger(table_names.XMR_7200)
 	present_bollinger(table_names.XRP_7200)
 	present_bollinger(table_names.DASH_7200)
@@ -148,7 +151,8 @@ def simulate_hold_strategy(candle_table_name_array):
 
 def present_bollinger(candle_table_name):
 	strat = BollingerStrategy(candle_table_name)
-	print "# of stddev from mean: ", strat.get_present_bollinger_diff()
+	print candle_table_name
+	print "# of stddev from mean: ", strat.get_current_bb_score()
 
 def simulate_scipy_trend_strategy(candle_table_name, trend_table_name, model):
 	strat = ScipyModelStrategy(candle_table_name, trend_table_name, model)

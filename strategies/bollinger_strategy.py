@@ -15,6 +15,7 @@ from trade import Trade
 from trade_table import TradeTable
 from trade_plan import TradePlan
 from trade_simulator import TradeSimulator
+import math
 
 class BollingerStrategy:
 
@@ -27,13 +28,15 @@ class BollingerStrategy:
 	ONE_OP_DELAY = 20 
 	STANDARD_AMOUNT = 1
 
-	def __init__(self, table_name, std_amount = False, bb_factor = 2.5, to_carry = True, one_op = True, stddev_adjust = True, avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False):
+	def __init__(self, table_name, std_amount = False, bb_factor = 2.5, to_carry = True, one_op = True, stddev_adjust = True, wait_better = True,
+			avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
 		self.to_carry = to_carry ##if set, when performing a buy/sell increase amount by the sum of all previous plan_buy/plan_sell
 		self.one_op = one_op ##if set force a delay between operations of the same type
 		self.stddev_adjust = stddev_adjust ## if true adjust amount bought/sold by how much it deviates from the bollinger band, if false use constant amount
+		self.wait_better = wait_better ## if set to true only approve buys or sells if bb_score has improved since last buy or sell
 		self.avg_period = avg_period ## how many candles to use to make avg
 		self.num_past_buy = num_past_buy ## how long to plan buying before actually buying
 		self.num_past_sell = num_past_sell ## how long to plan selling before actually selling
@@ -53,6 +56,7 @@ class BollingerStrategy:
 		self.candles = CandleTable.get_candle_array(table_name)
 		self.trade_table = None
 		self.trade_plan_array = []
+		self.bb_scores = []
 		self.candle_table_name = table_name
 		if self.set_default:
 			self.set_defaults()
@@ -79,6 +83,14 @@ class BollingerStrategy:
 		pp = PointPopulator(self.candle_table_name)
 		pp.setup()
 		self.stddev_pts = pp.create_stddev(self.avg_period)
+		
+		for i, p in enumerate(self.candles):
+			if i < self.avg_period: ##don't calculate stddev for first points since there is not enough history available
+				pass
+			else:
+				bb_score = (p.close - self.avg_pts[i].value)/self.stddev_pts[i-self.avg_period].value
+				self.bb_scores.append(bb_score)
+		
 		##self.stddev_table_name = pp.create_stddev(self.avg_period)
 		##self.stddev_pts = PointTable.get_point_array(self.stddev_table_name)
 
@@ -91,23 +103,12 @@ class BollingerStrategy:
 
 	## return difference in terms of standard deviations between last candle value and bollinger bands
 	## 0 means on avg, positive value is how many standard deviations above average, negative value is for below average
-	def get_present_bollinger_diff(self):
-		cur_value = self.candles[-1].close
+	def get_current_bb_score(self):
 		last_candle_index = len(self.candles) - 1
-		avg = self.avg_pts[last_candle_index - 1].value
-		stddev = self.stddev_pts[last_candle_index - self.avg_period - 1].value
-		return (cur_value-avg)/stddev
+		return self.bb_scores[last_candle_index - self.avg_period]
 
 
 
-	##delete tables that were created
-	def cleanup(self):
-		pass
-		##self.dbm.drop_table(self.middle_avg_table_name)
-		##self.dbm.drop_table(self.stddev_table_name)
-		##self.dbm.drop_table(self.bb_low_name)
-		##self.dbm.drop_table(self.bb_high_name)
-		##self.dbm.save_and_close()
 
 	##creates bollinger band table
 	##type is either low or high
@@ -149,16 +150,18 @@ class BollingerStrategy:
 			return True
 	
 	## recalc amount based on whether stddev is set or not 
-	def stddev_calc_amount(self, old_amount, candle_num, bb_val, type):
+	def stddev_calc_amount(self, old_amount, candle_num):
 		amount  = old_amount
+		bb_mult = 1
 		if self.stddev_adjust:
-			##scale amount sold by factor determined by how much price is deviating from the bollinger band
-			if type == "SELL":
-				price_difference = self.candles[candle_num].close - bb_val
-			else:
-				price_difference = bb_val - self.candles[candle_num].close
-			factor = price_difference/ self.stddev_pts[candle_num - self.avg_period].value
-			amount = amount * factor
+			bb_score = self.bb_scores[candle_num - self.avg_period]
+			if bb_score > self.bb_factor:
+				bb_mult = bb_score - self.bb_factor
+			elif bb_score < -1*self.bb_factor:
+				bb_mult = bb_score + self.bb_factor
+				bb_mult *= -1
+			
+			amount = amount * bb_mult
 		return amount
 
 	## recalc amount based on whether carry is set or not 
@@ -171,13 +174,52 @@ class BollingerStrategy:
 				amount += TradePlan.sum_past(self.trade_plan_array, candle_num, TradePlan.PLAN_BUY)
 		return amount
 
+	## returns true iff wait_better is turned off or bb_score has improved
+	def check_wait_better(self, candle_num):
+		if self.wait_better:
+			if math.fabs(self.bb_scores[candle_num- self.avg_period]) < math.fabs(self.bb_scores[candle_num - self.avg_period - 1]): ##score improved
+				return True
+			else:
+				return False
+		else:
+			return True
+
+
+	## determines whether to sell or not and the amount 
+	def validate_sell(self, candle_num, amount):
+		amount = self.stddev_calc_amount(amount, candle_num)
+		type = ""
+		if (TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_sell, TradePlan.PLAN_SELL) or TradePlan.check_past(self.trade_plan_array, candle_num, 1, TradePlan.SELL)) and \
+			self.check_one_op(candle_num, TradePlan.SELL) and \
+			self.check_wait_better(candle_num):
+			
+			##amount = bits/10
+			amount = self.carry_calc_amount(amount, candle_num, "SELL")
+			type = TradePlan.SELL
+		else:
+			type = TradePlan.PLAN_SELL
+		return (amount, type)
+
+	## determines whether to buy or not and the amount 
+	def validate_buy(self, candle_num, amount):
+		amount = self.stddev_calc_amount(amount, candle_num)
+		type = ""
+		if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_buy, TradePlan.PLAN_BUY) and \
+			self.check_one_op(candle_num, TradePlan.BUY) and \
+			self.check_wait_better(candle_num):
+			amount = self.carry_calc_amount(amount, candle_num, "BUY")
+			type = TradePlan.BUY
+		else:
+			type = TradePlan.PLAN_BUY
+		return (amount, type)
+
 	##returns market operation
 	def decide(self, candle_num, bits):
 		date = self.candles[candle_num].date
 		amount = self.amount
 		price = self.candles[candle_num].close
-		bb_low_val = self.avg_pts[candle_num  ].value - self.bb_factor*(self.stddev_pts[candle_num-self.avg_period ]).value
-		bb_high_val = self.avg_pts[candle_num ].value + self.bb_factor*(self.stddev_pts[candle_num-self.avg_period ]).value
+		bb_low_val = self.avg_pts[candle_num].value - self.bb_factor*(self.stddev_pts[candle_num-self.avg_period ]).value
+		bb_high_val = self.avg_pts[candle_num].value + self.bb_factor*(self.stddev_pts[candle_num-self.avg_period ]).value
 		##print amount	
 
 
@@ -186,27 +228,16 @@ class BollingerStrategy:
 			type = TradePlan.NONE
 		else:
 			##if current price exceeds high bollinger band -> sell
-			if self.candles[candle_num].close > bb_high_val:
-				amount = self.stddev_calc_amount(amount, candle_num, bb_high_val, "SELL")
-				if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_sell, TradePlan.PLAN_SELL):
-					if self.check_one_op(candle_num, TradePlan.SELL):
-						amount = self.carry_calc_amount(amount, candle_num, "SELL")
-						type = TradePlan.SELL
-					else:
-						type = TradePlan.PLAN_SELL
-				else:
-					type = TradePlan.PLAN_SELL
+			if self.bb_scores[candle_num - self.avg_period] > self.bb_factor:
+				ret = self.validate_sell(candle_num, amount)
+				amount = ret[0]
+				type = ret[1]
 			##if current price is below low bollinger band -> buy
-			elif self.candles[candle_num].close < bb_low_val:
-				amount = self.stddev_calc_amount(amount, candle_num, bb_low_val, "BUY")
-				if TradePlan.check_past(self.trade_plan_array, candle_num, self.num_past_buy, TradePlan.PLAN_BUY):
-					if self.check_one_op(candle_num, TradePlan.BUY):
-						amount = self.carry_calc_amount(amount, candle_num, "BUY")
-						type = TradePlan.BUY
-					else:
-						type = TradePlan.PLAN_BUY
-				else:
-					type = TradePlan.PLAN_BUY
+			##if price < bb_low_val:
+			elif self.bb_scores[candle_num - self.avg_period] < -1*self.bb_factor:
+				ret = self.validate_buy(candle_num, amount)
+				amount = ret[0]
+				type = ret[1]
 			##if between bollinger bands do nothing 
 			else:
 				type = TradePlan.NONE
@@ -229,11 +260,22 @@ class BollingerStrategy:
 			self.num_past_sell = 3 
 			self.one_op = False 
 			self.to_carry = True 
+			self.wait_better = True 
 		if CandleTable.get_period(self.table_name) == "7200":
 			self.bb_factor = 2
-			self.stddev_adjust = False
+			self.stddev_adjust = False 
 			self.avg_period = 80 
 			self.num_past_buy = 0 
 			self.num_past_sell = 6 
 			self.one_op = False
 			self.to_carry =False 
+			self.wait_better = False 
+	
+	##delete tables that were created
+	def cleanup(self):
+		pass
+		##self.dbm.drop_table(self.middle_avg_table_name)
+		##self.dbm.drop_table(self.stddev_table_name)
+		##self.dbm.drop_table(self.bb_low_name)
+		##self.dbm.drop_table(self.bb_high_name)
+		##self.dbm.save_and_close()
