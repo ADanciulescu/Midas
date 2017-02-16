@@ -70,7 +70,7 @@ class PointPopulator():
 		stddev_pt_array = []
 
 		for i, pt in enumerate(orig_pt_array):
-			if i < (num_history_pts-1): ##don't calculate stddev for first points since there is not enough history available
+			if i < num_history_pts: ##don't calculate stddev for first points since there is not enough history available
 				pass
 			else:
 				date = pt.date

@@ -26,8 +26,7 @@ class TradePlan:
 			else:
 				pass
 		return False
-
-
+	
 	## return true if the previous num_past trade plans before the index are of the type given
 	## otherwise return false
 	@staticmethod
