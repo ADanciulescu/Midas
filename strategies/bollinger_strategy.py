@@ -64,6 +64,10 @@ class BollingerStrategy:
 		self.cleanup()
 
 
+	def print_trade_plans(self):
+		for i, t in enumerate(self.trade_plan_array):
+			if t.type != "NONE":
+				print t.type, " ",  t.amount, " at ", t.price, "$   BB: ", self.bb_scores[i- self.avg_period]
 
 	##simply returns name
 	def get_name(self):

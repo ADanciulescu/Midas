@@ -22,6 +22,7 @@ class PoloniexClient:
 		curr_pair = curr_ref + "_" + curr_target
 		##pull raw json data from endpoint
 		data = self.pull_candle_data(curr_pair, start, end, period)
+		print len(data)
 		self.store_candle_data(data)
 	
 	##enters data into db

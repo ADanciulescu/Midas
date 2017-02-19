@@ -12,11 +12,14 @@ class CandleParser:
 	
 	def insert(self):
 		for c in self.data:
-			ct = Candle(self.table_name, c['date'], c['high'], c['low'], c['open'], c['close'], c['volume'], c['quoteVolume'], c['weightedAverage'])
 			try:
-				ct.save()
+				ct = Candle(self.table_name, c['date'], c['high'], c['low'], c['open'], c['close'], c['volume'], c['quoteVolume'], c['weightedAverage'])
+				try:
+					ct.save()
+				except:
+						"Duplicate candle, cannot insert"
 			except:
-					"Duplicate candle, cannot insert"
+				print "Candle cannot be parsed"
 		dbm = DBManager.get_instance()
 		dbm.save_and_close()
 

@@ -3,6 +3,7 @@
 *.swn
 *.swl
 *.swo
+*.swm
 *.pem
 *.bat
 *.sqlite

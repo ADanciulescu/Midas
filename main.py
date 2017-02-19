@@ -22,6 +22,7 @@ from bollinger_strategy import BollingerStrategy
 from oscil_strategy import OscilStrategy
 from random_strategy import RandomStrategy
 from hold_strategy import HoldStrategy
+from short_term_strategy import ShortTermStrategy
 from signaler import Signaler
 from sig import Sig
 from parameter_optimizer import ParameterOptimizer
@@ -40,55 +41,58 @@ import time
 ##lookinto fixing stddev_adjust, possibly sell/buy more first time(after num_past...)
 ## verify stddev and avg are calculated properly( no off by one errors)
 
+HALF_DAY = 43200
+
 def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
+	
+
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-01-01"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
 	##om.get_top_buy_price("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	signaler = Signaler()
-	signaler.run()
+	##signaler = Signaler()
+	##signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
-	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-1-1"), 1800)
-	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-1-1"), 1800)
-	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-1-1"), 1800)
-	##CandleFetcher.fetch_candles_after_date("ZEC", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("NXT", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("STR", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("LTC", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("ETC", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("DASH", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-1-1"), 14400)
-	##CandleFetcher.fetch_candles_after_date("LTC", date_to_timestamp("2016-1-1"), 7200)
-	##CandleFetcher.fetch_candles_after_date("ETC", date_to_timestamp("2016-1-1"), 7200)
-	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-1-1"), 7200)
-	##CandleFetcher.fetch_candles_after_date("DASH", date_to_timestamp("2016-1-1"), 7200)
-	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-1-1"), 14400)
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-1-1"), 7200)
+	##CandleFetcher.fetch_candles_after_date("NXT", date_to_timestamp("2016-1-1"), 7200)
 	
-	##CandleFetcher.cut_table(table_names.BTC_7200, date_to_timestamp("2016-1-1"), date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.ETH_7200, date_to_timestamp("2016-1-1"), date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.XMR_7200, date_to_timestamp("2016-1-1"), date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.XRP_7200, date_to_timestamp("2016-1-1"), date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.DASH_7200, date_to_timestamp("2016-1-1"), date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.LTC_7200, date_to_timestamp("2016-1-1"), date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.XRP_14400, date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.LTC_14400, date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.ETC_14400, date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.DASH_14400, date_to_timestamp("2016-6-1"))
-	##CandleFetcher.cut_table(table_names.REP_14400, date_to_timestamp("2016-6-1"))
+	##CandleFetcher.cut_table(table_names.BTC_300, date_to_timestamp("2017-2-17"))
+	##CandleFetcher.cut_table(table_names.BTC_300, date_to_timestamp("2017-1-1"), date_to_timestamp("2017-2-1"))
+	##CandleFetcher.cut_table(table_names.BTC_300, date_to_timestamp("2017-1-1"), date_to_timestamp("2017-2-1"))
+	##CandleFetcher.cut_table(table_names.BTC_300, date_to_timestamp("2017-2-16"), date_to_timestamp("2017-2-17"))
+
+
+
+	date1 = date_to_timestamp("2017-1-15")
+	for i in range(10):
+		date2 = date1+ HALF_DAY
+		tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
+		simulate_short_term_strategy([tn])
+		DBManager.drop_table(tn)
+		date1 = date2
+
+	##date2 = date1+ HALF_DAY
+	##tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
+	##simulate_short_term_strategy([tn])
+	
 
 	##populate_exp_avg_points(table_name_ETH_14400)
 	##grab_trend_all(trend_name_XMR, "XMR")
 	##cut_trend(table_name_ETH_14400, table_name_ETH)
+	
+	##strat = ShortTermStrategy(table_names.BTC_2017_02_19_300)	
 
 	##DBManager.drop_matching_tables("OSCIL")
 	##simulate_oscil_strategy(table_names.BIG_HALF1_14400)
 	##simulate_bollinger_strategy(table_names.BIG_HALF2_7200)
+	##simulate_bollinger_strategy([table_names.NXT_HALF2_7200])
 	##simulate_bollinger_strategy(table_names.BIG_HALF2_7200)
-	##simulate_bollinger_strategy([table_names.ETH_HALF1_7200])
+	##simulate_bollinger_strategy([table_names.BTC_HALF2_7200])
 	##simulate_bollinger_strategy(table_names.BIG_HALF2_14400)
 	##simulate_hold_strategy(table_names.SMALL_HALF2_14400)
 	##simulate_bollinger_strategy(tn_HALF_7200)
@@ -107,14 +111,14 @@ def main():
 	
 	
 	##present_bollinger(table_names.BTC_7200)
-	present_bollinger(table_names.BTC_7200)
-	present_bollinger(table_names.ETH_7200)
-	present_bollinger(table_names.ETC_7200)
-	present_bollinger(table_names.XMR_7200)
-	present_bollinger(table_names.XRP_7200)
-	present_bollinger(table_names.DASH_7200)
-	present_bollinger(table_names.ETC_7200)
-	present_bollinger(table_names.REP_7200)
+	##present_bollinger(table_names.ETH_7200)
+	##present_bollinger(table_names.ETC_7200)
+	##present_bollinger(table_names.XMR_7200)
+	##present_bollinger(table_names.DASH_7200)
+	##present_bollinger(table_names.LTC_7200)
+	##present_bollinger(table_names.REP_7200)
+	
+	##present_bollinger(table_names.BTC_7200)
 	##present_bollinger(table_names.DASH_14400)
 
 	##simulate(table_name_BTC_14400)
@@ -124,6 +128,15 @@ def main():
 def optimize(table_name_array):
 	po = ParameterOptimizer(table_name_array)
 	po.optimize_bollinger()
+
+def simulate_short_term_strategy(candle_table_name_array):
+	strat_array = []
+	for tn in candle_table_name_array:
+		strat = ShortTermStrategy(tn)
+		strat_array.append(strat)
+	trade_sim = TradeSimulator(candle_table_name_array, strat_array, to_log = True)
+	trade_sim.run()
+
 
 def simulate_oscil_strategy(candle_table_name_array):
 	strat_array = []
@@ -140,6 +153,7 @@ def simulate_bollinger_strategy(candle_table_name_array):
 		strat_array.append(strat)
 	trade_sim = TradeSimulator(candle_table_name_array, strat_array, to_log = True)
 	trade_sim.run()
+	##strat_array[0].print_trade_plans()
 
 def simulate_hold_strategy(candle_table_name_array):
 	strat_array = []

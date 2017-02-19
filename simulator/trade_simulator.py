@@ -163,7 +163,7 @@ class TradeSimulator:
 			last_price = self.candles_array[i][-1].close 
 			self.last_price_array.append(last_price)
 			last_date = self.candles_array[i][-1].date 
-			self.bits_end_array.append(self.bits_array[i])
+			self.bits_end_array[i] = self.bits_array[i]
 			if self.bits_array[i] > 0:
 				self.attempt_sell(i, last_date, self.bits_array[i], last_price)
 		

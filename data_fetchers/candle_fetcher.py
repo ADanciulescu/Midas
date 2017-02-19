@@ -6,6 +6,7 @@ from db_manager import DBManager
 from candle_table import CandleTable
 from candle import Candle
 from time import time
+from tools import date_to_timestamp 
 import table_names
 
 class CandleFetcher():
