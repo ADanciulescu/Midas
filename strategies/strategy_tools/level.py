@@ -17,4 +17,4 @@ class Level:
 			self.total += r.get_size()
 	
 	def pprint(self):
-			print self.val, "Num Ranges:", self.num_ranges, "Total:", self.total, "Avg: ", self.total/self.num_ranges
+			print self.val, "Num Ranges:", self.num_ranges, "Total:", self.total, "Avg: ", self.total

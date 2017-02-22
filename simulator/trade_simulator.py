@@ -13,7 +13,7 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	SUPPRESS_PRINT_HISTORY = True 
+	SUPPRESS_PRINT_HISTORY = False 
 	##poloniex fees
 	SELL_FEE = 0.0015
 	BUY_FEE = 0.0025
