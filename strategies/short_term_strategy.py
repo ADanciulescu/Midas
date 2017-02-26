@@ -147,6 +147,9 @@ class ShortTermStrategy:
 			self.interval_array.add_range(new_r)
 			self.update_intervals()
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
+			
+			if floor == -1:
+				return Operation(Operation.NONE_OP, 0)
 
 			##print "Floor:", self.floor.val
 			##print "Ceiling:", self.ceiling.val

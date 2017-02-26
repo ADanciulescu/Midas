@@ -82,9 +82,12 @@ class IntervalArray:
 				min_index = i
 
 
-		low_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.1)
-		high_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.9)
-		return(low_limit, high_limit)
+		low_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.25)
+		high_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.75)
+		if (high_limit-low_limit)/high_limit > 0.0004:
+			return(low_limit, high_limit)
+		else:
+			return (-1 , -1)
 
 	
 	##given 2 endpoints binary search for the value between endpoints corresponding to the percentile p

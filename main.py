@@ -47,15 +47,15 @@ def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
 	
 
-	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-11-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
 	##om.get_top_buy_price("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	##signaler = Signaler()
-	##signaler.run()
+	signaler = Signaler()
+	signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-1-1"), 7200)
@@ -68,19 +68,19 @@ def main():
 
 
 	##strat = ShortTermStrategy(table_names.BTC_300)
-	date1 = date_to_timestamp("2017-2-19") 
+	##date1 = date_to_timestamp("2016-11-1") 
 	##date2 = date1+ 4*HALF_DAY
 	##tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
 	##strat = ShortTermStrategy(tn)
 	##DBManager.drop_table(tn)
-	for i in range(10):
-		date2 = date1+ 4*HALF_DAY
-		tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
-		simulate_short_term_strategy([tn])
+	##for i in range(20):
+		##date2 = date1+ 10*HALF_DAY
+		##tn = CandleFetcher.cut_table(table_names.ETH_300, date1, date2)
+		##simulate_short_term_strategy([tn])
 		##strat = ShortTermStrategy(tn)
 
-		DBManager.drop_table(tn)
-		date1 = date2
+		##DBManager.drop_table(tn)
+		##date1 = date2
 	
 
 	##date2 = date1+ HALF_DAY
@@ -124,6 +124,7 @@ def main():
 	present_bollinger(table_names.DASH_7200)
 	present_bollinger(table_names.LTC_7200)
 	present_bollinger(table_names.REP_7200)
+	present_bollinger(table_names.NXT_7200)
 	
 	##present_bollinger(table_names.BTC_7200)
 	##present_bollinger(table_names.DASH_14400)
