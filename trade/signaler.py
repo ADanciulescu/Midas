@@ -14,24 +14,27 @@ class Signaler:
 	
 	HISTORY_LENGTH = 2592000 ## how long of a history to use when producing signals = 1 months in seconds
 
-	def __init__(self):
+	def __init__(self, to_print = True, to_email = False):
 		self.signal_table_names = [] ## stores signal_table_names
 		self.new_signals_array = [] ## stores arrays of new signals
+		self.to_print = to_print
+		self.to_email = to_email
 
-	def run(self, to_print = True):
+	def run(self):
 		self.update_all_signals()
 		self.push_to_db()
 		self.handle_new_signals()
-		if to_print:
+		if self.to_print:
 			self.print_all_signals()
 
 	def handle_new_signals(self):
-		emailer = Emailer()
-		for a in self.new_signals_array:
-			if len(a) > 0:
-				sig = a[-1]
-				if sig.type == Sig.BUY or sig.type == Sig.SELL:
-					emailer.email_signal(sig)
+		if self.to_email:
+			emailer = Emailer()
+			for a in self.new_signals_array:
+				if len(a) > 0:
+					sig = a[-1]
+					if sig.type == Sig.BUY or sig.type == Sig.SELL:
+						emailer.email_signal(sig)
 
 	##push the newly created signals to db
 	def push_to_db(self):

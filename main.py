@@ -54,7 +54,7 @@ def main():
 	##om.get_top_buy_price("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	signaler = Signaler()
+	signaler = Signaler(to_email = False, to_print = True)
 	signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()

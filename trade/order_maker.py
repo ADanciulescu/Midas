@@ -47,7 +47,7 @@ class OrderMaker:
 		amount = sym_money/rate
 		order_num = self.poloniex.buy(curr_pair, rate, amount)
 		if order_num != None:
-			pass
+			
 			##TODO: START HERE
 
 	def get_top_buy_rate(self, curr_pair):
