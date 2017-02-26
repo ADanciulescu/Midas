@@ -8,6 +8,7 @@
 *.bat
 *.sqlite
 *.key
+*.log
 tick.sh
 Makefile
 /results/*
