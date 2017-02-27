@@ -48,7 +48,7 @@ def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
 	
 	##OrderTable.create_tables()
-	OrderMaker.slow_buy("BTC", 0.01)
+	OrderMaker.slow_sell("BTC", 0.01)
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 

@@ -52,8 +52,28 @@ class OrderMaker:
 		amount = sym_money/rate
 		print "Fast buying", curr_pair, ":", amount, "at", rate 
 		order = OrderMaker.place_buy_order(curr_pair, rate, amount)
+	
+	##ASAP sell sym money worth of currency sym at the highest bid price
+	@staticmethod
+	def fast_sell(sym, sym_money):
+		curr_pair = "USDT_" + sym
+		rate = OrderMaker.get_instant_rate_bid(curr_pair, sym_money)
+		amount = sym_money/rate
+		print "Fast selling", curr_pair, ":", amount, "at", rate 
+		order = OrderMaker.place_sell_order(curr_pair, rate, amount)
 
-
+	## creates a thread that performs slow buy and runs slow_buy_code	
+	@staticmethod
+	def slow_buy(sym, sym_money):
+		t = threading.Thread(target = OrderMaker.slow_buy_code, args = (sym, sym_money,))
+		t.start()
+	
+	## creates a thread that performs slow sell and runs slow_sell_code	
+	@staticmethod
+	def slow_sell(sym, sym_money):
+		t = threading.Thread(target = OrderMaker.slow_sell_code, args = (sym, sym_money,))
+		t.start()
+	
 	##Buy sym money worth of sym currency by repeatedly posting order at slightly more than current highest
 	@staticmethod
 	def slow_buy_code(sym, sym_money):
@@ -83,14 +103,38 @@ class OrderMaker:
 					order = new_order
 			time.sleep(0.2)
 			order.polo_update()
-
-	## creates a thread that performs slow buy and runs slow_buy_code	
+	
+	##Sell sym money worth of sym currency by repeatedly posting order at slightly less than current lowest ask
 	@staticmethod
-	def slow_buy(sym, sym_money):
-		t = threading.Thread(target = OrderMaker.slow_buy_code, args = (sym, sym_money,))
-		t.start()
+	def slow_sell_code(sym, sym_money):
+		polo = Poloniex.get_instance()
 
-	##places a buy order to buy sym_money worth of sym currency
+		##place initial buy order
+		curr_pair = "USDT_" + sym
+		rate = OrderMaker.get_bottom_ask(curr_pair) - OrderMaker.TINY_AMT
+		amount = sym_money/rate
+		print "Slow selling", curr_pair, ":", amount, "at", rate 
+		order = OrderMaker.place_sell_order(curr_pair, rate, amount)
+		time.sleep(0.2)
+		while(order.is_active()):
+			bottom_rate = OrderMaker.get_bottom_ask(curr_pair)
+			
+			## if i've been overbid, modify overbid to get to top of list
+			if bottom_rate < order.rate: 
+				new_rate = bottom_rate - OrderMaker.TINY_AMT
+				date_placed = time.time()
+				move_result = polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
+				new_order_id = move_result['orderNumber']
+				if new_order_id != None:
+					print "Updating slow selling", curr_pair, ":", amount, "at", new_rate
+					order.drop()
+					new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
+					new_order.save()
+					order = new_order
+			time.sleep(0.2)
+			order.polo_update()
+
+	##places a buy order to buy curr_pair at rate and amount given 
 	@staticmethod
 	def place_buy_order(curr_pair, rate, amount):
 		date_placed = time.time()
@@ -99,6 +143,17 @@ class OrderMaker:
 		o = None
 		if order_id != None:
 			o = Order(Order.ORDER_ACTIVE, order_id, curr_pair, date_placed, amount, rate, Order.BID) 
+			o.save()
+		return o
+	
+	##places a sell order to buy curr_pair at rate and amount given 
+	@staticmethod
+	def place_sell_order(curr_pair, rate, amount):
+		date_placed = time.time()
+		order_id = Poloniex.get_instance().sell(curr_pair, rate, amount)["orderNumber"]
+		o = None
+		if order_id != None:
+			o = Order(Order.ORDER_ACTIVE, order_id, curr_pair, date_placed, amount, rate, Order.ASK) 
 			o.save()
 		return o
 	
@@ -167,4 +222,15 @@ class OrderMaker:
 			if money < 0:
 				return rate
 		
-
+	##return the rate at I can instantly sell sym_money worth of curr_pair 
+	@staticmethod
+	def get_instant_rate_ask(curr_pair, money):
+		bids =  Poloniex.get_instance().returnOrderBook(curr_pair)["bids"]
+		i = 0
+		for a in bids:
+			rate = float(a[0])
+			amount = float(a[1]) 
+			money_to_get = rate * amount 
+			money -= money_to_get
+			if money < 0:
+				return rate
