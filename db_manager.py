@@ -1,29 +1,42 @@
 import json
 import sqlite3
+import threading
 
 class DBManager:
 
-	INSTANCE = None
+	INSTANCES = []
 
 	INTEGER = "INTEGER"
 	REAL = "REAL"
 	TEXT = "TEXT"
 	NOT_NULL = "NOT NULL"
 	
-	def __init__(self):
+	def __init__(self, t_id):
 		self.sqlfile = "./db/currencies.sqlite"
 		self.conn = sqlite3.connect(self.sqlfile)
+		self.thread_id = t_id
 
 	@classmethod
 	def get_instance(cls):
-		if cls.INSTANCE is None:
-			cls.INSTANCE = cls()
-			cls.INSTANCE.open()
-		return cls.INSTANCE
+		cur_thread_id = threading.current_thread()
+		ret = None
+		for i in cls.INSTANCES:
+			if i.thread_id == cur_thread_id:
+				ret = i
+		
+		if ret is None:
+			instance = cls(cur_thread_id)
+			instance.open()
+			DBManager.INSTANCES.append(instance)
+			ret = instance
 
+		return ret
 
 	def open(self):
 		self.conn = sqlite3.connect(self.sqlfile)
+
+	def close(self):
+		self.conn.close()
 
 	##commit changes to db and close DBManager instance
 	def save_and_close(self):

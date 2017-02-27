@@ -29,9 +29,12 @@ from parameter_optimizer import ParameterOptimizer
 from order_maker import OrderMaker
 from order_table import OrderTable
 from emailer import Emailer
+from snap_fetcher import SnapFetcher
+from snap_table import SnapTable
+from snap_order_table import SnapOrderTable
 import table_names
 import time
-
+import threading
 
 ##TODO: keep testing with more data and keep adjusting parameters
 ##TODO: buy btc
@@ -46,18 +49,28 @@ HALF_DAY = 43200
 
 def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
-	
+
+	DBManager.drop_matching_tables("SNAP")
+	##print threading.get_ident()
+	##sf = SnapFetcher("SNAP_USDT_BTC_100")
+	##sf.run()
+
+	##SnapTable.delete_rows("SNAP_USDT_BTC_100")
+	##SnapOrderTable.delete_rows("SNAP_ORDER_USDT_BTC_100")
+
 	##OrderTable.create_tables()
-	OrderMaker.slow_sell("BTC", 0.01)
+	##OrderMaker.slow_sell("ETH", 12)
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-6-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
 	##om.get_top_buy_price("USDT_BTC")
-	##DBManager.drop_matching_tables("SIGNAL")
+	##DBManager.drop_matching_tables("SNAP")
 	##p = Poloniex()
 	##signaler = Signaler(to_email = False, to_print = True)
 	##signaler.run()
