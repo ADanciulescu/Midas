@@ -8,12 +8,21 @@ def createTimeStamp(datestr, format="%Y-%m-%d %H:%M:%S"):
 	return time.mktime(time.strptime(datestr, format))
 
 class Poloniex:
+	
+	INSTANCE = None
+
 	def __init__(self):
 		with open('./trade/poloniex_secret.key', 'r') as myfile:
 			key = myfile.readline().rstrip()
 			secret = myfile.readline().rstrip()
 			self.APIKey = key
 			self.Secret = secret 
+	
+	@classmethod
+	def get_instance(cls):
+		if cls.INSTANCE is None:
+			cls.INSTANCE = cls()
+		return cls.INSTANCE
 
 	def post_process(self, before):
 		after = before

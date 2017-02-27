@@ -7,8 +7,8 @@ from order import Order
 
 class OrderTable:
 
-	ORDER_ACTIVE = "ORDER_ACTIVE"
-	ORDER_FILLED = "ORDER_FILLED"
+	ORDER_ACTIVE = "ORDER_ACTIVE_TEST"
+	ORDER_FILLED = "ORDER_FILLED_TEST"
 
 
 	def __init__(self, table_name):
@@ -44,7 +44,13 @@ class OrderTable:
 		row = cursor.fetchone()
 		while row is not None:
 			o = Order.from_tuple(table_name, row) 
-			orders.append(t)
+			orders.append(o)
 			row = cursor.fetchone()
 		return orders
-	
+
+	@staticmethod
+	def create_tables():
+		ot = OrderTable(OrderTable.ORDER_ACTIVE)
+		ot.save()
+		ot = OrderTable(OrderTable.ORDER_FILLED)
+		ot.save()
