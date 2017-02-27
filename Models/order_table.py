@@ -7,10 +7,6 @@ from order import Order
 
 class OrderTable:
 
-	ORDER_ACTIVE = "ORDER_ACTIVE_TEST"
-	ORDER_FILLED = "ORDER_FILLED_TEST"
-
-
 	def __init__(self, table_name):
 		self.table_name = table_name
 	
@@ -50,7 +46,7 @@ class OrderTable:
 
 	@staticmethod
 	def create_tables():
-		ot = OrderTable(OrderTable.ORDER_ACTIVE)
+		ot = OrderTable(Order.ORDER_ACTIVE)
 		ot.save()
-		ot = OrderTable(OrderTable.ORDER_FILLED)
+		ot = OrderTable(Order.ORDER_FILLED)
 		ot.save()

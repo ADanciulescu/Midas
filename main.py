@@ -48,8 +48,8 @@ def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
 	
 	##OrderTable.create_tables()
-	##OrderMaker.fast_buy("NXT", 0.01)
-	OrderMaker.update_orders()
+	OrderMaker.slow_buy("BTC", 0.01)
+	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)

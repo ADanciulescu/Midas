@@ -5,7 +5,8 @@ from sig import Sig
 from poloniex import Poloniex
 from order import Order
 from order_table import OrderTable
-from time import time
+import time
+import threading
 
 class OrderMaker:
 	
@@ -47,25 +48,57 @@ class OrderMaker:
 	@staticmethod
 	def fast_buy(sym, sym_money):
 		curr_pair = "USDT_" + sym
-		polo = Poloniex.get_instance()
 		rate = OrderMaker.get_instant_rate_ask(curr_pair, sym_money)
 		amount = sym_money/rate
+		print "Fast buying", curr_pair, ":", amount, "at", rate 
 		order = OrderMaker.place_buy_order(curr_pair, rate, amount)
 
-	
+
 	##Buy sym money worth of sym currency by repeatedly posting order at slightly more than current highest
-	##@staticmethod
-	##def slow_buy(sym, sym_money):
+	@staticmethod
+	def slow_buy_code(sym, sym_money):
+		polo = Poloniex.get_instance()
+
+		##place initial buy order
+		curr_pair = "USDT_" + sym
+		rate = OrderMaker.get_top_bid(curr_pair) + OrderMaker.TINY_AMT
+		amount = sym_money/rate
+		print "Slow buying", curr_pair, ":", amount, "at", rate 
+		order = OrderMaker.place_buy_order(curr_pair, rate, amount)
+		time.sleep(0.2)
+		while(order.is_active()):
+			top_rate = OrderMaker.get_top_bid(curr_pair)
+			
+			## if i've been overbid, modify overbid to get to top of list
+			if top_rate > order.rate: 
+				new_rate = top_rate + OrderMaker.TINY_AMT
+				date_placed = time.time()
+				move_result = polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
+				new_order_id = move_result['orderNumber']
+				if new_order_id != None:
+					print "Updating slow buying", curr_pair, ":", amount, "at", new_rate
+					order.drop()
+					new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.BID) 
+					new_order.save()
+					order = new_order
+			time.sleep(0.2)
+			order.polo_update()
+
+	## creates a thread that performs slow buy and runs slow_buy_code	
+	@staticmethod
+	def slow_buy(sym, sym_money):
+		t = threading.Thread(target = OrderMaker.slow_buy_code, args = (sym, sym_money,))
+		t.start()
 
 	##places a buy order to buy sym_money worth of sym currency
 	@staticmethod
 	def place_buy_order(curr_pair, rate, amount):
-		date_placed = time()
+		date_placed = time.time()
 		order_id = Poloniex.get_instance().buy(curr_pair, rate, amount)["orderNumber"]
 		##order_num = Poloniex.get_instance().api_query("buy", {'currencyPair': curr_pair, 'rate' : rate, 'amount' : amount, 'fillOrKill' : 1})
 		o = None
 		if order_id != None:
-			o = Order(OrderTable.ORDER_ACTIVE, order_id, curr_pair, date_placed, amount, rate, Order.BID) 
+			o = Order(Order.ORDER_ACTIVE, order_id, curr_pair, date_placed, amount, rate, Order.BID) 
 			o.save()
 		return o
 	
@@ -74,7 +107,7 @@ class OrderMaker:
 	@staticmethod
 	def update_orders():
 		polo = Poloniex.get_instance()
-		order_array = OrderTable.get_order_array(OrderTable.ORDER_ACTIVE)
+		order_array = OrderTable.get_order_array(Order.ORDER_ACTIVE)
 		
 		##create a dictionary that groups all orders by key = curr_pair
 		order_dict = {}
@@ -90,7 +123,7 @@ class OrderMaker:
 			##get open polo orders for same pair
 			polo_data = polo.api_query("returnOpenOrders", {'currencyPair': curr_pair})
 			
-			##if found db order on polo, update its info
+			##if found db active order on polo, update its info
 			##if not means db order is no longer active and should be moved to filled orders db
 			for o in orders:
 				found = False
@@ -103,7 +136,7 @@ class OrderMaker:
 				if not found:
 					o.drop()
 					o.table_name = OrderTable.ORDER_FILLED
-					o.date_filled = time()
+					o.date_filled = time.time()
 					o.save()
 		
 

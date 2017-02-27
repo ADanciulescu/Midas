@@ -3,8 +3,13 @@
 
 import sqlite3
 from db_manager import DBManager
+from poloniex import Poloniex
+from time import time
 
 class Order:
+	##TODO: handle partially filled orders	
+	ORDER_ACTIVE = "ORDER_ACTIVE_TEST"
+	ORDER_FILLED = "ORDER_FILLED_TEST"
 	
 	ID = "id"
 	CURR_PAIR = "curr_pair"
@@ -30,7 +35,32 @@ class Order:
 	@staticmethod
 	def from_tuple(table_name, tup):
 		return Order(table_name, tup[0], tup[1], tup[2], tup[4], tup[5], tup[6], tup[3])
-	
+
+
+	## update the order based on orderbook from poloniex
+	def polo_update(self):
+		polo = Poloniex.get_instance()
+		polo_data = polo.api_query("returnOpenOrders", {'currencyPair': self.curr_pair})
+		found = False
+		for d in polo_data:
+			if d['orderNumber'] == self.id:
+				found = True
+				self.amount = d['amount']
+				self.update()
+		
+		if not found:
+			self.drop()
+			self.table_name = Order.ORDER_FILLED
+			self.date_filled = time()
+			self.save()
+
+	##returns true if order is still active, else return false
+	def is_active(self):
+		if self.table_name == Order.ORDER_ACTIVE:
+			return True
+		else:
+			return False
+
 	##inserts trade into db
 	def save(self):
 		db_manager = DBManager.get_instance()
@@ -66,7 +96,7 @@ class Order:
 		try:
 			exec_string = "UPDATE {tn} SET {nf_curr_pair} = '{v_curr_pair}', {nf_date_placed} = {v_date_placed}, {nf_date_filled} = {v_date_filled}, {nf_amount} = {v_amount}, {nf_rate} = {v_rate}, {nf_type} = '{v_type}'\
 					WHERE {nf_id} = {v_id}"\
-				.format(tn = self.table_name, nf_curr_pair = Order.CURR_PAIR, nf_date_placed = Order.DATE_PLACED, nf_date_filled = Order.DATE_FILLED, nf_amount = Order.AMOUNT, nf_rate = Order.RATE, nf_type = Order.TYPE, v_curr_pair = self.curr_pair, v_date_placed = self.date_placed, v_date_filled = self.date_filled, v_amount = self.amount, v_rate = self.rate, v_type = self.type)
+				.format(tn = self.table_name, nf_id = Order.ID, nf_curr_pair = Order.CURR_PAIR, nf_date_placed = Order.DATE_PLACED, nf_date_filled = Order.DATE_FILLED, nf_amount = Order.AMOUNT, nf_rate = Order.RATE, nf_type = Order.TYPE, v_id = self.id, v_curr_pair = self.curr_pair, v_date_placed = self.date_placed, v_date_filled = self.date_filled, v_amount = self.amount, v_rate = self.rate, v_type = self.type)
 			cursor.execute(exec_string)
 			dbm.save_and_close()
 
