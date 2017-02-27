@@ -27,6 +27,7 @@ from signaler import Signaler
 from sig import Sig
 from parameter_optimizer import ParameterOptimizer
 from order_maker import OrderMaker
+from order_table import OrderTable
 from emailer import Emailer
 import table_names
 import time
@@ -54,8 +55,8 @@ def main():
 	##om.get_top_buy_price("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##p = Poloniex()
-	signaler = Signaler(to_email = False, to_print = True)
-	signaler.run()
+	##signaler = Signaler(to_email = False, to_print = True)
+	##signaler.run()
 	##signaler.print_all_signals()
 	##CandleFetcher.update_all()
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-1-1"), 7200)
@@ -117,14 +118,14 @@ def main():
 	##simulate_bollinger_strategy([table_names.XRP_HALF, table_names.LTC_HALF, table_names.ETC_HALF, table_names.REP_HALF, table_names.DASH_HALF])
 	
 	
-	present_bollinger(table_names.BTC_7200)
-	present_bollinger(table_names.ETH_7200)
-	present_bollinger(table_names.ETC_7200)
-	present_bollinger(table_names.XMR_7200)
-	present_bollinger(table_names.DASH_7200)
-	present_bollinger(table_names.LTC_7200)
-	present_bollinger(table_names.REP_7200)
-	present_bollinger(table_names.NXT_7200)
+	##present_bollinger(table_names.BTC_7200)
+	##present_bollinger(table_names.ETH_7200)
+	##present_bollinger(table_names.ETC_7200)
+	##present_bollinger(table_names.XMR_7200)
+	##present_bollinger(table_names.DASH_7200)
+	##present_bollinger(table_names.LTC_7200)
+	##present_bollinger(table_names.REP_7200)
+	##present_bollinger(table_names.NXT_7200)
 	
 	##present_bollinger(table_names.BTC_7200)
 	##present_bollinger(table_names.DASH_14400)
