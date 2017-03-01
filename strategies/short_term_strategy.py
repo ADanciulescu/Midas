@@ -14,6 +14,7 @@ class ShortTermStrategy:
 	DATA_PAST = 100 
 
 	def __init__(self, table_name, is_simul = True, to_print = False):
+		self.table_name = table_name
 		self.candles = CandleTable.get_candle_array(table_name)
 		self.to_print = to_print
 		self.interval_array = None
@@ -25,25 +26,27 @@ class ShortTermStrategy:
 		
 		self.ranges = self.create_ranges_better(self.candles)
 		
-		self.create_interval_array()
+		self.interval_array = self.create_interval_array(self.ranges)
 		##self.interval_array.pprint()
 		##print self.interval_array.local_maxes
 		##print self.interval_array.get_limits(773)
 		##self.update_levels(self.ranges, self.DATA_PAST)
 
-	def create_interval_array(self):
+	def create_interval_array(self, ranges):
 		##insert first range
-		if self.ranges[0].type == "DESC":
-			new_range = Range(self.ranges[0].pt2, self.ranges[0].pt1, 1)
+		if ranges[0].type == "DESC":
+			new_range = Range(ranges[0].pt2, ranges[0].pt1, 1)
 		else:
-			new_range = Range(self.ranges[0].pt1, self.ranges[0].pt2, 1)
+			new_range = Range(ranges[0].pt1, ranges[0].pt2, 1)
 
-		self.interval_array = IntervalArray([new_range])
+		interval_array = IntervalArray([new_range])
 
-		for r in self.ranges[1:]:
-			self.interval_array.add_range(r)
+		for r in ranges[1:]:
+			interval_array.add_range(r)
 	
-		self.update_intervals()
+		interval_array.update_intervals()
+
+		return interval_array
 		##self.interval_array.pprint()
 		##self.interval_array.find_local_mins()
 		##print self.interval_array.local_mins
@@ -53,10 +56,6 @@ class ShortTermStrategy:
 		##print self.interval_array.find_percentile(742.9959858699999, 744.10375414, 0.3)
 		##print self.interval_array.area_between(742.9959858699999, 744.10375414)
 
-	def update_intervals(self):
-		self.interval_array.find_local_mins()
-		self.interval_array.calc_cumulative()
-		self.interval_array.find_local_maxes()
 
 
 
@@ -114,7 +113,7 @@ class ShortTermStrategy:
 	def create_ranges_better(self, candles):
 		ranges = []
 		i = 0
-		while i < self.DATA_PAST-1:
+		while i < self.DATA_PAST:
 			pt1 = Point("", candles[i].date, candles[i].close)
 			pt2 = Point("", candles[i+1].date, candles[i+1].close)
 			new_r = Range(pt1, pt2, 0)
@@ -134,23 +133,37 @@ class ShortTermStrategy:
 
 	##returns market operation
 	def decide(self, candle_num, bits):
-		if candle_num < self.DATA_PAST+1:
-			return Operation(Operation.NONE_OP, 0)
-		elif candle_num == len(self.candles)-1:
+		if candle_num < self.DATA_PAST:
 			return Operation(Operation.NONE_OP, 0)
 		else:
-			self.interval_array.delete_range(self.ranges[candle_num -self.DATA_PAST])
-			pt1 = Point("", self.candles[candle_num].date, self.candles[candle_num].close)
-			pt2 = Point("", self.candles[candle_num+1].date, self.candles[candle_num+1].close)
-			new_r = Range(pt1, pt2, 0)
-			self.ranges.append(new_r)
-			self.interval_array.add_range(new_r)
-			self.update_intervals()
+			type = None
+			amount = 0
+
+			buy_mult = 1
+			sell_mult = 1
+			
+			
+			if bits/self.amount < 10:
+				buy_mult = 1
+				sell_mult = 1
+			elif bits/self.amount < 20:
+				buy_mult = 1
+				sell_mult = 1.3
+			elif bits/self.amount < 30:
+				buy_mult = 1
+				sell_mult = 1.6
+			else:
+				buy_mult = 1 
+				sell_mult = 2
+
+			
+
+
+
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			
 			if floor == -1:
-				return Operation(Operation.NONE_OP, 0)
-
+				type = Operation.NONE_OP
 			##print "Floor:", self.floor.val
 			##print "Ceiling:", self.ceiling.val
 
@@ -158,14 +171,26 @@ class ShortTermStrategy:
 			##if broke underneath floor since last candle -> buy
 			if self.candles[candle_num-1].close > floor and self.candles[candle_num].close < floor:
 				##print "Bought"
-				return Operation(Operation.BUY_OP, self.amount)
+				type = Operation.BUY_OP
+				amount = buy_mult*self.amount
 			##if broke through ceiling since last candle -> sell
 			elif self.candles[candle_num-1].close < ceiling and self.candles[candle_num].close > ceiling:
 				##print "Sold"
-				return Operation(Operation.SELL_OP, self.amount)
+				type = Operation.SELL_OP
+				amount = sell_mult*self.amount
 			else:
 				##print "None"
-				return Operation(Operation.NONE_OP, 0)
+				type = Operation.NONE_OP
+			
+			pt1 = Point("", self.candles[candle_num-1].date, self.candles[candle_num-1].close)
+			pt2 = Point("", self.candles[candle_num].date, self.candles[candle_num].close)
+			new_r = Range(pt1, pt2, 0)
+			self.ranges.pop(0)
+			self.ranges.append(new_r)
+			
+			##if candle_num %10 == 0:
+			self.interval_array = self.create_interval_array(self.ranges)
+			return Operation(type, amount)
 			
 			##if self.candles[candle_num].close < self.floor.val:
 				##print "Bought"

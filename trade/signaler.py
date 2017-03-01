@@ -19,6 +19,7 @@ class Signaler:
 		self.new_signals_array = [] ## stores arrays of new signals
 		self.to_print = to_print
 		self.to_email = to_email
+		self.stddev_array = [] ##specifically used for bollinger strategy
 
 	def run(self):
 		self.update_all_signals()
@@ -61,13 +62,14 @@ class Signaler:
 	
 	##prints signals from all currencies
 	def print_all_signals(self):
-		for tn in self.signal_table_names:
+		for i,tn in enumerate(self.signal_table_names):
 			signals = SignalTable.get_signal_array(tn)
 			print "******************************************************************************"
 			print tn
 			for s in signals[-10:]:
 				s.pprint()
-			print "******************************************************************************"
+			print "# of stddev from mean: ", self.stddev_array[i]
+	
 
 	## analyzes a table and returns possible new_signal
 	def get_new_signals(self, table_name):
@@ -94,6 +96,9 @@ class Signaler:
 			##if after last_date it means the signal is new
 			if sig.date > last_date:
 				new_signals.append(sig)
+		
+		##get current stddev and store it
+		self.stddev_array.append(strat.get_current_bb_score())
 
 		##delete created table when done
 		DBManager.drop_table(cut_table_name)

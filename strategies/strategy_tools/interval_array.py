@@ -3,6 +3,31 @@
 
 from range import Range
 
+class Area:
+
+	def __init__(self, low_min, high_min):
+		self.low_min = low_min
+		self.high_min = high_min
+
+	def is_between(self, val):
+		if val >= self.low_min and val <= self.high_min:
+			return True
+		else:
+			return False
+
+	def calculate_limits(self, interval_array):
+		self.mid = interval_array.find_percentile(self.low_min, self.high_min, 0.5)
+		if interval_array.height_at(self.mid) < 10:
+			self.low_limit = -1
+			self.high_limit = -1
+		else:
+			self.low_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.2)
+			self.high_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.8)
+			
+			if (self.high_limit-self.low_limit)*2/(self.high_limit+self.low_limit) < 0.004:
+				self.low_limit = -1
+				self.high_limit = -1
+
 class IntervalArray:
 
 	def __init__(self, interval_array):
@@ -10,6 +35,15 @@ class IntervalArray:
 		self.cumulative_array = []
 		self.local_mins = []
 		self.local_maxes = []
+
+	def add_ranges(self, ranges):
+		for r in ranges:
+			self.add_range(r)
+
+	def height_at(self, val):
+		for i in self.interval_array:
+			if i.is_between(val):
+				return i.value
 	
 	##updates interval arrange by adding the range given
 	def add_range(self, r):
@@ -22,6 +56,11 @@ class IntervalArray:
 		self.update_interval_values(r, -1)
 		self.delete_key_pt(r.pt1)
 		self.delete_key_pt(r.pt2)
+	
+	def update_intervals(self):
+		self.find_local_mins()
+		self.calc_cumulative()
+		##self.find_local_maxes()
 
 	def calc_cumulative(self):
 		self.cumulative_array = []
@@ -37,7 +76,7 @@ class IntervalArray:
 		area_begin = 0
 		area_end = 0
 		for i, c in enumerate(self.cumulative_array):
-			if Range.is_between(c, begin):
+			if c.is_between(begin):
 				##if we are in the first interval
 				if i == 0:
 					area_begin = (begin-c.pt1.value)* self.interval_array[i].value
@@ -46,7 +85,7 @@ class IntervalArray:
 				##print "area:begin"
 				##print i
 				##print area_begin
-			if Range.is_between(c, end):
+			if c.is_between(end):
 				if i == 0:
 					area_end = (end - c.pt1.value)*self.interval_array[i].value
 				else:
@@ -70,24 +109,36 @@ class IntervalArray:
 	##returns low_limit and high_limit around the max to be used to make trade decisions
 	def get_limits(self, val):
 		##g = raw_input("")
-		dif_array = []
-		for m in self.local_maxes:
-			dif_array.append(abs(m-val))
+		##dif_array = []
+		##for m in self.local_maxes:
+			##dif_array.append(abs(m-val))
 
-		min_diff = dif_array[0]
-		min_index = 0
-		for i, d in enumerate(dif_array):
-			if d< min_diff:
-				min_diff = d
-				min_index = i
+		##min_diff = dif_array[0]
+		##min_index = 0
+		##for i, d in enumerate(dif_array):
+			##if d< min_diff:
+				##min_diff = d
+				##min_index = i
+		target_area = None
+		for a in self.areas:
+			if a.is_between(val):
+				target_area = a
 
-
-		low_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.25)
-		high_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.75)
-		if (high_limit-low_limit)/high_limit > 0.0004:
-			return(low_limit, high_limit)
+		if target_area is None:
+			##print val 
+			##self.pprint()
+			return (-1, -1)
 		else:
-			return (-1 , -1)
+			target_area.calculate_limits(self)
+			return (target_area.low_limit, target_area.high_limit)
+
+		##low_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.2)
+		##high_limit = self.find_percentile(self.local_mins[min_index], self.local_mins[min_index+1], 0.8)
+		
+		##if (high_limit-low_limit)*2/(high_limit+low_limit) > 0.004:
+			##return(low_limit, high_limit)
+		##else:
+			##return (-1 , -1)
 
 	
 	##given 2 endpoints binary search for the value between endpoints corresponding to the percentile p
@@ -141,6 +192,11 @@ class IntervalArray:
 		last_local_min = (agg_array[-1][-1].pt2.value + agg_array[-1][0].pt1.value)/2
 		self.local_mins.append(last_local_min)
 
+		self.areas = []
+
+		for i, m in enumerate(self.local_mins[:-1]):
+			a = Area(m, self.local_mins[i+1])
+			self.areas.append(a)
 
 	def print_mins(self):
 		print self.local_mins

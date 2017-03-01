@@ -48,7 +48,9 @@ class TradeSimulator:
 		self.balance = 0 ##money balance
 		self.max_debt = 0 ##lowest balance ever incurred
 		self.money_spent = 0 ##total money spent
-		
+		self.bit_sec = 0 ##corresponds to the sum of bit*time held for the trading period
+		self.total_bits_bought_array = [] ##holds total bits bought for each currency
+
 		self.preprocess()
 
 	##create neccesary data structures before simulator actually runs
@@ -59,6 +61,7 @@ class TradeSimulator:
 			self.bits_array.append(0)
 			self.bits_end_array.append(0)
 			self.symbol_array.append(CandleTable.get_target_currency(tn))
+			self.total_bits_bought_array.append(0)
 
 		##get candle arrays
 		self.candles_array = []
@@ -100,17 +103,17 @@ class TradeSimulator:
 		most_candles = self.candles_array[self.most_candles_index()]
 		num_most_candles = len(most_candles)
 		for i in range(num_most_candles):
-
 			##then iterate over candle table
 			for j in range(self.num_currencies):
-				
+				period = CandleTable.get_period(self.table_name_array[j])
+				self.bit_sec += self.bits_array[j]*int(period)
 				##offset adjusts for different tables having different num of candles
 				offset = num_most_candles - len(self.candles_array[j])
 				if offset <= i:
+					
 					operation = self.strategy_array[j].decide(i - offset, self.bits_array[j])
 					self.process_operation(j, operation, self.candles_array[j][i-offset])
-				else:
-					##too early to trade these candles
+				else: ##too early to trade these candles
 					pass
 
 		self.finalize_balance()
@@ -142,6 +145,10 @@ class TradeSimulator:
 			print "Profit Percent: ", self.profit_percent 
 		else:
 			print "NO MONEY SPENT"
+		##if self.num_currencies == 1:
+			##self.profit_per_bitsec = self.profit_percent/self.bit_sec
+			##print self.profit_per_bitsec
+		print ""
 
 	##returns snapshot at the end
 	def get_bits_summary(self):
@@ -200,7 +207,7 @@ class TradeSimulator:
 			self.balance -= total_cost 
 			self.money_spent += total_cost 
 			self.bits_array[currency_index] += amount
-
+			self.total_bits_bought_array[currency_index] += amount
 			#update max_debt
 			if self.balance < self.max_debt:
 				self.max_debt = self.balance
