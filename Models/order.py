@@ -8,9 +8,10 @@ from time import time
 
 class Order:
 	##TODO: handle partially filled orders	
-	ORDER_ACTIVE = "ORDER_ACTIVE_TEST"
-	ORDER_FILLED = "ORDER_FILLED_TEST"
-	
+	ORDER_ACTIVE = "ORDER_ACTIVE"
+	ORDER_FILLED = "ORDER_FILLED"
+	ORDER_CANCELLED = "ORDER_CANCELLED"
+
 	ID = "id"
 	CURR_PAIR = "curr_pair"
 	DATE_PLACED = "date_placed"
@@ -45,7 +46,7 @@ class Order:
 		for d in polo_data:
 			if d['orderNumber'] == self.id:
 				found = True
-				self.amount = d['amount']
+				self.amount = float(d['amount'])
 				self.update()
 		
 		if not found:
@@ -88,6 +89,29 @@ class Order:
 
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
+
+	##moves current order to new tn, updated amount_filled 
+	def move(self, tn, amount_filled = 0):
+		
+		##drop from active orders
+		self.drop()
+
+		amount_left = self.amount
+
+		##if any of the order was filled before being cancelled, create order
+		if amount_filled > 0:
+			self.table_name = Order.ORDER_FILLED 
+			self.amount = amount_filled
+			self.date_filled = time()
+			self.save()
+
+		if tn == self.ORDER_CANCELLED:
+			self.table_name = tn 
+			self.amount = amount_left
+			self.date_filled = time()
+			self.save()
+
+
 
 	##updates an already existing trade
 	def update(self):

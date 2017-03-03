@@ -46,10 +46,13 @@ class SignalTable:
 	## return date of last signal entry in the table
 	@staticmethod
 	def get_last_date(table_name):
-		dbm = DBManager.get_instance()
-		cursor = dbm.get_cursor()
-		cursor.execute(" SELECT date FROM '{tn}' WHERE date = ( SELECT MAX(date) FROM '{tn}' )".format(tn = table_name))
-		return cursor.fetchone()[0]
+		if DBManager.exists_table(table_name):
+			dbm = DBManager.get_instance()
+			cursor = dbm.get_cursor()
+			cursor.execute(" SELECT date FROM '{tn}' WHERE date = ( SELECT MAX(date) FROM '{tn}' )".format(tn = table_name))
+			return cursor.fetchone()[0]
+		else:
+			return 0
 	
 	##returns last signal in table
 	@staticmethod
@@ -65,4 +68,4 @@ class SignalTable:
 	@staticmethod
 	def get_sym(table_name):
 		info = table_name.split("_")
-		return info[2]
+		return info[3]

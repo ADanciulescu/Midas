@@ -50,3 +50,5 @@ class OrderTable:
 		ot.save()
 		ot = OrderTable(Order.ORDER_FILLED)
 		ot.save()
+		ot = OrderTable(Order.ORDER_CANCELLED)
+		ot.save()

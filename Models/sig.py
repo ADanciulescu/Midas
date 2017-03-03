@@ -46,6 +46,7 @@ class Sig:
 				.format(tn = self.table_name, nf_date = Sig.DATE, nf_sym = self.SYM, nf_amount = Sig.AMOUNT, nf_price = Sig.PRICE,
 					nf_type = Sig.TYPE, v_date = self.date, v_sym = self.sym, v_amount = self.amount, v_price = self.price, v_type = self.type)
 			cursor.execute(exec_string)
+			dbm.save_and_close()
 			
 		except sqlite3.IntegrityError:
 			    print('ERROR: Something went wrong inserting signal into {tn}'.format(tn = table_name))

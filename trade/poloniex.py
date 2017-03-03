@@ -16,7 +16,9 @@ class Poloniex:
 			key = myfile.readline().rstrip()
 			secret = myfile.readline().rstrip()
 			self.APIKey = key
-			self.Secret = secret 
+			self.Secret = secret
+
+		self.secs_last_call = time.time()
 	
 	@classmethod
 	def get_instance(cls):
@@ -37,6 +39,18 @@ class Poloniex:
 		return after
 
 	def api_query(self, command, req={}):
+
+		##make sure at least 200 ms are waited in between consecutive calls
+		secs_cur = time.time()
+		secs_since_last_call = secs_cur - self.secs_last_call
+		if secs_since_last_call < 0.2:
+			secs_sleep = 0.2
+			self.secs_last_call = secs_cur + secs_sleep 
+			time.sleep(secs_sleep)
+		else:
+			self.secs_last_call = secs_cur 
+
+
 		if(command == "returnTicker" or command == "return24Volume"):
 			ret = urllib2.urlopen(urllib2.Request('https://poloniex.com/public?command=' + command))
 			return json.loads(ret.read())

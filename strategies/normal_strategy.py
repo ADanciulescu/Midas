@@ -9,8 +9,7 @@ from random import randint
 class NormalStrategy:
 
 	NAME = "NORMAL"
-	PBUY = 0.2 ## probability to sell all at any one time
-	NUM_TRADES = 50 ## how many trades to aim for
+	PBUY = 1 ## probability to buy all at any one time
 
 	def __init__(self, table_name, bits, bitsec):
 		self.table_name = table_name
@@ -25,21 +24,27 @@ class NormalStrategy:
 
 	##calculates buy amount
 	def calc_buy_amt(self):
-		self.bitsperiod = self.bitsec/self.period
-		##solve (1-PSELL)/PSELL = 2*bitperiod/bits
-		self.psell = 1/(1+2*self.bitsperiod/float(self.bits))
-		##print "Psell:", self.psell
-		num_candles = len(self.candles)
-		self.exp_buy_run_len = (1-self.psell)/float(self.psell)
-		##print "Run len:", self.exp_buy_run_len
-		exp_num_runs = num_candles/(self.exp_buy_run_len+1)
-		##print "Num Runs", exp_num_runs
-		##exp_buys_per_run = self.PBUY*exp_buy_run_len
-	
-		bitsperiod_per_run = self.bitsperiod/exp_num_runs
-		buy_amt = bitsperiod_per_run/(self.exp_buy_run_len*(self.exp_buy_run_len/2)*self.PBUY)
-		##print "Buy amt:", buy_amt	
-		return buy_amt
+		if self.bits > 0:
+			self.bitsperiod = self.bitsec/float(self.period)
+			##solve (1-PSELL)/PSELL = 2*bitperiod/bits
+			self.psell = 1/(1+(2*self.bitsperiod/float(self.bits)))
+			##print "Psell:", self.psell
+			self.exp_buy_run_len = (1-self.psell)/float(self.psell)
+			##print "Run len:", self.exp_buy_run_len
+			num_candles = len(self.candles)
+			exp_num_runs = num_candles/(self.exp_buy_run_len+1)
+			##print "Num Runs", exp_num_runs
+			##exp_buys_per_run = self.PBUY*exp_buy_run_len
+		
+			bitsperiod_per_run = self.bitsperiod/exp_num_runs
+			buy_amt = bitsperiod_per_run/(self.exp_buy_run_len*(self.exp_buy_run_len/2)*self.PBUY)
+			
+			
+			self.rand_int_sell = randint(0,int(self.exp_buy_run_len))
+			##print "Buy amt:", buy_amt	
+			return buy_amt
+		else:
+			return 0
 
 
 	##simply returns name
@@ -48,25 +53,17 @@ class NormalStrategy:
 
 	##returns market operation
 	def decide(self, candle_num, bits):
-		##rand_int = randint(1,100)
-		##if rand_int <= self.PSELL*100:
-			##self.runs.append(0)
-			##return Operation(Operation.SELL_OP, bits)
-		##elif rand_int <= (self.PSELL+self.PBUY)*100:
-			##self.runs[-1] += 1
-			##return Operation(Operation.BUY_OP, self.buy_amt)
-		##else:
-			##self.runs[-1] += 1
-			##return Operation(Operation.NONE_OP, 0)
-		rand_int_sell = randint(0,self.exp_buy_run_len)
-		rand_int_buy = randint(1,100)
-		if candle_num % int(self.exp_buy_run_len+1) == rand_int_sell:
-			self.runs.append(0)
-			return Operation(Operation.SELL_OP, bits)
-		elif rand_int_buy <= (self.PBUY)*100:
-			self.runs[-1] += 1
-			return Operation(Operation.BUY_OP, self.buy_amt)
+		if self.bits > 0:
+			rand_int_buy = randint(1,100)
+			if candle_num % int(self.exp_buy_run_len+1) == self.rand_int_sell:
+				self.runs.append(0)
+				return Operation(Operation.SELL_OP, bits)
+			elif rand_int_buy <= (self.PBUY)*100:
+				self.runs[-1] += 1
+				return Operation(Operation.BUY_OP, self.buy_amt)
+			else:
+				self.runs[-1] += 1
+				return Operation(Operation.NONE_OP, 0)
 		else:
-			self.runs[-1] += 1
 			return Operation(Operation.NONE_OP, 0)
 			

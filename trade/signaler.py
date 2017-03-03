@@ -4,6 +4,7 @@ from sig import Sig
 from signal_table import SignalTable
 from db_manager import DBManager
 from bollinger_strategy import BollingerStrategy
+from short_term_strategy import ShortTermStrategy
 from candle_fetcher import CandleFetcher 
 from candle_table import CandleTable
 from emailer import Emailer
@@ -14,19 +15,29 @@ class Signaler:
 	
 	HISTORY_LENGTH = 2592000 ## how long of a history to use when producing signals = 1 months in seconds
 
-	def __init__(self, to_print = True, to_email = False):
+	def __init__(self, trader_tables, to_print = True, to_email = False):
 		self.signal_table_names = [] ## stores signal_table_names
 		self.new_signals_array = [] ## stores arrays of new signals
 		self.to_print = to_print
 		self.to_email = to_email
 		self.stddev_array = [] ##specifically used for bollinger strategy
+		self.trader_tables = trader_tables
+		self.strat_array = []
+		self.setup()
+	
+	##setup before it runs
+	## populates signal_table_names
+	def setup(self):
+		for tn in self.trader_tables:
+			strat = ShortTermStrategy(tn, is_simul = False, to_print = False)
+			self.strat_array.append(strat)
+			signal_table_name = tn.replace("CANDLE", "SIGNAL_" + strat.get_name())
+			self.signal_table_names.append(signal_table_name)
 
-	def run(self):
+	def update(self):
+		self.new_signals_array = []
 		self.update_all_signals()
 		self.push_to_db()
-		self.handle_new_signals()
-		if self.to_print:
-			self.print_all_signals()
 
 	def handle_new_signals(self):
 		if self.to_email:
@@ -46,19 +57,29 @@ class Signaler:
 			
 			for s in self.new_signals_array[i]:
 				s.save()
-			dbm = DBManager.get_instance()
-			dbm.save_and_close()
 
 				
 	## update new_singals_array with any new signals
 	def update_all_signals(self):
-		CandleFetcher.update_all()
+		
+		##update tables with new data
+		CandleFetcher.update_tables(self.trader_tables)
+		
 		
 		##for each candle table, compute signal table name and get new signals
-		for tn in table_names.trader_tables:
-			signal_table_name = tn.replace("CANDLE", "SIGNAL")
-			self.signal_table_names.append(signal_table_name)
-			self.new_signals_array.append(self.get_new_signals(tn))
+		for i in range(len(self.trader_tables)):
+			new_signals = self.get_new_signals(i)
+			self.new_signals_array.append(new_signals)
+
+		if self.to_print:
+			self.print_new_signals()
+
+	def print_new_signals(self):
+		for i,tn in enumerate(self.signal_table_names):
+			print tn
+			for s in self.new_signals_array[i]:
+				s.pprint()
+
 	
 	##prints signals from all currencies
 	def print_all_signals(self):
@@ -70,35 +91,48 @@ class Signaler:
 				s.pprint()
 			print "# of stddev from mean: ", self.stddev_array[i]
 	
+	##find index of first candle with date bigger than last_date
+	def find_new_candle_index(self, candles, last_date):
+		len_candles = len(candles)
+		i = len_candles - 1
+		while i >= 0:
+			if candles[i].date < last_date:
+				return i + 1 
+			i -= 1
+		return 0	
+
 
 	## analyzes a table and returns possible new_signal
-	def get_new_signals(self, table_name):
+	def get_new_signals(self, tn_index):
+
+		tn = self.trader_tables[tn_index]
+		signal_tn = self.signal_table_names[tn_index]
+
 		cur_date = int(time())
-		signal_table_name = table_name.replace("CANDLE", "SIGNAL")
-		last_date = 0
-
-		if DBManager.exists_table(signal_table_name):
-			last_date = SignalTable.get_last_date(signal_table_name)
-			
-
+		last_date = SignalTable.get_last_date(signal_tn)
+		period = float(CandleTable.get_period(tn))
+		
 		##cut the candle table to get one of a more manageable size
-		cut_table_name = CandleFetcher.cut_table(table_name, cur_date - Signaler.HISTORY_LENGTH)
-		candles = CandleTable.get_candle_array(table_name)
+		cut_table_name = CandleFetcher.cut_table(tn, int(cur_date - 5*ShortTermStrategy.DATA_PAST*period))
+		candles = CandleTable.get_candle_array(cut_table_name)
+
+		new_candle_index = self.find_new_candle_index(candles, last_date)
 		
 		new_signals = []
 
-		##run a bollinger strategy on the candles and store the resulting operations returned
-		strat = BollingerStrategy(table_name, std_amount = True, set_default = True)
-		for i in range(len(candles)):
+		##run a strategy on the candles and store the resulting operations returned
+		strat = self.strat_array[tn_index]
+		strat.update_with_candles(candles)
+	
+		i = new_candle_index
+		while i < len(candles):
 			o = strat.decide(i, 0)
-			sig = Sig(signal_table_name, candles[i].date, SignalTable.get_sym(signal_table_name), o.amount, candles[i].close, o.op)
+			sig = Sig(signal_tn, candles[i].date, SignalTable.get_sym(signal_tn), o.amount, candles[i].close, o.op)
 			
 			##if after last_date it means the signal is new
 			if sig.date > last_date:
 				new_signals.append(sig)
-		
-		##get current stddev and store it
-		self.stddev_array.append(strat.get_current_bb_score())
+			i += 1
 
 		##delete created table when done
 		DBManager.drop_table(cut_table_name)

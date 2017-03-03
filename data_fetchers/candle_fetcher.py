@@ -18,7 +18,7 @@ class CandleFetcher():
 	## big candle table is uniquely defined by currency and period
 	@staticmethod
 	def get_candle_data(curr_target, date_start, date_end, period):
-		print "Adding ", curr_target, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
+		##print "Adding ", curr_target, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
 		##configuration
 		curr_ref = "USDT"
 		##curr_target = "BTC"
@@ -57,7 +57,7 @@ class CandleFetcher():
 	##returns new candle_table name
 	@staticmethod
 	def cut_table(orig_table_name, date_start, date_end = 9999999999):
-		print "Cutting table: ", orig_table_name, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
+		##print "Cutting table: ", orig_table_name, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
 		
 		##create new table
 		curr_ref = CandleTable.get_ref_currency(orig_table_name)	
@@ -86,6 +86,15 @@ class CandleFetcher():
 	@staticmethod
 	def update_all():
 		for tn in table_names.complete_tables:
+			last_date_updated = CandleTable.get_last_date(tn)
+			target_curr = CandleTable.get_target_currency(tn)
+			period = CandleTable.get_period(tn)
+			CandleFetcher.fetch_candles_after_date(target_curr, last_date_updated, period)
+		
+	##updates the big tables for all the currencies with any new candles
+	@staticmethod
+	def update_tables(tns):
+		for tn in tns:
 			last_date_updated = CandleTable.get_last_date(tn)
 			target_curr = CandleTable.get_target_currency(tn)
 			period = CandleTable.get_period(tn)

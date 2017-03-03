@@ -13,7 +13,6 @@ from results_logger import ResultsLogger
 
 class TradeSimulator:
 
-	SUPPRESS_PRINT_HISTORY = True 
 	##poloniex fees
 	SELL_FEE = 0.0015
 	BUY_FEE = 0.0025
@@ -31,11 +30,12 @@ class TradeSimulator:
 	ZEC_AMOUNT = 3
 	DEFAULT_AMOUNT = 10
 
-	def __init__(self, table_name_array, strategy_array, limit = -12345, to_print = True, to_log = True):
+	def __init__(self, table_name_array, strategy_array, limit = -12345, to_print = True, to_print_trades = False, to_log = True):
 		self.table_name_array = table_name_array
 		self.strategy_array = strategy_array
 		self.balance_limit = limit ##limits how low max_debt can go before buying fails
 		self.to_print = to_print
+		self.to_print_trades = to_print_trades
 		self.to_log = to_log
 				
 		self.num_currencies = len(table_name_array)
@@ -126,7 +126,7 @@ class TradeSimulator:
 
 	def print_results(self):
 		
-		if not self.SUPPRESS_PRINT_HISTORY:
+		if self.to_print_trades:
 			for i in range(self.num_currencies):
 				print "*************************************************************************************************************************"
 				print "History: ", self.table_name_array[i]
@@ -176,6 +176,8 @@ class TradeSimulator:
 		
 		if self.money_spent > 0:
 			self.profit_percent = self.balance/(-1*self.max_debt)
+		else:
+			self.profit_percent = 0
 
 	##performs market operation updating bits and balance 
 	def process_operation(self, currency_index, operation, candle):

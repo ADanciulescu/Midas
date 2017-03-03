@@ -33,6 +33,7 @@ from snap_fetcher import SnapFetcher
 from snap_table import SnapTable
 from snap_order_table import SnapOrderTable
 from normal_strategy import NormalStrategy
+from trader import Trader
 import table_names
 import time
 import threading
@@ -51,6 +52,15 @@ HALF_DAY = 43200
 def main():
 	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
 
+	##DBManager.drop_matching_tables("SIGNAL")
+	##signaler = Signaler(table_names.short_term_tables)
+	##signaler.update()
+
+	##OrderTable.create_tables()
+	trader = Trader()
+	trader.run()
+	
+
 	##DBManager.drop_matching_tables("SNAP")
 	##DBManager.drop_matching_tables("SNAP")
 	##print threading.get_ident()
@@ -60,8 +70,7 @@ def main():
 	##SnapTable.delete_rows("SNAP_USDT_BTC_100")
 	##SnapOrderTable.delete_rows("SNAP_ORDER_USDT_BTC_100")
 
-	##OrderTable.create_tables()
-	##OrderMaker.slow_buy("ETH", 100)
+	##OrderMaker.slow_sell("ETC", 60)
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
@@ -110,15 +119,17 @@ def main():
 	##print "Total Balance:", total_balance
 	##print "Total Percent:", total_percent
 	
-	date1 = date_to_timestamp("2016-6-1") 
-	for i in range(9):
-		date2 = date1+ 60*HALF_DAY
-		tn = CandleFetcher.cut_table(table_names.XMR_300, date1, date2)
-		strat = ShortTermStrategy(tn)
+	##total = 1
+	##date1 = date_to_timestamp("2016-6-1")
+	##for i in range(18):
+		##date2 = date1+ 30*HALF_DAY
+		##tn = CandleFetcher.cut_table(table_names.LTC_300, date1, date2)
+		##strat = ShortTermStrategy(tn)
 		##strat = BollingerStrategy(tn, set_default = True)
-		test_against_normal(strat)
-		DBManager.drop_table(tn)
-		date1 = date2
+		##total *= (1+test_against_normal(strat))
+		##DBManager.drop_table(tn)
+		##date1 = date2
+	##print total
 	
 
 	##date2 = date1+ HALF_DAY
@@ -165,7 +176,7 @@ def main():
 def test_against_normal(strat):
 	print "**************************************NORMAL************************************************"
 	tn = strat.table_name
-	trade_sim = TradeSimulator([tn], [strat], to_log = True)
+	trade_sim = TradeSimulator([tn], [strat], to_print_trades = True, to_log = True)
 	trade_sim.run()
 	f_bitsec = trade_sim.bit_sec
 	f_bits = trade_sim.total_bits_bought_array[0]
@@ -181,15 +192,16 @@ def test_against_normal(strat):
 	s_profit_percent = trade_sim.profit_percent
 	
 	print ""
+	##print "First: bits, bitsec", f_bits, f_bitsec
+	##print "Second: bits, bitsec", s_bits, s_bitsec
 	print "balance dif:", f_balance-s_balance
 	print "profit dif:", f_profit_percent-s_profit_percent
 	print "**************************************NORMAL DONE*******************************************"
-	##print "First: bits, bitsec", f_bits, f_bitsec
-	##print "Second: bits, bitsec", s_bits, s_bitsec
 	##total = 0
 	##for r in strat.runs:
 		##total+=r
 	##print total/len(strat.runs)
+	return f_profit_percent
 
 ## optimize parameters
 def optimize(table_name_array):

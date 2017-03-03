@@ -10,7 +10,7 @@ from level import Level
 	
 class ShortTermStrategy:
 
-	NAME = "SHORT_TERM"
+	NAME = "SHORTTERM"
 	DATA_PAST = 100 
 
 	def __init__(self, table_name, is_simul = True, to_print = False):
@@ -18,19 +18,25 @@ class ShortTermStrategy:
 		self.candles = CandleTable.get_candle_array(table_name)
 		self.to_print = to_print
 		self.interval_array = None
+		self.is_simul = is_simul
 
 		if is_simul:
 			self.amount = TradeSimulator.get_currency_amount(table_name)
 		else:
 			self.amount = 1
 		
-		self.ranges = self.create_ranges_better(self.candles)
-		
+		init_candles = self.candles[:self.DATA_PAST]
+		self.ranges = self.create_ranges_better(init_candles)
 		self.interval_array = self.create_interval_array(self.ranges)
 		##self.interval_array.pprint()
 		##print self.interval_array.local_maxes
 		##print self.interval_array.get_limits(773)
 		##self.update_levels(self.ranges, self.DATA_PAST)
+		self.last = "sell"
+
+	##called by signaler when it grabs new data
+	def update_with_candles(self, new_candles):
+		self.candles = new_candles 
 
 	def create_interval_array(self, ranges):
 		##insert first range
@@ -82,6 +88,9 @@ class ShortTermStrategy:
 
 	## populate ranges	
 	def create_ranges(self, train_candles):
+		range_candles = self.candles[-self.DATA_PAST:]
+		self.ranges = self.create_ranges_better(init_candles)
+		self.interval_array = self.create_interval_array(self.ranges)
 		ranges = []
 		r = Range(None, None, 0)
 		i = 0
@@ -113,7 +122,7 @@ class ShortTermStrategy:
 	def create_ranges_better(self, candles):
 		ranges = []
 		i = 0
-		while i < self.DATA_PAST:
+		while i < len(candles)-1:
 			pt1 = Point("", candles[i].date, candles[i].close)
 			pt2 = Point("", candles[i+1].date, candles[i+1].close)
 			new_r = Range(pt1, pt2, 0)
@@ -136,30 +145,17 @@ class ShortTermStrategy:
 		if candle_num < self.DATA_PAST:
 			return Operation(Operation.NONE_OP, 0)
 		else:
-			type = None
+
+			##if called by signaler, need to recalculate interval_array
+			if not self.is_simul:
+				num_candles = len(self.candles)
+				range_candles = self.candles[candle_num-self.DATA_PAST+1:candle_num + 1]
+				self.ranges = self.create_ranges_better(range_candles)
+				self.interval_array = self.create_interval_array(self.ranges)
+			
+			type = Operation.NONE_OP
 			amount = 0
-
-			buy_mult = 1
-			sell_mult = 1
 			
-			
-			if bits/self.amount < 10:
-				buy_mult = 1
-				sell_mult = 1
-			elif bits/self.amount < 20:
-				buy_mult = 1
-				sell_mult = 1.3
-			elif bits/self.amount < 30:
-				buy_mult = 1
-				sell_mult = 1.6
-			else:
-				buy_mult = 1 
-				sell_mult = 2
-
-			
-
-
-
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			
 			if floor == -1:
@@ -170,36 +166,31 @@ class ShortTermStrategy:
 			##print self.candles[candle_num].date, self.candles[candle_num].close
 			##if broke underneath floor since last candle -> buy
 			if self.candles[candle_num-1].close > floor and self.candles[candle_num].close < floor:
-				##print "Bought"
-				type = Operation.BUY_OP
-				amount = buy_mult*self.amount
+				if self.last == "sell":
+					type = Operation.BUY_OP
+					amount = self.amount
+					self.last = "buy"
 			##if broke through ceiling since last candle -> sell
 			elif self.candles[candle_num-1].close < ceiling and self.candles[candle_num].close > ceiling:
-				##print "Sold"
-				type = Operation.SELL_OP
-				amount = sell_mult*self.amount
+				if self.last == "buy":
+					type = Operation.SELL_OP
+					amount = self.amount
+					self.last = "sell"
 			else:
 				##print "None"
 				type = Operation.NONE_OP
-			
-			pt1 = Point("", self.candles[candle_num-1].date, self.candles[candle_num-1].close)
-			pt2 = Point("", self.candles[candle_num].date, self.candles[candle_num].close)
-			new_r = Range(pt1, pt2, 0)
-			self.ranges.pop(0)
-			self.ranges.append(new_r)
-			
-			##if candle_num %10 == 0:
-			self.interval_array = self.create_interval_array(self.ranges)
+		
+			if self.is_simul:
+				pt1 = Point("", self.candles[candle_num-1].date, self.candles[candle_num-1].close)
+				pt2 = Point("", self.candles[candle_num].date, self.candles[candle_num].close)
+				new_r = Range(pt1, pt2, 0)
+				self.ranges.pop(0)
+				self.ranges.append(new_r)
+				
+				##if candle_num %10 == 0:
+				self.interval_array = self.create_interval_array(self.ranges)
+
 			return Operation(type, amount)
-			
-			##if self.candles[candle_num].close < self.floor.val:
-				##print "Bought"
-				##return Operation(Operation.BUY_OP, self.amount)
-			##if broke through ceiling since last candle -> sell
-			##elif self.candles[candle_num].close > self.ceiling.val:
-				##print "Sold"
-				##return Operation(Operation.SELL_OP, self.amount)
-			##else:
-				##return Operation(Operation.NONE_OP, 0)
+				
 
 
