@@ -57,8 +57,13 @@ def main():
 	##signaler.update()
 
 	##OrderTable.create_tables()
+	##om = OrderMaker()
+	##om.slow_sell("XRP", 1, sell_all = True)
+	##om = OrderMaker()
+	##om.slow_sell("ETH", 1, sell_all = True)
 	trader = Trader()
 	trader.run()
+	##print "wtf"
 	
 
 	##DBManager.drop_matching_tables("SNAP")

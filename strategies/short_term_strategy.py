@@ -32,7 +32,20 @@ class ShortTermStrategy:
 		##print self.interval_array.local_maxes
 		##print self.interval_array.get_limits(773)
 		##self.update_levels(self.ranges, self.DATA_PAST)
-		self.last = "sell"
+		sym = CandleTable.get_target_currency(table_name)
+		if sym == "BTC":
+			self.last = "sell"
+		elif sym == "ETH":
+			self.last = "sell"
+		elif sym == "XMR":
+			self.last = "buy"
+		elif	sym == "DASH":
+			self.last = "buy"
+		elif	sym == "LTC":
+			self.last = "buy"
+		elif	sym == "ETC":
+			self.last = "buy"
+			
 
 	##called by signaler when it grabs new data
 	def update_with_candles(self, new_candles):

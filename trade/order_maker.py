@@ -23,12 +23,14 @@ class OrderMaker:
 	##amounts of each symbol to trade
 	SYM_AMOUNTS = { 
 			"BTC" : 50,
-			"ETH" : 25,
-			"XMR" : 25,
-			"DASH" : 25
+			"ETH" : 50,
+			"XMR" : 50,
+			"DASH" : 50,
+			"ETC" : 50,
+			"LTC" : 50
 	}
 
-	SYMS = ["BTC", "ETH", "XMR", "DASH", "XRP", "NXT"]
+	SYMS = ["BTC", "ETH", "XMR", "DASH", "XRP", "NXT", "ETC", "LTC"]
 
 	TINY_AMT = 0.00000001
 	
@@ -63,9 +65,11 @@ class OrderMaker:
 	def handle_signal(self, signal):
 		amt = self.SYM_AMOUNTS[signal.sym]
 		if signal.type == "BUY":
-			self.slow_buy(signal.sym, amt, limit = signal.price)
+			##self.slow_buy(signal.sym, amt, limit = signal.price)
+			self.slow_buy(signal.sym, amt)
 		elif signal.type == "SELL":
-			self.slow_sell(signal.sym, amt , sell_all = True, limit = signal.price)
+			##self.slow_sell(signal.sym, amt , sell_all = True, limit = signal.price)
+			self.slow_sell(signal.sym, amt, sell_all = True)
 
 
 	##ASAP buy sym money worth of currency sym at the lowest ask price
@@ -86,7 +90,7 @@ class OrderMaker:
 
 	## creates a thread that performs slow buy and runs slow_buy_code	
 	def slow_buy(self, sym, sym_money, limit =  100000):
-		t = threading.Thread(target = self.slow_buy_code, args = (sym, sym_money,))
+		t = threading.Thread(target = self.slow_buy_code, args = (sym, sym_money, limit))
 		t.start()
 	
 	## creates a thread that performs slow sell and runs slow_sell_code	
@@ -101,7 +105,6 @@ class OrderMaker:
 		##place initial buy order
 		curr_pair = "USDT_" + sym
 		rate = self.get_top_bid(curr_pair) + OrderMaker.TINY_AMT
-		new_rate += OrderMaker.TINY_AMT
 
 		amount = sym_money/rate
 
@@ -113,6 +116,7 @@ class OrderMaker:
 		
 		while(order.is_active()):
 			new_rate = self.get_top_bid(curr_pair, order)
+			new_rate += OrderMaker.TINY_AMT
 			amount_filled = initial_amount - order.amount
 			
 			## if i've been overbid, modify my bid to get to top of list
@@ -146,6 +150,8 @@ class OrderMaker:
 		if sell_all:
 			self.update_balances()
 			amount = self.balances[sym]
+			if amount == 0:
+				return
 		else:
 			amount = sym_money/rate
 
@@ -164,6 +170,7 @@ class OrderMaker:
 			if new_rate != order.rate:
 
 				if new_rate < limit: ##if surpassed limit cancel order
+					print "order cancelled"
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
 					order.move(Order.ORDER_CANCELLED, amount_filled)
 				else:
