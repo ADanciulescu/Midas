@@ -155,6 +155,14 @@ class CandleTable:
 			row = cursor.fetchone()
 		return candles
 	
+	##drops any fake candles, identified by high == 0 
+	@staticmethod
+	def delete_fake_candles(table_name):
+		dbm = DBManager.get_instance()
+		cursor = db_manager.get_cursor()
+		cursor.execute("DELETE FROM '{tn}' WHERE high = 0".format(tn = table_name))
+		dbm.save_and_close()
+
 	##returns candle objects for the given table_name
 	@staticmethod
 	def get_candle_array_by_date(table_name, date_low = 0, date_high = 9999999999):

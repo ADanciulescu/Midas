@@ -60,9 +60,13 @@ def main():
 	##om.slow_sell("XRP", 1, sell_all = True)
 	##om = OrderMaker()
 	##om.slow_sell("ETH", 1, sell_all = True)
-	##trader = Trader()
-	##trader.run()
-	
+	trader = Trader()
+	trader.run()
+
+	##while(True):
+		##print(time.time())
+		##CandleFetcher.update_tables_imperative([table_names.BTC_300],[True])
+		##time.sleep(1)
 
 	##DBManager.drop_matching_tables("SNAP")
 	##DBManager.drop_matching_tables("SNAP")
@@ -78,7 +82,7 @@ def main():
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-6-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("ETC", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("LTC", date_to_timestamp("2016-6-1"), 300)

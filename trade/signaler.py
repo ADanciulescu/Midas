@@ -24,6 +24,7 @@ class Signaler:
 		self.trader_tables = trader_tables
 		self.strat_array = []
 		self.setup()
+		self.curr_available = [] ## array holding infor about whether a currency is available to be sold(true) or not(false) 
 	
 	##setup before it runs
 	## populates signal_table_names
@@ -33,8 +34,11 @@ class Signaler:
 			self.strat_array.append(strat)
 			signal_table_name = tn.replace("CANDLE", "SIGNAL_" + strat.get_name())
 			self.signal_table_names.append(signal_table_name)
-
-	def update(self):
+	
+	##curr_available is used to determine what currencies are available to be sold/bought(passed into corresponding Strategy to make correct decision)
+	## updates signaler with new signals
+	def update(self, curr_available):
+		self.curr_available = curr_available 
 		self.new_signals_array = []
 		self.update_all_signals()
 		self.push_to_db()
@@ -63,7 +67,7 @@ class Signaler:
 	def update_all_signals(self):
 		
 		##update tables with new data
-		CandleFetcher.update_tables(self.trader_tables)
+		CandleFetcher.update_tables_imperative(self.trader_tables, self.curr_available)
 		
 		
 		##for each candle table, compute signal table name and get new signals
@@ -116,23 +120,22 @@ class Signaler:
 		cut_table_name = CandleFetcher.cut_table(tn, int(cur_date - 5*ShortTermStrategy.DATA_PAST*period))
 		candles = CandleTable.get_candle_array(cut_table_name)
 
-		new_candle_index = self.find_new_candle_index(candles, last_date)
+		##new_candle_index = self.find_new_candle_index(candles, last_date)
 		
 		new_signals = []
 
 		##run a strategy on the candles and store the resulting operations returned
 		strat = self.strat_array[tn_index]
-		strat.update_with_candles(candles)
+		sym = SignalTable.get_sym(self.signal_table_names[tn_index])
+		strat.update_state(candles, self.curr_available[sym])
 	
-		i = new_candle_index
-		while i < len(candles):
-			o = strat.decide(i, 0)
-			sig = Sig(signal_tn, candles[i].date, SignalTable.get_sym(signal_tn), o.amount, candles[i].close, o.op)
-			
-			##if after last_date it means the signal is new
-			if sig.date > last_date:
-				new_signals.append(sig)
-			i += 1
+		##i = new_candle_index
+		##while i < len(candles):
+		i = len(candles) - 1
+		o = strat.decide(i, 0)	
+		sig = Sig(signal_tn, candles[i].date, SignalTable.get_sym(signal_tn), o.amount, candles[i].close, o.op)
+		new_signals.append(sig)	
+		##i += 1
 
 		##delete created table when done
 		DBManager.drop_table(cut_table_name)

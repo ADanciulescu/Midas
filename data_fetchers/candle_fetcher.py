@@ -5,10 +5,11 @@ from tools import timestamp_to_date
 from db_manager import DBManager
 from candle_table import CandleTable
 from candle import Candle
-from time import time
 from tools import date_to_timestamp 
 from candle_parser import CandleParser
 import table_names
+from order_maker import OrderMaker
+import time
 
 class CandleFetcher():
 
@@ -50,7 +51,7 @@ class CandleFetcher():
 	@staticmethod
 	def fetch_candles_after_date(curr_target, orig_date_start, period):
 		date_start = orig_date_start
-		cur_time = time()
+		cur_time = time.time()
 		while(date_start < cur_time):
 			date_end = date_start + CandleFetcher.FETCH_WINDOW_LENGTH
 			CandleFetcher.get_candle_data(curr_target, date_start, date_end, period)
@@ -101,5 +102,32 @@ class CandleFetcher():
 			last_date_updated = CandleTable.get_last_date(tn)
 			target_curr = CandleTable.get_target_currency(tn)
 			period = CandleTable.get_period(tn)
-			CandleFetcher.fetch_candles_after_date(target_curr, last_date_updated, period)
+			CandleFetcher.fetch_candles_after_date(target_curr, (last_date_updated - 10*int(period)), period)
+	
+	##updates the big tables for all the currencies with any new candles, for any missing candles that should be here create fake placeholder candles
+	@staticmethod
+	def update_tables_imperative(tns, curr_avail):
 		
+		CandleFetcher.update_tables(tns) ##perform normal update of any legit candles(replacing fake ones)
+		
+		sec_now = time.time()
+		for i, tn in enumerate(tns):
+			last_candle_date = CandleTable.get_last_date(tn)
+			target_curr = CandleTable.get_target_currency(tn)
+			period = int(CandleTable.get_period(tn))
+			curr_pair = "USDT_" + target_curr
+			
+			last_candle_date += period
+			while(last_candle_date < sec_now):
+				print("here")
+				(bottom_ask, top_bid) = OrderMaker.get_spread(curr_pair)
+				if curr_avail[target_curr]: ##means it is true, means it is available to be sold
+					close = bottom_ask
+				else:
+					close = top_bid
+				c = Candle(tn, last_candle_date, 0, 0, 0, close, 0, 0, 0)
+				c.save()
+				last_candle_date += period
+
+			
+			

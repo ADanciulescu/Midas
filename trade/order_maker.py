@@ -27,7 +27,9 @@ class OrderMaker:
 			"XMR" : 50,
 			"DASH" : 50,
 			"ETC" : 50,
-			"LTC" : 50
+			"LTC" : 50,
+			"XRP" : 50,
+			"NXT" : 50,
 	}
 
 	SYMS = ["BTC", "ETH", "XMR", "DASH", "XRP", "NXT", "ETC", "LTC"]
@@ -41,11 +43,23 @@ class OrderMaker:
 		self.polo = Poloniex.get_instance()
 		self.balances = {}
 		self.update_balances()
+		self.curr_available = {}
+		self.update_curr_available() 
 
 	def update_balances(self):
 		balance_info = self.polo.returnBalances()
 		for s in self.SYMS:
 			self.balances[s] = float(balance_info[s])
+	
+	def update_curr_available(self):
+		info = self.polo.api_query("returnCompleteBalances",{})
+		for s in self.SYMS:
+			amt = float(info[s]['available'])
+			if amt > 0: 
+				self.curr_available[s] = True
+			else:
+				self.curr_available[s] = False 
+
 
 	##goes through any buy signals and determines how much to spend on each currency
 	def attempt_buys(self):
@@ -312,3 +326,11 @@ class OrderMaker:
 			money -= money_to_get
 			if money < 0:
 				return rate
+
+	##returns (bottoms_ask, top_bid) for given currency pair
+	@staticmethod
+	def get_spread(curr_pair):
+		orders =  Poloniex.get_instance().returnOrderBook(curr_pair)
+		bids =  orders["bids"]
+		asks =  orders["asks"]
+		return(float(bids[0][0]), float(asks[0][0]))
