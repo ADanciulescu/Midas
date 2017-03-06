@@ -30,9 +30,10 @@ class OrderMaker:
 			"LTC" : 50,
 			"XRP" : 50,
 			"NXT" : 50,
+			"ZEC" : 50
 	}
 
-	SYMS = ["BTC", "ETH", "XMR", "DASH", "XRP", "NXT", "ETC", "LTC"]
+	SYMS = ["BTC", "ETH", "XMR", "DASH", "XRP", "NXT", "ETC", "LTC", "ZEC"]
 
 	TINY_AMT = 0.00000001
 	

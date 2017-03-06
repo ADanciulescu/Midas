@@ -60,8 +60,9 @@ def main():
 	##om.slow_sell("XRP", 1, sell_all = True)
 	##om = OrderMaker()
 	##om.slow_sell("ETH", 1, sell_all = True)
-	trader = Trader()
-	trader.run()
+	
+	##trader = Trader()
+	##trader.run()
 
 	##while(True):
 		##print(time.time())
@@ -88,6 +89,7 @@ def main():
 	##CandleFetcher.fetch_candles_after_date("LTC", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("XRP", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-6-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("ZEC", date_to_timestamp("2016-6-1"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])

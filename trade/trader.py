@@ -29,7 +29,7 @@ class Trader:
 				print("***********************************SIGNALS*********************************************")
 				for ns in new_signals_array:
 					self.handle_new_currency_signals(ns)
-				for i in range(6):
+				for i in range(len(table_names.short_term_tables)):
 					print(self.signaler.strat_array[i].last)
 
 	##perform buys/sells depending on last signal

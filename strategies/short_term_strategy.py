@@ -10,7 +10,7 @@ from range import Range
 class ShortTermStrategy:
 
 	NAME = "SHORTTERM"
-	DATA_PAST = 100 
+	DATA_PAST = 150 
 
 	def __init__(self, table_name, is_simul = True, to_print = False):
 		self.table_name = table_name
