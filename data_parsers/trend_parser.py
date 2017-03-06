@@ -17,12 +17,12 @@ class TrendParser():
 		for r in rows:
 			try:
 				date_string = r["c"][0]["v"]
-				print date_string
+				print(date_string)
 				date = date_to_timestamp(date_string)
 				hits = r["c"][1]["f"]
 				t = Trend(dbm, self.table_name, date, hits)
 				t.save()
 			except:
-				print "rached the end"
+				print("reached the end")
 		dbm.save_and_close()
 

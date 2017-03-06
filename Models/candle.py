@@ -31,18 +31,18 @@ class Candle:
 		self.weightedAverage = weightedAverage
 
 	def pprint(self):
-		print ""
-		print "table_name: ", self.table_name
-		print "date: ", self.date
-		print "high: ", self.high
-		print "low: ", self.low
-		print "open: ", self.open
-		print "close: ", self.close
-		print "mid: ", self.mid
-		print "volume: ", self.volume
-		print "qvolume: ", self.quoteVolume
-		print "wAvg: ", self.weightedAverage
-		print ""
+		print()
+		print(("table_name: ", self.table_name))
+		print(("date: ", self.date))
+		print(("high: ", self.high))
+		print(("low: ", self.low))
+		print(("open: ", self.open))
+		print(("close: ", self.close))
+		print(("mid: ", self.mid))
+		print(("volume: ", self.volume))
+		print(("qvolume: ", self.quoteVolume))
+		print(("wAvg: ", self.weightedAverage))
+		print()
 
 	
 	##uses cursor tuple to create a Candle and return it

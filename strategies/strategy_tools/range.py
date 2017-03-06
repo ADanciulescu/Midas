@@ -26,7 +26,7 @@ class Range:
 		return (abs(self.pt2.date - self.pt1.date))/300.0
 
 	def pprint(self):
-		print "Len:", self.get_len(), "[", self.pt1.value, "------", self.pt2.value, "]", "Value: ", self.value, self.type
+		print(("Len:", self.get_len(), "[", self.pt1.value, "------", self.pt2.value, "]", "Value: ", self.value, self.type))
 
 	def is_between(self, val):
 		if self.type == "INC":

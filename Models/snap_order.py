@@ -32,7 +32,6 @@ class SnapOrder:
 			query = "INSERT INTO {tn} ({nf_date}, {nf_amount}, {nf_rate}, {nf_type}) VALUES\
 					({v_date}, {v_amount}, {v_rate}, '{v_type}')"\
 				.format(tn = self.table_name, nf_date = SnapOrder.DATE, nf_amount = SnapOrder.AMOUNT, nf_rate = SnapOrder.RATE, nf_type = SnapOrder.TYPE, v_date = self.date, v_amount = self.amount, v_rate = self.rate, v_type = self.type)
-			print query
 			cursor.execute(query)
 			dbm.save_and_close()
 

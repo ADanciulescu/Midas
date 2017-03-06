@@ -19,7 +19,6 @@ class TrendTable:
 		cursor = dbm.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_date} {ft_i} PRIMARY KEY {nn}, {nf_hits} {ft_i} {nn})'\
 				.format(tn = self.table_name, nf_date = Trend.DATE, nf_hits = Trend.HITS, ft_i = DBManager.INTEGER, ft_t = DBManager.TEXT, nn = DBManager.NOT_NULL)
-		print exec_string
 		cursor.execute(exec_string)
 		dbm.save_and_close()
 	

@@ -95,10 +95,10 @@ class TradeTable:
 		for t in arr:
 			if t.type != Trade.NONE_TYPE:
 				if none_counter > 0:
-					print "***************************No operation for ticks: ", none_counter, " *************************************"
+					print(("***************************No operation for ticks: ", none_counter, " *************************************"))
 					none_counter = 0
 			else:
 				none_counter += 1
 			t.pprint()
-		print "***************************No operation for ticks: ", none_counter, " *************************************"
+		print(("***************************No operation for ticks: ", none_counter, " *************************************"))
 

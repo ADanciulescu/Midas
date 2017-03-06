@@ -1,8 +1,9 @@
-import urllib
-import urllib2
+import urllib.request
+import urllib.parse
 import json
 import time
 import hmac,hashlib
+import requests
 
 def createTimeStamp(datestr, format="%Y-%m-%d %H:%M:%S"):
 	return time.mktime(time.strptime(datestr, format))
@@ -18,7 +19,6 @@ class Poloniex:
 			self.APIKey = key
 			self.Secret = secret
 
-		self.secs_last_call = time.time()
 	
 	@classmethod
 	def get_instance(cls):
@@ -40,43 +40,30 @@ class Poloniex:
 
 	def api_query(self, command, req={}):
 
-		##make sure at least 200 ms are waited in between consecutive calls
-		secs_cur = time.time()
-		secs_since_last_call = secs_cur - self.secs_last_call
-		if secs_since_last_call < 0.3:
-			secs_sleep = 0.2
-			self.secs_last_call = secs_cur + secs_sleep 
-			time.sleep(secs_sleep)
+
+		if(command == "returnTicker" or command == "return24Volume"):
+			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command))
+			return json.loads(ret.read().decode('utf-8'))
+		elif(command == "returnOrderBook"):
+			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command + '&currencyPair=' + str(req['currencyPair'])))
+			return json.loads(ret.read().decode('utf-8'))
+		elif(command == "returnMarketTradeHistory"):
+			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + "returnTradeHistory" + '&currencyPair=' + str(req['currencyPair'])))
+			return json.loads(ret.read().decode('utf-8'))
 		else:
-			self.secs_last_call = secs_cur 
+			req['command'] = command
+			req['nonce'] = int(time.time()*1000)
+			post_data = urllib.parse.urlencode(req)
 
-		try:
-			if(command == "returnTicker" or command == "return24Volume"):
-				ret = urllib2.urlopen(urllib2.Request('https://poloniex.com/public?command=' + command))
-				return json.loads(ret.read())
-			elif(command == "returnOrderBook"):
-				ret = urllib2.urlopen(urllib2.Request('https://poloniex.com/public?command=' + command + '&currencyPair=' + str(req['currencyPair'])))
-				return json.loads(ret.read())
-			elif(command == "returnMarketTradeHistory"):
-				ret = urllib2.urlopen(urllib2.Request('https://poloniex.com/public?command=' + "returnTradeHistory" + '&currencyPair=' + str(req['currencyPair'])))
-				return json.loads(ret.read())
-			else:
-				req['command'] = command
-				req['nonce'] = int(time.time()*1000)
-				post_data = urllib.urlencode(req)
+			sign = hmac.new(self.Secret.encode('utf-8'), post_data.encode('utf-8'), hashlib.sha512).hexdigest()
+			headers = {
+					'Sign': sign,
+					'Key': self.APIKey
+					}
 
-				sign = hmac.new(self.Secret, post_data, hashlib.sha512).hexdigest()
-				headers = {
-						'Sign': sign,
-						'Key': self.APIKey
-						}
-
-				ret = urllib2.urlopen(urllib2.Request('https://poloniex.com/tradingApi', post_data, headers))
-				jsonRet = json.loads(ret.read())
-				return self.post_process(jsonRet)
-		except:
-			print "Api query error"
-			return None 
+			ret = requests.post('https://poloniex.com/tradingApi', data =  req, headers = headers)
+			jsonRet = json.loads(ret.text)
+			return self.post_process(jsonRet)
 				
 
 

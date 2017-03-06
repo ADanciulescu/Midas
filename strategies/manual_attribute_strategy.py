@@ -30,14 +30,14 @@ class ManualAttributeStrategy():
 	##returns market operation
 	##time represents which candle the trade_simulator is processing atm
 	def decide(self, time, bits):
-		print "************************************************************************************************"
-		print "Time: ", timestamp_to_date(self.candles[time].date) 
-		print "Price: ", self.candles[time].close
-		print self.attribute_name, ": ", getattr(self.candles[time], self.attribute_name)
+		print("************************************************************************************************")
+		print(("Time: ", timestamp_to_date(self.candles[time].date)))
+		print(("Price: ", self.candles[time].close))
+		print((self.attribute_name, ": ", getattr(self.candles[time], self.attribute_name)))
 
 		## ask for user input
 		response = raw_input("Please enter trade: ")
-		print "************************************************************************************************"
+		print("************************************************************************************************")
 		if response == self.BUY_CMD:
 			return Operation(Operation.BUY_OP, self.BUY_AMOUNT)
 		elif response == self.SELL_CMD:

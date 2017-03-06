@@ -63,7 +63,6 @@ def main():
 	##om.slow_sell("ETH", 1, sell_all = True)
 	trader = Trader()
 	trader.run()
-	##print "wtf"
 	
 
 	##DBManager.drop_matching_tables("SNAP")
@@ -179,7 +178,7 @@ def main():
 	##simulate(table_name_LTC_14400)
 
 def test_against_normal(strat):
-	print "**************************************NORMAL************************************************"
+	print("**************************************NORMAL************************************************")
 	tn = strat.table_name
 	trade_sim = TradeSimulator([tn], [strat], to_print_trades = True, to_log = True)
 	trade_sim.run()
@@ -196,12 +195,12 @@ def test_against_normal(strat):
 	s_balance = trade_sim.balance
 	s_profit_percent = trade_sim.profit_percent
 	
-	print ""
+	print()
 	##print "First: bits, bitsec", f_bits, f_bitsec
 	##print "Second: bits, bitsec", s_bits, s_bitsec
-	print "balance dif:", f_balance-s_balance
-	print "profit dif:", f_profit_percent-s_profit_percent
-	print "**************************************NORMAL DONE*******************************************"
+	print(("balance dif:", f_balance-s_balance))
+	print(("profit dif:", f_profit_percent-s_profit_percent))
+	print("**************************************NORMAL DONE*******************************************")
 	##total = 0
 	##for r in strat.runs:
 		##total+=r
@@ -252,8 +251,8 @@ def simulate_hold_strategy(candle_table_name_array):
 
 def present_bollinger(candle_table_name):
 	strat = BollingerStrategy(candle_table_name)
-	print candle_table_name
-	print "# of stddev from mean: ", strat.get_current_bb_score()
+	print(candle_table_name)
+	print(("# of stddev from mean: ", strat.get_current_bb_score()))
 
 def simulate_scipy_trend_strategy(candle_table_name, trend_table_name, model):
 	strat = ScipyModelStrategy(candle_table_name, trend_table_name, model)
@@ -323,7 +322,7 @@ def get_candle_data(curr_target):
 	
 	##if exists drop firt and recreate
 	if DBManager.exists_table(table_name):
-		print "table with same configuration already exists, deleting it and rebuilding..."
+		print("table with same configuration already exists, deleting it and rebuilding...")
 		drop_table(table_name)
 	ct = CandleTable(curr_ref, curr_target, start, end, period)
 	ct.save()

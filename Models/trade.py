@@ -30,13 +30,13 @@ class Trade:
 	
 	def pprint(self):
 		if self.type == self.BUY_TYPE:
-			print "Bought: " + str(self.amount) + " at: " + str(self.price)
+			print(("Bought: ", self.amount, " at: ", self.price))
 		elif self.type == self.SELL_TYPE:
-			print "Sold: " + str(self.amount) + " at: " + str(self.price)
+			print(("Sold: ", self.amount, " at: ", self.price))
 		elif self.type == self.FAIL_SELL_TYPE:
-			print "Fail to sell: " + str(self.amount) + " at: " + str(self.price)
+			print(("Fail to sell: ", self.amount, " at: ", self.price))
 		elif self.type == self.FAIL_BUY_TYPE:
-			print "Fail to buy: " + str(self.amount) + " at: " + str(self.price)
+			print(("Fail to buy: ", self.amount, " at: ", self.price))
 
 
 

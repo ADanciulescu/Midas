@@ -42,8 +42,8 @@ class NeuralCandleModel:
 		inputs = self.get_inputs(candles)
 		desired_outputs = self.get_outputs(candles)
 		results = self.model.predict(inputs)
-		print results
-		print desired_outputs
+		print(results)
+		print(desired_outputs)
 
 		total_wrong = 0
 		total_correct = 0
@@ -54,9 +54,9 @@ class NeuralCandleModel:
 			else:
 				total_wrong += 1
 		
-		print "Total Correct: ", total_correct
-		print "Total Wrong: ", total_wrong
-		print "Performance: ", total_correct/float(total_correct+total_wrong)
+		print(("Total Correct: ", total_correct))
+		print(("Total Wrong: ", total_wrong))
+		print(("Performance: ", total_correct/float(total_correct+total_wrong)))
 
 	def cross_validate(self, candle_table_name):
 		##get candles and use them to calculate outputs

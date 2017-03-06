@@ -55,7 +55,7 @@ class ManualTrendStrategy():
 
 				try:
 					past_avg = PointTable.lookup_date(self.avg_table_name, trend_timestamp).value
-					print "Number of views: " + str(past_avg) 
+					print(("Number of views: ",past_avg))
 				except:
 					return Operation(Operation.NONE_OP, 0)
 

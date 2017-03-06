@@ -15,7 +15,7 @@ class ResultsLogger:
 
 	##called with the results of a instance, puts it in file
 	def log(self, total_bought, total_spent, total_sold, net_worth, bits):
-		print self.filename	
+		print(self.filename)	
 		fo = open(self.filename, "a")
 		fo.write(self.line)
 		fo.write(self.trends_table_name + "   " + self.cur_table_name + "\n")

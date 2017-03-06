@@ -59,10 +59,10 @@ class ParameterOptimizer:
 										strat = BollingerStrategy(tn, bb_factor = bb, stddev_adjust = std, avg_period = period, num_past_buy = num_buy, num_past_sell = num_sell, one_op = oo, to_carry = tc)
 										strat_array.append(strat)
 									trade_sim = TradeSimulator(self.test_table_array, strat_array, to_log = False)
-									print "*************************************************************************************************************************"
-									print "bb: ", bb, " std: ", std, " period: ", period, " num_buy: ", num_buy, " num_sell: ", num_sell, " one_op: ", oo, " to_carry: ", tc
+									print("*************************************************************************************************************************")
+									print(("bb: ", bb, " std: ", std, " period: ", period, " num_buy: ", num_buy, " num_sell: ", num_sell, " one_op: ", oo, " to_carry: ", tc))
 									trade_sim.run()
-									print "*************************************************************************************************************************"
+									print("*************************************************************************************************************************")
 									
 									p.set_balance(trade_sim.balance)
 									p.set_percent_profit(trade_sim.profit_percent)
@@ -72,7 +72,7 @@ class ParameterOptimizer:
 	
 	##print summary for a particular parameter
 	def print_summary(self, parameter_attr_array):
-		print "**********************************************************************************"
+		print("**********************************************************************************")
 		for pa in parameter_attr_array:
 			##avgs out performance keeping parameter attr fixed and varying all possible combinations of the other parameters 
 			for v in getattr(self, pa):
@@ -86,15 +86,15 @@ class ParameterOptimizer:
 						count += 1
 				avg_balance = total_balance/count
 				avg_pp = total_pp/count
-				print pa, ": ", v
-				print "Balance Avg: ", avg_balance
-				print "Profit Percent Avg: ", avg_pp
-			print ""
+				print((pa, ": ", v))
+				print(("Balance Avg: ", avg_balance))
+				print(("Profit Percent Avg: ", avg_pp))
+			print()
 
 
-		print "**********************************************************************************"
+		print("**********************************************************************************")
 		self.print_best("balance")
-		print "**********************************************************************************"
+		print("**********************************************************************************")
 		self.print_best("percent_profit")
 
 	##print the paramater combination with the best balance
@@ -104,7 +104,7 @@ class ParameterOptimizer:
 			if getattr(p, attr) > getattr(max_p, attr):
 				max_p = p
 	
-		print "Best ", attr, ": "
+		print(("Best ", attr, ": "))
 		max_p.pprint()
 
 						

@@ -199,7 +199,7 @@ class IntervalArray:
 			self.areas.append(a)
 
 	def print_mins(self):
-		print self.local_mins
+		print(self.local_mins)
 
 	## modifies intervals by deleting a key pt 
 	def delete_key_pt(self, pt):
@@ -261,7 +261,7 @@ class IntervalArray:
 				interval.value += amount
 
 	def pprint(self):
-		print "Interval Array:"
+		print("Interval Array:")
 		for r in self.interval_array:
 			r.pprint()
 	

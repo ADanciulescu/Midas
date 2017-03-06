@@ -77,7 +77,7 @@ class OrderMaker:
 		curr_pair = "USDT_" + sym
 		rate = self.get_instant_rate_ask(curr_pair, sym_money)
 		amount = sym_money/rate
-		print "Fast buying", curr_pair, ":", amount, "at", rate 
+		print(("Fast buying", curr_pair, ":", amount, "at", rate))
 		order = self.place_buy_order(curr_pair, rate, amount)
 	
 	##ASAP sell sym money worth of currency sym at the highest bid price
@@ -85,7 +85,7 @@ class OrderMaker:
 		curr_pair = "USDT_" + sym
 		rate = self.get_instant_rate_bid(curr_pair, sym_money)
 		amount = sym_money/rate
-		print "Fast selling", curr_pair, ":", amount, "at", rate 
+		print(("Fast selling", curr_pair, ":", amount, "at", rate))
 		order = self.place_sell_order(curr_pair, rate, amount)
 
 	## creates a thread that performs slow buy and runs slow_buy_code	
@@ -111,7 +111,7 @@ class OrderMaker:
 		initial_amount = amount
 		
 		
-		print "Slow buying", curr_pair, ":", amount, "at", rate 
+		print(("Slow buying", curr_pair, ":", amount, "at", rate))
 		order = self.place_buy_order(curr_pair, rate, amount)
 		
 		while(order.is_active()):
@@ -130,7 +130,7 @@ class OrderMaker:
 					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
 					new_order_id = move_result['orderNumber']
 					if new_order_id != None:
-						print "Updating slow buying", curr_pair, ":", order.amount, "at", new_rate
+						print(("Updating slow buying", curr_pair, ":", order.amount, "at", new_rate))
 						order.move(Order.ORDER_FILLED, amount_filled)
 						new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
 						new_order.save()
@@ -158,7 +158,7 @@ class OrderMaker:
 		initial_amount = amount
 		
 		
-		print "Slow selling", curr_pair, ":", amount, "at", rate 
+		print(("Slow selling", curr_pair, ":", amount, "at", rate))
 		order = self.place_sell_order(curr_pair, rate, amount)
 		
 		while(order.is_active()):
@@ -170,7 +170,7 @@ class OrderMaker:
 			if new_rate != order.rate:
 
 				if new_rate < limit: ##if surpassed limit cancel order
-					print "order cancelled"
+					print("order cancelled")
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
 					order.move(Order.ORDER_CANCELLED, amount_filled)
 				else:
@@ -178,7 +178,7 @@ class OrderMaker:
 					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
 					new_order_id = move_result['orderNumber']
 					if new_order_id != None:
-						print "Updating slow selling", curr_pair, ":", order.amount, "at", new_rate
+						print(("Updating slow selling", curr_pair, ":", order.amount, "at", new_rate))
 						order.move(Order.ORDER_FILLED, amount_filled)
 						new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
 						new_order.save()
@@ -279,7 +279,7 @@ class OrderMaker:
 				while(float(asks[i][0]) < prev_order.rate):
 					##print asks[i][0], "at", asks[i][1]
 					bits_below_my_order += float(asks[i][1])
-					print asks[i][0], "at", asks[i][1]
+					print((asks[i][0], "at", asks[i][1]))
 					i += 1
 
 				##if there is a substantial amount of bits priced under my prev_order, return bottom ask

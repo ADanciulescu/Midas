@@ -1,7 +1,7 @@
 ## sends email notifications
 import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 class Emailer():
 
@@ -26,8 +26,8 @@ class Emailer():
 		msg.attach(MIMEText(body, 'plain'))
 		self.server.sendmail(self.email, self.email, msg.as_string())
 		
-		print "Sent Email:"
-		print msg
+		print("Sent Email:")
+		print(msg)
 
 	def __del__(self):
 		self.server.quit()

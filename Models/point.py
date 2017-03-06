@@ -21,11 +21,11 @@ class Point:
 		return Point(table_name, tup[1], tup[2])
 	
 	def pprint(self):
-		print ""
-		print "table_name: ", self.table_name
-		print "date: ", self.date
-		print "value: ", self.value
-		print ""
+		print()
+		print(("table_name: ", self.table_name))
+		print(("date: ", self.date))
+		print(("value: ", self.value))
+		print()
 	
 	##inserts point into db
 	def save(self):

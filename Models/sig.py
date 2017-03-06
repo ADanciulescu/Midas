@@ -31,7 +31,7 @@ class Sig:
 		return Sig(table_name, tup[0], tup[1], tup[2], tup[3], tup[4])
 	
 	def pprint(self):
-		print self.summary()  
+		print(self.summary())  
 	
 	def summary(self):
 		return self.sym + " " + self.type + " " + timestamp_to_date(self.date) + " " + str(self.amount) + " at $" + str(self.price)  

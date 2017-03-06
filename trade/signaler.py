@@ -76,7 +76,7 @@ class Signaler:
 
 	def print_new_signals(self):
 		for i,tn in enumerate(self.signal_table_names):
-			print tn
+			print(tn)
 			for s in self.new_signals_array[i]:
 				s.pprint()
 
@@ -85,11 +85,11 @@ class Signaler:
 	def print_all_signals(self):
 		for i,tn in enumerate(self.signal_table_names):
 			signals = SignalTable.get_signal_array(tn)
-			print "******************************************************************************"
-			print tn
+			print("******************************************************************************")
+			print(tn)
 			for s in signals[-10:]:
 				s.pprint()
-			print "# of stddev from mean: ", self.stddev_array[i]
+			print(("# of stddev from mean: ", self.stddev_array[i]))
 	
 	##find index of first candle with date bigger than last_date
 	def find_new_candle_index(self, candles, last_date):

@@ -128,27 +128,27 @@ class TradeSimulator:
 		
 		if self.to_print_trades:
 			for i in range(self.num_currencies):
-				print "*************************************************************************************************************************"
-				print "History: ", self.table_name_array[i]
-				print ""
+				print("*************************************************************************************************************************")
+				print(("History: ", self.table_name_array[i]))
+				print()
 				TradeTable.pprint(self.trade_table_name_array[i])
-				print "*************************************************************************************************************************"
+				print("*************************************************************************************************************************")
 
 	
-		print ""
-		print "Total Spent: ", self.money_spent
-		print "Max Debt: ", self.max_debt
+		print()
+		print(("Total Spent: ", self.money_spent))
+		print(("Max Debt: ", self.max_debt))
 		bits_summary = self.get_bits_summary()
-		print "Bits at end: ", bits_summary 
-		print "Balance:" + str(self.balance)
+		print(("Bits at end: ", bits_summary))
+		print(("Balance:", self.balance))
 		if self.money_spent > 0:
-			print "Profit Percent: ", self.profit_percent 
+			print(("Profit Percent: ", self.profit_percent))
 		else:
-			print "NO MONEY SPENT"
+			print("NO MONEY SPENT")
 		##if self.num_currencies == 1:
 			##self.profit_per_bitsec = self.profit_percent/self.bit_sec
 			##print self.profit_per_bitsec
-		print ""
+		print()
 
 	##returns snapshot at the end
 	def get_bits_summary(self):

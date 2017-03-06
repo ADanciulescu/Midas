@@ -1,7 +1,6 @@
 ## class hits the poloniex api and loads data into DB
 
-import urllib
-import urllib2
+from urllib.request import urlopen
 import json
 import sqlite3
 from candle_parser import CandleParser
@@ -31,7 +30,7 @@ class PoloniexClient:
 	##returns raw json data from candle endpoint	
 	def pull_candle_data(self, currency_pair, start, end, period):
 		url = PoloniexClient.POLO_ENDPOINT + PoloniexClient.CMD_CANDLE + "&" + "currencyPair=" + currency_pair + "&" + "start=" + str(start) + "&" + "end=" + str(end) + "&" + "period=" + str(period)
-		response = urllib2.urlopen(url)
+		response = urlopen(url)
 		data = json.load(response)
 		return data
 

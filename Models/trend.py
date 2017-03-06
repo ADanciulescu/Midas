@@ -20,11 +20,11 @@ class Trend:
 		return Trend(table_name, tup[0], tup[1])
 	
 	def pprint(self):
-		print ""
-		print "table_name: ", self.table_name
-		print "date: ", self.date
-		print "hits: ", self.hits
-		print ""
+		print()
+		print(("table_name: ", self.table_name))
+		print(("date: ", self.date))
+		print(("hits: ", self.hits))
+		print()
 	
 	##inserts trend into db
 	def save(self):
@@ -37,6 +37,6 @@ class Trend:
 		try:
 			cursor.execute(exec_string)
 		except:
-			print "Unable to insert trend into database, most likely a duplicate"
+			print("Unable to insert trend into database, most likely a duplicate")
 			
 	

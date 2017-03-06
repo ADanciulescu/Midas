@@ -5,7 +5,6 @@ from trade_simulator import TradeSimulator
 from interval_array import IntervalArray
 from point import Point
 from range import Range
-from level import Level
 
 	
 class ShortTermStrategy:

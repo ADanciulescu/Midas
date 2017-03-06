@@ -16,7 +16,7 @@ class Trader:
 		self.order_maker = OrderMaker()
 
 	def run(self):
-		print "Starting Trader"
+		print("Starting Trader")
 		while(True):
 			secs_last_run = CandleTable.get_last_date(table_names.short_term_tables[0])
 			secs_cur = time.time()
@@ -25,17 +25,17 @@ class Trader:
 			if(secs_cur-secs_last_run) > (self.period+250):
 				self.signaler.update()
 				new_signals_array = self.signaler.new_signals_array
-				print "***********************************SIGNALS*********************************************"
+				print("***********************************SIGNALS*********************************************")
 				for ns in new_signals_array:
 					self.handle_new_currency_signals(ns)
 				for i in range(6):
-					print self.signaler.strat_array[i].last
+					print(self.signaler.strat_array[i].last)
 
 	##perform buys/sells depending on last signal
 	def handle_new_currency_signals(self, signal_array):
 		if len(signal_array) > 0:
 			last_signal = signal_array[-1]
-		 	last_signal.pprint()
+			last_signal.pprint()
 			self.order_maker.handle_signal(last_signal)	
 			
 
