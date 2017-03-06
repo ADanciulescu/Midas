@@ -77,7 +77,7 @@ def main():
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
-	CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("ETC", date_to_timestamp("2016-6-1"), 300)

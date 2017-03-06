@@ -4,6 +4,7 @@ import json
 import time
 import hmac,hashlib
 import requests
+import threading
 
 def createTimeStamp(datestr, format="%Y-%m-%d %H:%M:%S"):
 	return time.mktime(time.strptime(datestr, format))
@@ -16,8 +17,9 @@ class Poloniex:
 		with open('./trade/poloniex_secret.key', 'r') as myfile:
 			key = myfile.readline().rstrip()
 			secret = myfile.readline().rstrip()
-			self.APIKey = key
-			self.Secret = secret
+		self.APIKey = key
+		self.Secret = secret
+		self.lock = threading.Lock()
 
 	
 	@classmethod
@@ -39,16 +41,26 @@ class Poloniex:
 		return after
 
 	def api_query(self, command, req={}):
-
-
+		print("before acquire")
+		self.lock.acquire()
+		print("after acquire")
 		if(command == "returnTicker" or command == "return24Volume"):
 			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command))
+			
+			time.sleep(0.2)
+			self.lock.release()
 			return json.loads(ret.read().decode('utf-8'))
 		elif(command == "returnOrderBook"):
 			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command + '&currencyPair=' + str(req['currencyPair'])))
+			
+			time.sleep(0.2)
+			self.lock.release()
 			return json.loads(ret.read().decode('utf-8'))
 		elif(command == "returnMarketTradeHistory"):
 			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + "returnTradeHistory" + '&currencyPair=' + str(req['currencyPair'])))
+			
+			time.sleep(0.2)
+			self.lock.release()
 			return json.loads(ret.read().decode('utf-8'))
 		else:
 			req['command'] = command
@@ -63,6 +75,9 @@ class Poloniex:
 
 			ret = requests.post('https://poloniex.com/tradingApi', data =  req, headers = headers)
 			jsonRet = json.loads(ret.text)
+			
+			time.sleep(0.2)
+			self.lock.release()
 			return self.post_process(jsonRet)
 				
 

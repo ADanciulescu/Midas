@@ -1,5 +1,5 @@
 from order_maker import OrderMaker
 
 om = OrderMaker()
-om.slow_sell("DASH", 1, sell_all = True)
-##om.slow_sell("XRP", 1, sell_all = True)
+om.slow_buy("ETH", 0.1)
+om.slow_buy("BTC", 0.1)
