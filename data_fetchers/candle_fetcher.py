@@ -119,7 +119,6 @@ class CandleFetcher():
 			
 			last_candle_date += period
 			while(last_candle_date < sec_now):
-				print("here")
 				(bottom_ask, top_bid) = OrderMaker.get_spread(curr_pair)
 				if curr_avail[target_curr]: ##means it is true, means it is available to be sold
 					close = bottom_ask

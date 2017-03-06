@@ -41,9 +41,7 @@ class Poloniex:
 		return after
 
 	def api_query(self, command, req={}):
-		print("before acquire")
 		self.lock.acquire()
-		print("after acquire")
 		if(command == "returnTicker" or command == "return24Volume"):
 			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command))
 			
