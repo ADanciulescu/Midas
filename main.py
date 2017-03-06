@@ -61,8 +61,9 @@ def main():
 	##om = OrderMaker()
 	##om.slow_sell("ETH", 1, sell_all = True)
 	
-	##trader = Trader()
-	##trader.run()
+	##OrderMaker.get_last_trade_rate("USDT_BTC")
+	trader = Trader()
+	trader.run()
 
 	##while(True):
 		##print(time.time())

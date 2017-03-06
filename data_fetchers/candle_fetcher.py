@@ -110,8 +110,8 @@ class CandleFetcher():
 		
 		CandleFetcher.update_tables(tns) ##perform normal update of any legit candles(replacing fake ones)
 		
-		sec_now = time.time()
 		for i, tn in enumerate(tns):
+			sec_now = time.time()
 			last_candle_date = CandleTable.get_last_date(tn)
 			target_curr = CandleTable.get_target_currency(tn)
 			period = int(CandleTable.get_period(tn))
@@ -119,14 +119,17 @@ class CandleFetcher():
 			
 			last_candle_date += period
 			while(last_candle_date < sec_now):
-				(bottom_ask, top_bid) = OrderMaker.get_spread(curr_pair)
-				if curr_avail[target_curr]: ##means it is true, means it is available to be sold
-					close = bottom_ask
-				else:
-					close = top_bid
+				print("wtf")
+				##(top_bid, bottom_ask) = OrderMaker.get_spread(curr_pair)
+				##if curr_avail[target_curr]: ##means it is true, means it is available to be sold
+					##close = bottom_ask
+				##else:
+					##close = top_bid
+				close = OrderMaker.get_last_trade_rate(curr_pair)
 				c = Candle(tn, last_candle_date, 0, 0, 0, close, 0, 0, 0)
 				c.save()
 				last_candle_date += period
+			print("done")
 
 			
 			

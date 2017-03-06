@@ -335,3 +335,10 @@ class OrderMaker:
 		bids =  orders["bids"]
 		asks =  orders["asks"]
 		return(float(bids[0][0]), float(asks[0][0]))
+	
+	##returns last trade rate for given currency pair
+	@staticmethod
+	def get_last_trade_rate(curr_pair):
+		trades =  Poloniex.get_instance().returnMarketTradeHistory(curr_pair)
+		rate = float(trades[0]['rate'])
+		return rate
