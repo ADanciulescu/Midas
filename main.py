@@ -1,4 +1,3 @@
-from poloniex_client import PoloniexClient
 from poloniex import Poloniex
 from db_manager import DBManager
 from trade_simulator import TradeSimulator
@@ -61,8 +60,8 @@ def main():
 	##om.slow_sell("XRP", 1, sell_all = True)
 	##om = OrderMaker()
 	##om.slow_sell("ETH", 1, sell_all = True)
-	trader = Trader()
-	trader.run()
+	##trader = Trader()
+	##trader.run()
 	
 
 	##DBManager.drop_matching_tables("SNAP")
@@ -78,7 +77,7 @@ def main():
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
-	##CandleFetcher.fetch_candles_after_date("DASH", date_to_timestamp("2016-6-1"), 300)
+	CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("ETH", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)
 	##CandleFetcher.fetch_candles_after_date("ETC", date_to_timestamp("2016-6-1"), 300)
@@ -300,35 +299,6 @@ def simulate_random_strategy(candle_table_name):
 	strat = RandomStrategy(candles)
 	trade_sim = TradeSimulator(candle_table_name, candles, strat)
 	trade_sim.run()
-
-
-##grabs candle data from poloniex and enters it into db
-##data is entered into it's own table that is uniquely defined by the configurations(currenct pair, start, end etc.)
-def get_candle_data(curr_target):
-	##configuration
-	curr_ref = "USDT"
-	##curr_target = "BTC"
-	##start = 1451606400 ## Jan 01 2016
-	##end = 1459468800## Apr 1 2016
-	##start = 1459468800## Apr 1 2016
-	##end = 1467331200 ## july 01 2016
-	##start = 1467331200 ## july 01 2016
-	##end =  1475280000## oct 01 2016 
-	start = 1475280000 ## aug 8 2016
-	end = 9999999999 ## present
-	period = 14400 ## in seconds
-	
-	table_name = CandleTable.calc_table_name(curr_ref, curr_target, start, end, period)
-	
-	##if exists drop firt and recreate
-	if DBManager.exists_table(table_name):
-		print("table with same configuration already exists, deleting it and rebuilding...")
-		drop_table(table_name)
-	ct = CandleTable(curr_ref, curr_target, start, end, period)
-	ct.save()
-	pc = PoloniexClient(table_name)
-	pc.populate_candle_db(curr_ref, curr_target, start, end, period)
-
 
 ##drops table that matches the given table name
 def drop_table(table_name):

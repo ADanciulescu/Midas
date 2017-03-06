@@ -1,12 +1,13 @@
 ##fetches candle data and completes a large candle table for each currency
 
-from poloniex_client import PoloniexClient
+from poloniex import Poloniex
 from tools import timestamp_to_date
 from db_manager import DBManager
 from candle_table import CandleTable
 from candle import Candle
 from time import time
 from tools import date_to_timestamp 
+from candle_parser import CandleParser
 import table_names
 
 class CandleFetcher():
@@ -18,6 +19,7 @@ class CandleFetcher():
 	## big candle table is uniquely defined by currency and period
 	@staticmethod
 	def get_candle_data(curr_target, date_start, date_end, period):
+		polo = Poloniex.get_instance()
 		##print "Adding ", curr_target, " candle data between: ", timestamp_to_date(date_start), " ---- ", timestamp_to_date(date_end)  
 		##configuration
 		curr_ref = "USDT"
@@ -38,9 +40,10 @@ class CandleFetcher():
 		if not DBManager.exists_table(table_name):
 			ct = CandleTable(curr_ref, curr_target, date_start, date_end, period, table_name)
 			ct.save()
-		
-		pc = PoloniexClient(table_name)
-		pc.populate_candle_db(curr_ref, curr_target, date_start, date_end, period)
+		curr_pair = curr_ref + "_" + curr_target	
+		data = polo.api_query("returnChartData", {'currencyPair': curr_pair, 'start' : date_start, 'end' : date_end, 'period' : period})
+		cp = CandleParser(table_name, data)
+
 		
 	## adds everything from date_start to present to the given currency table
 	## makes repeated calls to get_candle_data to fetch the data in 3 month chunks

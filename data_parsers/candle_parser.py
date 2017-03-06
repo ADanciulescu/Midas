@@ -11,7 +11,7 @@ class CandleParser:
 		self.insert()
 	
 	def insert(self):
-		for c in self.data:
+		for c in self.data['candleStick']:
 			try:
 				ct = Candle(self.table_name, c['date'], c['high'], c['low'], c['open'], c['close'], c['volume'], c['quoteVolume'], c['weightedAverage'])
 				try:
