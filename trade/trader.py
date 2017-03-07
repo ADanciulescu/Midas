@@ -22,7 +22,7 @@ class Trader:
 			secs_cur = time.time()
 			
 			##print secs_cur-secs_last_run
-			if(secs_cur-secs_last_run) > (self.period):
+			if(secs_cur-secs_last_run) > (self.period+1):
 				self.order_maker.update_curr_available()
 				self.signaler.update(self.order_maker.curr_available)
 				new_signals_array = self.signaler.new_signals_array

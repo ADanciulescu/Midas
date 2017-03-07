@@ -32,6 +32,9 @@ class ShortTermStrategy:
 		##print self.interval_array.get_limits(773)
 		##self.update_levels(self.ranges, self.DATA_PAST)
 		sym = CandleTable.get_target_currency(table_name)
+
+		if is_simul:
+			self.last = "sell"
 			
 
 	##called by signaler when it grabs new data
