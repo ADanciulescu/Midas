@@ -3,6 +3,7 @@
 from signal_table import SignalTable
 from sig import Sig
 from poloniex import Poloniex
+from poloniex import createTimeStamp
 from order import Order
 from order_table import OrderTable
 import time
@@ -336,9 +337,12 @@ class OrderMaker:
 		asks =  orders["asks"]
 		return(float(bids[0][0]), float(asks[0][0]))
 	
-	##returns last trade rate for given currency pair
+	##returns last trade rate for given currency pair before the given date
 	@staticmethod
-	def get_last_trade_rate(curr_pair):
+	def get_last_trade_rate(curr_pair, date):
 		trades =  Poloniex.get_instance().returnMarketTradeHistory(curr_pair)
-		rate = float(trades[0]['rate'])
-		return rate
+		for i in range(len(trades)):
+			if createTimeStamp(trades[i]['date']) < date:
+				print(i, date)
+				rate = float(trades[i]['rate'])
+				return rate
