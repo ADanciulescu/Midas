@@ -62,6 +62,7 @@ def main():
 	##om.slow_sell("ETH", 1, sell_all = True)
 	
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
+	DBManager.drop_matching_tables("SIGNAL")
 	trader = Trader()
 	trader.run()
 
@@ -70,7 +71,6 @@ def main():
 		##CandleFetcher.update_tables_imperative([table_names.BTC_300],[True])
 		##time.sleep(1)
 
-	##DBManager.drop_matching_tables("SNAP")
 	##DBManager.drop_matching_tables("SNAP")
 	##print threading.get_ident()
 	##sf = SnapFetcher("SNAP_USDT_BTC_100")

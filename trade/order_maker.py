@@ -3,11 +3,14 @@
 from signal_table import SignalTable
 from sig import Sig
 from poloniex import Poloniex
-from poloniex import createTimeStamp
 from order import Order
 from order_table import OrderTable
 import time
 import threading
+import calendar
+
+def createTimeStamp(datestr, format="%Y-%m-%d %H:%M:%S"):
+	return calendar.timegm(time.strptime(datestr, format))
 
 class OrderMaker:
 	
@@ -342,7 +345,7 @@ class OrderMaker:
 	def get_last_trade_rate(curr_pair, date):
 		trades =  Poloniex.get_instance().returnMarketTradeHistory(curr_pair)
 		for i in range(len(trades)):
+			##print(t)	
 			if createTimeStamp(trades[i]['date']) < date:
-				print(i, date)
-				rate = float(trades[i]['rate'])
+				rate = float(trades[i-2]['rate'])
 				return rate
