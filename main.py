@@ -64,7 +64,7 @@ def main():
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	CandleFetcher.update_tables(table_names.short_term_tables)
-	trader = Trader()
+	trader = Trader(Trader.PREORDER)
 	trader.run()
 
 	##while(True):
