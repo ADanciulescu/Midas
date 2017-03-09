@@ -17,7 +17,7 @@ class Area:
 
 	def calculate_limits(self, interval_array):
 		self.mid = interval_array.find_percentile(self.low_min, self.high_min, 0.5)
-		if interval_array.height_at(self.mid) < 10:
+		if interval_array.height_at(self.mid) < 2:
 			self.low_limit = -1
 			self.high_limit = -1
 		else:
@@ -25,8 +25,8 @@ class Area:
 			self.high_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.8)
 			
 			if (self.high_limit-self.low_limit)*2/(self.high_limit+self.low_limit) < 0.004:
-				self.low_limit = -1
-				self.high_limit = -1
+				self.low_limit = -10
+				self.high_limit = -10
 
 class IntervalArray:
 
@@ -183,7 +183,7 @@ class IntervalArray:
 		self.local_mins.append(first_local_min)
 		i = 1
 		while i < len(agg_array)-1:
-			if agg_array[i][0].value <= 3:
+			if agg_array[i][0].value <= 2:
 				if agg_array[i][0].value < agg_array[i-1][0].value and agg_array[i][0].value < agg_array[i+1][0].value:
 					local_min = (agg_array[i][-1].pt2.value + agg_array[i][0].pt1.value)/2
 					self.local_mins.append(local_min)

@@ -63,9 +63,9 @@ def main():
 	
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
-	CandleFetcher.update_tables(table_names.short_term_tables)
-	trader = Trader(Trader.PREORDER)
-	trader.run()
+	##CandleFetcher.update_tables(table_names.short_term_tables)
+	##trader = Trader(Trader.PREORDER)
+	##trader.run()
 
 	##while(True):
 		##print(time.time())
@@ -85,13 +85,6 @@ def main():
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
 	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2016-6-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("XMR", date_to_timestamp("2016-6-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("ETC", date_to_timestamp("2016-6-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("LTC", date_to_timestamp("2016-6-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("XRP", date_to_timestamp("2016-6-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-6-1"), 300)
-	##CandleFetcher.fetch_candles_after_date("ZEC", date_to_timestamp("2016-6-1"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
@@ -130,17 +123,17 @@ def main():
 	##print "Total Balance:", total_balance
 	##print "Total Percent:", total_percent
 	
-	##total = 1
-	##date1 = date_to_timestamp("2016-6-1")
-	##for i in range(18):
-		##date2 = date1+ 30*HALF_DAY
-		##tn = CandleFetcher.cut_table(table_names.LTC_300, date1, date2)
-		##strat = ShortTermStrategy(tn)
+	total = 1
+	date1 = date_to_timestamp("2016-6-1")
+	for i in range(18):
+		date2 = date1+ 30*HALF_DAY
+		tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
+		strat = ShortTermStrategy(tn)
 		##strat = BollingerStrategy(tn, set_default = True)
-		##total *= (1+test_against_normal(strat))
-		##DBManager.drop_table(tn)
-		##date1 = date2
-	##print total
+		total *= (1+test_against_normal(strat))
+		DBManager.drop_table(tn)
+		date1 = date2
+	print(total)
 	
 
 	##date2 = date1+ HALF_DAY

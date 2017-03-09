@@ -10,7 +10,7 @@ from range import Range
 class ShortTermStrategy:
 
 	NAME = "SHORTTERM"
-	DATA_PAST = 150 
+	DATA_PAST = 50 
 
 	def __init__(self, table_name, is_simul = True, to_print = False):
 		self.table_name = table_name
@@ -18,6 +18,7 @@ class ShortTermStrategy:
 		self.to_print = to_print
 		self.interval_array = None
 		self.is_simul = is_simul
+		self.area_array = []
 
 		if is_simul:
 			self.amount = TradeSimulator.get_currency_amount(table_name)
@@ -168,13 +169,12 @@ class ShortTermStrategy:
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			self.floor = floor
 			self.ceiling = ceiling
-			print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
-			if floor == -1:
-				type = Operation.NONE_OP
-			##print "Floor:", self.floor.val
-			##print "Ceiling:", self.ceiling.val
+			##print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
 
-			##print self.candles[candle_num].date, self.candles[candle_num].close
+
+			if floor > 0:
+				self.area_array.append((floor, ceiling))
+
 			##if broke underneath floor since last candle -> buy
 			if self.candles[candle_num-1].close > floor and self.candles[candle_num].close < floor:
 				if self.last == "sell":
@@ -187,8 +187,21 @@ class ShortTermStrategy:
 					type = Operation.SELL_OP
 					amount = self.amount
 					self.last = "sell"
+			elif floor == -1:
+				##if self.last == "buy":
+					##if self.candles[candle_num].close < self.area_array[-1][0]:
+						##type = Operation.SELL_OP
+						##amount = self.amount
+						##self.last = "sell"
+					##else:
+						##type = Operation.NONE_OP
+						##amount = 0 
+				##else:
+					##type = Operation.NONE_OP
+					##amount = 0 
+				type = Operation.NONE_OP
+				amount = 0 
 			else:
-				##print "None"
 				type = Operation.NONE_OP
 		
 			if self.is_simul:
