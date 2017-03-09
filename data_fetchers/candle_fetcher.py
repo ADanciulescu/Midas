@@ -108,7 +108,7 @@ class CandleFetcher():
 	@staticmethod
 	def update_tables_imperative(tns, curr_avail):
 		
-		CandleFetcher.update_tables(tns) ##perform normal update of any legit candles(replacing fake ones)
+		##CandleFetcher.update_tables(tns) ##perform normal update of any legit candles(replacing fake ones)
 		
 		for i, tn in enumerate(tns):
 			sec_now = time.time()

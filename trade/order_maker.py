@@ -85,10 +85,10 @@ class OrderMaker:
 		amt = self.SYM_AMOUNTS[signal.sym]
 		if signal.type == "BUY":
 			##self.slow_buy(signal.sym, amt, limit = signal.price)
-			self.slow_buy(signal.sym, amt)
+			self.slow_buy(signal.sym, amt, limit = signal.price)
 		elif signal.type == "SELL":
 			##self.slow_sell(signal.sym, amt , sell_all = True, limit = signal.price)
-			self.slow_sell(signal.sym, amt, sell_all = True)
+			self.slow_sell(signal.sym, amt, sell_all = True, limit = signal.price)
 
 
 	##ASAP buy sym money worth of currency sym at the lowest ask price
@@ -141,7 +141,7 @@ class OrderMaker:
 			## if i've been overbid, modify my bid to get to top of list
 			if new_rate != order.rate:
 
-				if new_rate > limit: ##if surpassed limit cancel order
+				if new_rate > (limit*1.01): ##if surpassed limit cancel order
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
 					order.move(Order.ORDER_CANCELLED, amount_filled)
 				else:
@@ -188,7 +188,7 @@ class OrderMaker:
 			## if i've been overbid, modify my bid to get to top of list
 			if new_rate != order.rate:
 
-				if new_rate < limit: ##if surpassed limit cancel order
+				if new_rate < (limit*0.99): ##if surpassed limit cancel order
 					print("order cancelled")
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
 					order.move(Order.ORDER_CANCELLED, amount_filled)
@@ -347,5 +347,5 @@ class OrderMaker:
 		for i in range(len(trades)):
 			##print(t)	
 			if createTimeStamp(trades[i]['date']) < date:
-				rate = float(trades[i-2]['rate'])
+				rate = float(trades[i]['rate'])
 				return rate

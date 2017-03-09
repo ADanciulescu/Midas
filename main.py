@@ -62,7 +62,8 @@ def main():
 	##om.slow_sell("ETH", 1, sell_all = True)
 	
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
-	DBManager.drop_matching_tables("SIGNAL")
+	##DBManager.drop_matching_tables("SIGNAL")
+	CandleFetcher.update_tables(table_names.short_term_tables)
 	trader = Trader()
 	trader.run()
 
