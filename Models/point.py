@@ -39,4 +39,3 @@ class Point:
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong inserting point into {tn}'.format(tn = table_name))
 
-		dbm.save_and_close()

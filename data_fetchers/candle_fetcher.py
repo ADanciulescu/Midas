@@ -80,6 +80,7 @@ class CandleFetcher():
 		for c in candle_array:
 			new_c = Candle(new_table_name, c.date, c.high, c.low, c.open, c.close, c.volume, c.quoteVolume, c.weightedAverage)
 			new_c.save()
+		dbm = DBManager.get_instance()
 		return new_table_name
 
 	##updates the big tables for all the currencies with any new candles
@@ -124,6 +125,8 @@ class CandleFetcher():
 				c = Candle(tn, last_candle_date, 0, 0, 0, close, 0, 0, 0)
 				c.save()
 				last_candle_date += period
+			dbm = DBManager.get_instance()
+			dbm.save_and_close()
 
 			
 			

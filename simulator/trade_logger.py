@@ -21,6 +21,8 @@ class TradeLogger:
 		for c in candles:
 			p = Trade(dbm, table_name, c.date, 0, 0, Trade.NONE_TYPE)
 			p.save()
+		dbm = DBManager.get_instance()
+		dbm.save_and_close()
 		
 	def log_trade(self, date, amount, price, type):
 		trade = TradeTable.get_trade(self.table_name, date)

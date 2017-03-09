@@ -15,7 +15,6 @@ class DBManager:
 		self.sqlfile = "./db/currencies.sqlite"
 		self.conn = sqlite3.connect(self.sqlfile)
 		self.thread_id = t_id
-		self.lock = threading.Lock()
 
 	@classmethod
 	def get_instance(cls):
@@ -31,9 +30,6 @@ class DBManager:
 			DBManager.INSTANCES.append(instance)
 			ret = instance
 
-		if ret.lock.locked():
-			ret.lock.release()
-		ret.lock.acquire()
 		return ret
 
 	def open(self):
@@ -45,7 +41,6 @@ class DBManager:
 	##commit changes to db and close DBManager instance
 	def save_and_close(self):
 		self.conn.commit()
-		self.lock.release()
 
 	def get_cursor(self):
 		return self.conn.cursor()

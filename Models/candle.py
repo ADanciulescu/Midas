@@ -65,7 +65,6 @@ class Candle:
 					.format(tn = self.table_name, nf_date = self.DATE, nf_high = self.HIGH, nf_low = self.LOW, nf_open = self.OPEN, nf_close = self.CLOSE, nf_mid = self.MID, nf_volume = self.VOLUME, nf_qVol = self.QUOTE_VOLUME, nf_wAvg = self.WEIGHTED_AVERAGE, v_date = self.date, v_high = self.high, v_low = self.low, v_open = self.open, v_close = self.close, v_mid = self.mid, v_volume = self.volume, v_qVol = self.quoteVolume, v_wAvg = self.weightedAverage))
 			except sqlite3.IntegrityError:
 						print('ERROR: Something went wrong inserting candle into {tn}'.format(tn = table_name))
-			dbm.save_and_close()	
 
 	def update(self, high, low, open, close, mid, volume, quoteVolume, weightedAverage):
 		dbm = DBManager.get_instance()
@@ -78,7 +77,6 @@ class Candle:
 
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong updaing candle from {tn}'.format(tn = self.table_name))
-		dbm.save_and_close()
 
 	##return candle with matching date from given tablename
 	@staticmethod

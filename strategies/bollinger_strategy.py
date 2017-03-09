@@ -139,6 +139,8 @@ class BollingerStrategy:
 
 				new_pt = Point(bb_table_name, date, value)
 				new_pt.save()
+		dbm = DBManager.get_instance()
+		dbm.save_and_close()
 		return bb_table_name
 
 	##returns true if operation is allowed

@@ -57,7 +57,6 @@ class Trade:
 		except sqlite3.IntegrityError:
 			pass 
 			##print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
-		dbm.save_and_close()
 
 	##updates an already existing trade
 	def update(self):
@@ -73,5 +72,4 @@ class Trade:
 			dbm.conn.commit()
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
-		dbm.save_and_close()
 
