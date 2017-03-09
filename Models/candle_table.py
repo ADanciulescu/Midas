@@ -121,6 +121,8 @@ class CandleTable:
 		for c in candles:
 			p = Point(dbm, pt_name, c.date, c.close)
 			p.save()
+		dbm = DBManager.get_instance()
+		dbm.save_and_close()
 		return pt_name
 	
 	## returns point array from candles
