@@ -14,18 +14,18 @@ class PointTable:
 	
 	##creates point table in db
 	def save(self):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_id} {ft_i} PRIMARY KEY {nn}, {nf_date} {ft_i} {nn}, {nf_val} {ft_r} {nn})'\
 				.format(tn = self.table_name, nf_id = Point.ID, nf_date = Point.DATE, nf_val = Point.VALUE, ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, nn = DBManager.NOT_NULL)
 		cursor.execute(exec_string)
-		db_manager.save_and_close()
+		dbm.save_and_close()
 	
 	##returns cursor to all points in table_name)
 	@staticmethod
 	def get_point_cursor(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor
 	
@@ -48,8 +48,8 @@ class PointTable:
 	##returns point object for given index
 	@staticmethod
 	def get_last(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = "SELECT * FROM {tn} WHERE date = (SELECT MAX(date)  FROM {tn});".format(tn = table_name)
 		cursor.execute(exec_string)
 		return Point.from_tuple(table_name, cursor.fetchone())
@@ -57,8 +57,8 @@ class PointTable:
 	##returns point object for given index
 	@staticmethod
 	def lookup(table_name, index):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = "SELECT * FROM '{tn}' WHERE id = {i}".format(tn = table_name, i = index)
 		cursor.execute(exec_string)
 		return Point.from_tuple(table_name, cursor.fetchone())
@@ -67,8 +67,8 @@ class PointTable:
 	##returns point object for given date or the first one after
 	@staticmethod
 	def lookup_date(table_name, date):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = "SELECT * FROM '{tn}' WHERE date >= {d}".format(tn = table_name, d = date)
 		cursor.execute(exec_string)
 		return Point.from_tuple(table_name, cursor.fetchone())

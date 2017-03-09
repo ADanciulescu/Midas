@@ -42,8 +42,8 @@ class Trade:
 
 	##inserts trade into db
 	def save(self, to_commit = False):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		try:
 			exec_string = "INSERT INTO {tn} ({nf_date}, {nf_amount}, {nf_price}, {nf_type}) VALUES\
 					({v_date}, {v_amount}, {v_price}, '{v_type}')"\
@@ -52,11 +52,12 @@ class Trade:
 			
 			##for speed purposes only commit when changing one at a time
 			if to_commit:
-				db_manager.conn.commit()
+				dbm.conn.commit()
 
 		except sqlite3.IntegrityError:
 			pass 
 			##print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()
 
 	##updates an already existing trade
 	def update(self):
@@ -70,7 +71,7 @@ class Trade:
 			
 			##for speed purposes only commit when changing one at a time
 			dbm.conn.commit()
-
 		except sqlite3.IntegrityError:
-			    print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
+			print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()
 

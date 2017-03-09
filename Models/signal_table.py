@@ -11,19 +11,19 @@ class SignalTable:
 	
 	##creates point table in db
 	def save(self):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_date} {ft_i} PRIMARY KEY {nn}, {nf_sym} {ft_t} {nn}, {nf_amount} {ft_r} {nn}, {nf_price} {ft_r} {nn}, {nf_type} {ft_t} {nn})'\
 				.format(tn = self.table_name, nf_date = Sig.DATE, nf_sym = Sig.SYM, nf_amount = Sig.AMOUNT, nf_price = Sig.PRICE, nf_type = Sig.TYPE,
 						ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, ft_t = DBManager.TEXT, nn = DBManager.NOT_NULL)
 		cursor.execute(exec_string)
-		db_manager.save_and_close()
+		dbm.save_and_close()
 	
 	##returns cursor to all signals in table_name
 	@staticmethod
 	def get_signal_cursor(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor
 	

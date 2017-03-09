@@ -23,15 +23,12 @@ class TrendCutter:
 		self.last_date = CandleTable.get_last_date(self.candle_table_name)
 		self.cut_trend_table_name = self.get_trend_table_name()
 
-		dbm = DBManager()
-		if dbm.exists_table(self.cut_trend_table_name):
-			dbm.drop_table(self.cut_trend_table_name)
-			dbm.save_and_close()
+		if DBManager.exists_table(self.cut_trend_table_name):
+			DBManager.drop_table(self.cut_trend_table_name)
 
 		tt = TrendTable(self.cut_trend_table_name)
 		tt.save()
 	
-		dbm = DBManager()
 
 		candles = CandleTable.get_candle_array(self.candle_table_name)
 
@@ -40,7 +37,6 @@ class TrendCutter:
 			hits = TrendTable.get_most_recent_hits(self.trend_table_name, date)
 			trend = Trend(dbm, self.cut_trend_table_name, date, hits)
 			trend.save()
-		dbm.save_and_close()
 			
 		##cursor = TrendTable.get_section(self.trend_table_name, self.first_date, self.last_date)
 		##trend_tuples = cursor.fetchall()

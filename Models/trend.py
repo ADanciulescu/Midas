@@ -33,10 +33,10 @@ class Trend:
 		exec_string = "INSERT INTO {tn} ({nf_date}, {nf_hits}) VALUES\
 				(\"{v_date}\", {v_hits})"\
 			.format(tn = self.table_name, nf_date = self.DATE, nf_hits = self.HITS, v_date = self.date, v_hits = self.hits)
-		
+			
 		try:
 			cursor.execute(exec_string)
 		except:
 			print("Unable to insert trend into database, most likely a duplicate")
 			
-	
+		dbm.save_and_close()

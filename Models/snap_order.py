@@ -33,7 +33,7 @@ class SnapOrder:
 					({v_date}, {v_amount}, {v_rate}, '{v_type}')"\
 				.format(tn = self.table_name, nf_date = SnapOrder.DATE, nf_amount = SnapOrder.AMOUNT, nf_rate = SnapOrder.RATE, nf_type = SnapOrder.TYPE, v_date = self.date, v_amount = self.amount, v_rate = self.rate, v_type = self.type)
 			cursor.execute(query)
-			dbm.save_and_close()
 
 		except sqlite3.IntegrityError:
-			    print('ERROR: Something went wrong inserting snap order into {tn}'.format(tn = self.table_name))
+			print('ERROR: Something went wrong inserting snap order into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()

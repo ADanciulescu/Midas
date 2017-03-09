@@ -30,8 +30,8 @@ class Snap:
 					({v_date})"\
 				.format(tn = self.table_name, nf_date = Snap.DATE, v_date = self.date)
 			cursor.execute(query)
-			dbm.save_and_close()
 			
 		except sqlite3.IntegrityError:
-			    print('ERROR: Something went wrong inserting snap into {tn}'.format(tn = self.table_name))
+			print('ERROR: Something went wrong inserting snap into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()
 	

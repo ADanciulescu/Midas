@@ -12,12 +12,12 @@ class SnapOrderTable:
 	
 	##creates snap order table in db
 	def save(self):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_date} {ft_i} {nn}, {nf_amount} {ft_r} {nn}, {nf_rate} {ft_r} {nn}, {nf_type} {ft_t} {nn}, PRIMARY KEY ({nf_date}, {nf_rate}))'\
 				.format(tn = self.table_name, nf_date = SnapOrder.DATE, nf_amount = SnapOrder.AMOUNT, nf_rate = SnapOrder.RATE, nf_type = SnapOrder.TYPE, ft_t = DBManager.TEXT, ft_r = DBManager.REAL, ft_i = DBManager.INTEGER, nn = DBManager.NOT_NULL)
 		cursor.execute(exec_string)
-		db_manager.save_and_close()
+		dbm.save_and_close()
 
 	## returns a snap order table name from a snap table name
 	@staticmethod
@@ -27,8 +27,8 @@ class SnapOrderTable:
 	##returns cursor to all snap orders in table_name)
 	@staticmethod
 	def get_snap_order_cursor(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor
 	
@@ -50,8 +50,8 @@ class SnapOrderTable:
 	##deletes all rows
 	@staticmethod
 	def delete_rows(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("DELETE FROM '{tn}'".format(tn = table_name))
-		db_manager.save_and_close()
+		dbm.save_and_close()
 

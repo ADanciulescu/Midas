@@ -37,5 +37,6 @@ class Point:
 				.format(tn = self.table_name, nf_date = Point.DATE, nf_value = Point.VALUE, v_date = self.date, v_value = self.value))
 			
 		except sqlite3.IntegrityError:
-			    print('ERROR: Something went wrong inserting point into {tn}'.format(tn = table_name))
-	
+			print('ERROR: Something went wrong inserting point into {tn}'.format(tn = table_name))
+
+		dbm.save_and_close()

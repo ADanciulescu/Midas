@@ -254,8 +254,6 @@ class TradeSimulator:
 		for ta in self.trades_array:
 			for t in ta:
 				t.save()
-		dbm = DBManager.get_instance()
-		dbm.save_and_close()
 
 	##returns core amount of bits to trade based on table name
 	@staticmethod

@@ -64,17 +64,17 @@ class Order:
 
 	##inserts trade into db
 	def save(self):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		try:
 			exec_string = "INSERT INTO {tn} ({nf_id}, {nf_curr_pair}, {nf_date_placed}, {nf_date_filled}, {nf_amount}, {nf_rate}, {nf_type}) VALUES\
 					({v_id}, '{v_curr_pair}', {v_date_placed}, {v_date_filled}, {v_amount}, {v_rate}, '{v_type}')"\
 				.format(tn = self.table_name, nf_id = Order.ID, nf_curr_pair = Order.CURR_PAIR, nf_date_placed = Order.DATE_PLACED, nf_date_filled = Order.DATE_FILLED, nf_amount = Order.AMOUNT, nf_rate = Order.RATE, nf_type = Order.TYPE, v_id = self.id, v_curr_pair = self.curr_pair, v_date_placed = self.date_placed, v_date_filled = self.date_filled, v_amount = self.amount, v_rate = self.rate, v_type = self.type)
 			cursor.execute(exec_string)
-			db_manager.save_and_close()
 
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong inserting order into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()
 
 	##drop order from the table that it is currently in
 	def drop(self):
@@ -85,10 +85,10 @@ class Order:
 					WHERE {nf_id} = {v_id}"\
 				.format(tn = self.table_name, nf_id = Order.ID, v_id = self.id)
 			cursor.execute(exec_string)
-			dbm.save_and_close()
 
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong inserting trade into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()
 
 	##moves current order to new tn, updated amount_filled 
 	def move(self, tn, amount_filled = 0):
@@ -122,7 +122,7 @@ class Order:
 					WHERE {nf_id} = {v_id}"\
 				.format(tn = self.table_name, nf_id = Order.ID, nf_curr_pair = Order.CURR_PAIR, nf_date_placed = Order.DATE_PLACED, nf_date_filled = Order.DATE_FILLED, nf_amount = Order.AMOUNT, nf_rate = Order.RATE, nf_type = Order.TYPE, v_id = self.id, v_curr_pair = self.curr_pair, v_date_placed = self.date_placed, v_date_filled = self.date_filled, v_amount = self.amount, v_rate = self.rate, v_type = self.type)
 			cursor.execute(exec_string)
-			dbm.save_and_close()
 
 		except sqlite3.IntegrityError:
 			print('ERROR: Something went wrong inserting order into {tn}'.format(tn = self.table_name))
+		dbm.save_and_close()

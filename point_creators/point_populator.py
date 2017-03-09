@@ -47,8 +47,6 @@ class PointPopulator():
 	def save_pts(self, pt_array):
 		for p in pt_array:
 			p.save()
-		dbm = DBManager.get_instance()
-		dbm.save_and_close()
 
 
 

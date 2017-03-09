@@ -12,18 +12,15 @@ class TradeLogger:
 		self.table_name = table_name
 		self.candle_table_name = candle_table_name
 
-		dbm = DBManager
 		if dbm.exists_table(table_name):
-			dbm.drop_table(table_name)
+			DBManager.drop_table(table_name)
 		self.table = TradeTable(table_name)
 		self.table.save()
 
 		candles = CandleTable.get_candle_array(candle_table_name)
-		dbm = DBManager()
 		for c in candles:
 			p = Trade(dbm, table_name, c.date, 0, 0, Trade.NONE_TYPE)
 			p.save()
-		dbm.save_and_close()
 		
 	def log_trade(self, date, amount, price, type):
 		trade = TradeTable.get_trade(self.table_name, date)

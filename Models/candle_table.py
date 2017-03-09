@@ -34,27 +34,27 @@ class CandleTable:
 
 	##creates candle table in db
 	def create_candle_table(self):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_date} {ft_i} PRIMARY KEY {nn}, {nf_high} {ft_r} {nn}, {nf_low} {ft_r} {nn}, {nf_open} {ft_r} {nn}, {nf_close} {ft_r} {nn}, {nf_mid} {ft_r} {nn}, {nf_volume} {ft_r} {nn}, {nf_qVol} {ft_r} {nn}, {nf_wAvg} {ft_r} {nn})'\
 				.format(tn = self.table_name,  nf_date = Candle.DATE, nf_high = Candle.HIGH, nf_low = Candle.LOW, nf_open = Candle.OPEN, nf_close = Candle.CLOSE, nf_mid = Candle.MID, nf_volume = Candle.VOLUME, nf_qVol = Candle.QUOTE_VOLUME, nf_wAvg = Candle.WEIGHTED_AVERAGE, ft_i = DBManager.INTEGER, ft_r = DBManager.REAL, nn = DBManager.NOT_NULL)
 		cursor.execute(exec_string)
-		db_manager.save_and_close()
+		dbm.save_and_close()
 	
 	
 	##returns cursor to all candles in table_name)
 	@staticmethod
 	def get_candle_cursor(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor
 	
 	##returns cursor to all candles in table_name that are between the dates
 	@staticmethod
 	def get_candle_cursor_by_date(table_name, date_low = 0, date_high = 9999999999):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		query = "SELECT * FROM '{tn}' WHERE date >= {dl} AND date <= {dh}".format(tn = table_name, dl = date_low, dh = date_high)
 		cursor.execute(query)
 		return cursor
@@ -118,11 +118,9 @@ class CandleTable:
 		pt = PointTable(pt_name)
 		pt.save()
 		candles = CandleTable.get_candle_array(candle_table_name)
-		dbm = DBManager().get_instance()
 		for c in candles:
 			p = Point(dbm, pt_name, c.date, c.close)
 			p.save()
-		dbm.save_and_close()
 		return pt_name
 	
 	## returns point array from candles
@@ -159,7 +157,7 @@ class CandleTable:
 	@staticmethod
 	def delete_fake_candles(table_name):
 		dbm = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		cursor = dbm.get_cursor()
 		cursor.execute("DELETE FROM '{tn}' WHERE high = 0".format(tn = table_name))
 		dbm.save_and_close()
 

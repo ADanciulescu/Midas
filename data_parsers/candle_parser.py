@@ -20,7 +20,5 @@ class CandleParser:
 						"Duplicate candle, cannot insert"
 			except:
 				print("Candle cannot be parsed")
-		dbm = DBManager.get_instance()
-		dbm.save_and_close()
 
 

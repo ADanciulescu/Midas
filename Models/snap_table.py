@@ -13,18 +13,18 @@ class SnapTable:
 	
 	##creates snap table in db
 	def save(self):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		exec_string = 'CREATE TABLE {tn} ({nf_date} {ft_i} PRIMARY KEY {nn})'\
 				.format(tn = self.table_name, nf_date = Snap.DATE, ft_i = DBManager.INTEGER, nn = DBManager.NOT_NULL)
 		cursor.execute(exec_string)
-		db_manager.save_and_close()
+		dbm.save_and_close()
 	
 	##returns cursor to all snaps in table_name)
 	@staticmethod
 	def get_snap_cursor(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		return cursor
 	
@@ -55,7 +55,7 @@ class SnapTable:
 	##deletes all rows
 	@staticmethod
 	def delete_rows(table_name):
-		db_manager = DBManager.get_instance()
-		cursor = db_manager.get_cursor()
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
 		cursor.execute("DELETE FROM '{tn}'".format(tn = table_name))
-		db_manager.save_and_close()
+		dbm.save_and_close()

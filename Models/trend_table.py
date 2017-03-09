@@ -22,14 +22,6 @@ class TrendTable:
 		cursor.execute(exec_string)
 		dbm.save_and_close()
 	
-	##returns cursor to all points in table_name)
-	@staticmethod
-	def get_trend_cursor(table_name):
-		dbm = DBManager.get_instance()
-		cursor = dbm.get_cursor()
-		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
-		return cursor
-
 	## returns cursor to points between the 2 dates
 	@staticmethod
 	def get_section(table_name, date_start, date_end):
@@ -42,7 +34,9 @@ class TrendTable:
 	@staticmethod
 	def get_trend_array(table_name):
 		##returns a cursor pointing to all candles linked to the table_name
-		cursor = TrendTable.get_trend_cursor(table_name)
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
+		cursor.execute("SELECT * FROM '{tn}'".format(tn = table_name))
 		trends = []
 
 		##loop through cursor and add all candles to array
@@ -51,6 +45,7 @@ class TrendTable:
 			t = Trend.from_tuple(table_name, row) 
 			trends.append(t)
 			row = cursor.fetchone()
+		dbm.save_and_close()
 		return trends
 
 	##passed in a table_name and date
@@ -61,6 +56,7 @@ class TrendTable:
 		cursor = dbm.get_cursor()
 		query = "SELECT hits FROM '{tn}' WHERE date < {d} ORDER BY date DESC".format(tn = table_name, d = date)
 		cursor.execute(query)
+		dbm.save_and_close()
 		return cursor.fetchone()[0]
 
 	
@@ -79,6 +75,4 @@ class TrendTable:
 		for t in trends:
 			p = Point(pt_name, t.date, t.hits)
 			p.save()
-		dbm = DBManager.get_instance()
-		dbm.save_and_close()
 		return pt_name
