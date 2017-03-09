@@ -9,7 +9,7 @@ import time
 
 class SnapFetcher:
 
-	NUM_ORDER = 3 ##fetch NUM_ORDER sell orders and NUM_ORDER buy orders for each snap
+	NUM_ORDER = 5 ##fetch NUM_ORDER sell orders and NUM_ORDER buy orders for each snap
 
 	def __init__(self, snap_table_name):
 		self.snap_tn = snap_table_name

@@ -145,16 +145,19 @@ class OrderMaker:
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
 					order.move(Order.ORDER_CANCELLED, amount_filled)
 				else:
-					date_placed = time.time()
 					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
-					new_order_id = move_result['orderNumber']
-					if new_order_id != None:
+					
+					if move_result["success"] == 1:
+						date_placed = time.time()
+						new_order_id = move_result['orderNumber']
 						print(("Updating slow buying", curr_pair, ":", order.amount, "at", new_rate))
 						order.move(Order.ORDER_FILLED, amount_filled)
 						new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
 						new_order.save()
 						order = new_order
 						initial_amount = order.amount
+					else:
+						print("Failed to move buy order:", curr_pair, "to new rate:", new_rate)
 			order.polo_update()
 	
 	
@@ -193,16 +196,18 @@ class OrderMaker:
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
 					order.move(Order.ORDER_CANCELLED, amount_filled)
 				else:
-					date_placed = time.time()
 					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
-					new_order_id = move_result['orderNumber']
-					if new_order_id != None:
+					if move_result["success"] == 1:
+						new_order_id = move_result['orderNumber']
+						date_placed = time.time()
 						print(("Updating slow selling", curr_pair, ":", order.amount, "at", new_rate))
 						order.move(Order.ORDER_FILLED, amount_filled)
 						new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
 						new_order.save()
 						order = new_order
 						initial_amount = order.amount
+					else:
+						print("Failed to move sell order:", curr_pair, "to new rate:", new_rate)
 			order.polo_update()
 
 	##places a buy order to buy curr_pair at rate and amount given 
