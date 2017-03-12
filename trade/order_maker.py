@@ -26,15 +26,15 @@ class OrderMaker:
 	
 	##amounts of each symbol to trade
 	SYM_AMOUNTS = { 
-			"BTC" : 50,
-			"ETH" : 50,
-			"XMR" : 50,
-			"DASH" : 50,
-			"ETC" : 50,
-			"LTC" : 50,
-			"XRP" : 50,
-			"NXT" : 50,
-			"ZEC" : 50
+			"BTC" : 150,
+			"ETH" : 150,
+			"XMR" : 150,
+			"DASH" : 150,
+			"ETC" : 100,
+			"LTC" : 75,
+			"XRP" : 75,
+			"NXT" : 75,
+			"ZEC" : 150
 	}
 
 	SYMS = ["BTC", "ETH", "XMR", "DASH", "XRP", "NXT", "ETC", "LTC", "ZEC"]
@@ -49,6 +49,7 @@ class OrderMaker:
 		self.balances = {}
 		self.update_balances()
 		self.curr_available = {}
+		self.curr_available_balances = {}
 		self.update_curr_available() 
 
 	def update_balances(self):
@@ -59,7 +60,8 @@ class OrderMaker:
 	def update_curr_available(self):
 		info = self.polo.api_query("returnCompleteBalances",{})
 		for s in self.SYMS:
-			amt = float(info[s]['available'])
+			amt = float(info[s]['available']) + float(info[s]['onOrders'])
+			self.curr_available_balances[s] = amt
 			if amt > 0: 
 				self.curr_available[s] = True
 			else:
@@ -94,13 +96,16 @@ class OrderMaker:
 	def handle_signal_preorder(self, signal, operating_range):
 		sym = signal.sym
 		max_usd_amt = self.SYM_AMOUNTS[sym]
-		owned_amt = self.balances[sym]
+		owned_amt = self.curr_available_balances[sym]
 		curr_pair = "USDT_" + sym
 		polo_order_data = self.polo.api_query("returnOpenOrders", {'currencyPair': curr_pair})
 
 		if len(polo_order_data) > 2:
 			print("something is wrong more than 2 open orders for a specific currency")
-	
+
+		##for s in self.SYMS:
+			##print(s, self.curr_available_balances[s])
+
 		##get information about currently existing open buy/sell orders
 		existing_buy_order = None
 		existing_sell_order = None
@@ -114,35 +119,38 @@ class OrderMaker:
 
 		floor = operating_range[0]
 		ceiling = operating_range[1]
+		
+		sym_amt = owned_amt 
 		if existing_sell_order is not None:
 			if ceiling == -1:
 				print("Cancelling sell order", curr_pair)
 				cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': existing_sell_order.id})
 			else:
 				print(("Updating preselling", curr_pair, ":", existing_sell_order.amount, "at", ceiling))
-				move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : ceiling})
+				move_result = self.polo.api_query("moveOrder", {'orderNumber': existing_sell_order.id, 'rate' : ceiling, 'amount' : sym_amt})
 		else:
 			if ceiling == -1:
 				return
 			else:
-				sym_amt = owned_amt 
 				if sym_amt > 0:
 					print(("Creating presell", curr_pair, ":", sym_amt, "at", ceiling))
 					self.place_sell_order(curr_pair, ceiling, sym_amt)
 		
-		
+		if floor != -1:
+			sym_amt = buy_usd_amt/floor
+		else:
+			sym_amount = -1
 		if existing_buy_order is not None:
-			if floor == -1:
+			if floor == -1 or sym_amt <= 0:
 				print("Cancelling buy order", curr_pair)
 				cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': existing_buy_order.id})
 			else:
 				print(("Updating prebuying", curr_pair, ":", existing_buy_order.amount, "at", floor))
-				move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : floor})
+				move_result = self.polo.api_query("moveOrder", {'orderNumber': existing_buy_order.id, 'rate' : sym_amt})
 		else:
 			if floor == -1:
 				return
 			else:
-				sym_amt = buy_usd_amt/floor
 				if sym_amt > 0:
 					print(("Creating prebuy", curr_pair, ":", sym_amt, "at", floor))
 					self.place_buy_order(curr_pair, floor, sym_amt)

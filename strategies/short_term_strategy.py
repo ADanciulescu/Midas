@@ -169,7 +169,7 @@ class ShortTermStrategy:
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			self.floor = floor
 			self.ceiling = ceiling
-			##print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
+			print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
 
 
 			if floor > 0:

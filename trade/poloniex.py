@@ -42,42 +42,37 @@ class Poloniex:
 
 	def api_query(self, command, req={}):
 		self.lock.acquire()
-		if(command == "returnTicker" or command == "return24Volume"):
-			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command))
-			
-			time.sleep(0.2)
-			self.lock.release()
-			return json.loads(ret.read().decode('utf-8'))
-		elif(command == "returnOrderBook"):
-			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command + '&currencyPair=' + str(req['currencyPair'])))
-			
-			time.sleep(0.2)
-			self.lock.release()
-			return json.loads(ret.read().decode('utf-8'))
-		elif(command == "returnMarketTradeHistory"):
-			ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + "returnTradeHistory" + '&currencyPair=' + str(req['currencyPair'])))
-			
-			time.sleep(0.2)
-			self.lock.release()
-			return json.loads(ret.read().decode('utf-8'))
-		else:
-			req['command'] = command
-			req['nonce'] = int(time.time()*1000)
-			post_data = urllib.parse.urlencode(req)
+		
+		try:		
+			if(command == "returnTicker" or command == "return24Volume"):
+				ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command))
+				ret_decoded = json.loads(ret.read().decode('utf-8'))
+			elif(command == "returnOrderBook"):
+				ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + command + '&currencyPair=' + str(req['currencyPair'])))
+				ret_decoded = json.loads(ret.read().decode('utf-8'))
+			elif(command == "returnMarketTradeHistory"):
+				ret = urllib.request.urlopen(urllib.request.Request('https://poloniex.com/public?command=' + "returnTradeHistory" + '&currencyPair=' + str(req['currencyPair'])))
+				ret_decoded = json.loads(ret.read().decode('utf-8'))
+			else:
+				req['command'] = command
+				req['nonce'] = int(time.time()*1000)
+				post_data = urllib.parse.urlencode(req)
 
-			sign = hmac.new(self.Secret.encode('utf-8'), post_data.encode('utf-8'), hashlib.sha512).hexdigest()
-			headers = {
-					'Sign': sign,
-					'Key': self.APIKey
-					}
+				sign = hmac.new(self.Secret.encode('utf-8'), post_data.encode('utf-8'), hashlib.sha512).hexdigest()
+				headers = {
+						'Sign': sign,
+						'Key': self.APIKey
+						}
 
-			ret = requests.post('https://poloniex.com/tradingApi', data =  req, headers = headers)
-			jsonRet = json.loads(ret.text)
+				ret = requests.post('https://poloniex.com/tradingApi', data =  req, headers = headers)
+				jsonRet = json.loads(ret.text)
+				ret_decoded = self.post_process(jsonRet)
+		except json.decoder.JSONDecodeError:
+			ret_decoded = None
 			
-			time.sleep(0.2)
-			self.lock.release()
-			return self.post_process(jsonRet)
-				
+		time.sleep(0.2)
+		self.lock.release()
+		return ret_decoded
 
 
 	def returnTicker(self):
