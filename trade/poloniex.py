@@ -68,6 +68,7 @@ class Poloniex:
 				jsonRet = json.loads(ret.text)
 				ret_decoded = self.post_process(jsonRet)
 		except json.decoder.JSONDecodeError:
+			print("***************************************api query ERROR**************************************************")
 			ret_decoded = None
 			
 		time.sleep(0.2)

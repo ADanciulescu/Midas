@@ -42,18 +42,21 @@ class Order:
 	def polo_update(self):
 		polo = Poloniex.get_instance()
 		polo_data = polo.api_query("returnOpenOrders", {'currencyPair': self.curr_pair})
-		found = False
-		for d in polo_data:
-			if d['orderNumber'] == self.id:
-				found = True
-				self.amount = float(d['amount'])
-				self.update()
-		
-		if not found:
-			self.drop()
-			self.table_name = Order.ORDER_FILLED
-			self.date_filled = time()
-			self.save()
+		if polo_data is None:
+			print("API error unable to polo_update order")
+		else:
+			found = False
+			for d in polo_data:
+				if d['orderNumber'] == self.id:
+					found = True
+					self.amount = float(d['amount'])
+					self.update()
+			
+			if not found:
+				self.drop()
+				self.table_name = Order.ORDER_FILLED
+				self.date_filled = time()
+				self.save()
 
 	##returns true if order is still active, else return false
 	def is_active(self):

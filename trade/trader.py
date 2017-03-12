@@ -28,10 +28,9 @@ class Trader:
 			##print secs_cur-secs_last_run
 			if(secs_cur-secs_last_run) > (self.period+1):
 				print("***********************************SIGNALS*********************************************")
-				self.order_maker.update_curr_available()
-				self.signaler.update(self.order_maker.curr_available)
+				self.order_maker.update_balances()
+				self.signaler.update(self.order_maker.is_owned)
 				new_signals_array = self.signaler.new_signals_array
-				self.order_maker.update_balances()	
 				self.handle_new_currency_signals(new_signals_array)
 				for i in range(len(table_names.short_term_tables)):
 					print("last operation was: " , self.signaler.strat_array[i].last)
