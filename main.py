@@ -63,6 +63,7 @@ def main():
 	
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
+	CandleFetcher.fetch_candles_after_date("XRP", date_to_timestamp("2017-3-1"), 300)
 	CandleFetcher.update_tables(table_names.short_term_tables)
 	trader = Trader(Trader.CLASSIC)
 	trader.run()
