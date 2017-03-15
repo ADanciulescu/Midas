@@ -42,7 +42,7 @@ class Poloniex:
 
 	def api_query(self, command, req={}):
 		self.lock.acquire()
-		print("**********************query********************************")
+		##print("**********************query********************************")
 		
 		try:		
 			if(command == "returnTicker" or command == "return24Volume"):

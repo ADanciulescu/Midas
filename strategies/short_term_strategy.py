@@ -194,7 +194,9 @@ class ShortTermStrategy:
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			self.floor = floor
 			self.ceiling = ceiling
-			##print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
+			
+			if not self.is_simul:
+				print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
 
 			if self.is_simul:
 				##self.factor = self.vol_pts_short[candle_num].value/self.vol_pts_long[candle_num].value
