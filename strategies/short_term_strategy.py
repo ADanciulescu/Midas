@@ -5,12 +5,17 @@ from trade_simulator import TradeSimulator
 from interval_array import IntervalArray
 from point import Point
 from range import Range
+from moving_average import MovingAverage
+from point_table import PointTable
+from db_manager import DBManager
 
 	
 class ShortTermStrategy:
 
 	NAME = "SHORTTERM"
 	DATA_PAST = 50 
+	VOL_PERIOD_LONG = 50
+	VOL_PERIOD_SHORT = 1
 
 	def __init__(self, table_name, is_simul = True, to_print = False):
 		self.table_name = table_name
@@ -37,7 +42,19 @@ class ShortTermStrategy:
 
 		if is_simul:
 			self.last = "sell"
-			
+			self.calc_vol_tables()
+	
+	def calc_vol_tables(self):
+		pt_name = CandleTable.to_point_table(self.table_name, "volume")
+		points = PointTable.get_point_array(pt_name)
+		pt_name_1 = "TEMP1"
+		mv1 = MovingAverage(pt_name_1, points)
+		pt_name_2 = "TEMP2"
+		mv2 = MovingAverage(pt_name_2, points)
+		DBManager.drop_matching_tables("TEMP")
+		self.vol_pts_short = mv1.simple(self.VOL_PERIOD_SHORT)
+		self.vol_pts_long = mv2.simple(self.VOL_PERIOD_LONG)
+
 
 	##called by signaler when it grabs new data
 	def update_state(self, new_candles, is_avail):
@@ -179,6 +196,9 @@ class ShortTermStrategy:
 			self.ceiling = ceiling
 			##print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
 
+			if self.is_simul:
+				##self.factor = self.vol_pts_short[candle_num].value/self.vol_pts_long[candle_num].value
+				self.factor = 1
 
 			if floor > 0:
 				self.area_array.append((floor, ceiling))
@@ -187,13 +207,16 @@ class ShortTermStrategy:
 			if self.candles[candle_num-1].close > floor and self.candles[candle_num].close < floor:
 				if self.last == "sell":
 					type = Operation.BUY_OP
-					amount = self.amount
+					if self.is_simul:
+						amount = self.amount*self.factor
+					else:
+						amount = self.amount
 					self.last = "buy"
 			##if broke through ceiling since last candle -> sell
 			elif self.candles[candle_num-1].close < ceiling and self.candles[candle_num].close > ceiling:
 				if self.last == "buy":
 					type = Operation.SELL_OP
-					amount = self.amount
+					amount = bits 
 					self.last = "sell"
 			elif floor == -1:
 				##if self.last == "buy":

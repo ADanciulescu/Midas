@@ -86,7 +86,7 @@ def main():
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
-	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-6-1"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
@@ -171,10 +171,10 @@ def main():
 	
 def test_short():
 	total = 1
-	date1 = date_to_timestamp("2016-6-1")
-	for i in range(9*4):
-		date2 = date1+ 15*HALF_DAY
-		tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
+	date1 = date_to_timestamp("2016-11-1")
+	for i in range(3):
+		date2 = date1+ 15*4*HALF_DAY
+		tn = CandleFetcher.cut_table(table_names.REP_300, date1, date2)
 		strat = ShortTermStrategy(tn)
 		##strat = BollingerStrategy(tn, set_default = True)
 		total *= (1+test_against_normal(strat))

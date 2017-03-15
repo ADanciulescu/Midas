@@ -21,8 +21,8 @@ class Area:
 			self.low_limit = -1
 			self.high_limit = -1
 		else:
-			self.low_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.1)
-			self.high_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.7)
+			self.low_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.2)
+			self.high_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.8)
 			
 			if (self.high_limit-self.low_limit)*2/(self.high_limit+self.low_limit) < 0.004:
 				self.low_limit = -10
@@ -179,7 +179,8 @@ class IntervalArray:
 				else:
 					agg_array.append([interval])
 		
-		first_local_min = (agg_array[0][-1].pt2.value + agg_array[0][0].pt1.value)/2
+		##first_local_min = (agg_array[0][-1].pt2.value + agg_array[0][0].pt1.value)/2
+		first_local_min = agg_array[0][0].pt1.value
 		self.local_mins.append(first_local_min)
 		i = 1
 		while i < len(agg_array)-1:
@@ -189,7 +190,8 @@ class IntervalArray:
 					self.local_mins.append(local_min)
 			i += 1
 
-		last_local_min = (agg_array[-1][-1].pt2.value + agg_array[-1][0].pt1.value)/2
+		##last_local_min = (agg_array[-1][-1].pt2.value + agg_array[-1][0].pt1.value)/2
+		last_local_min = agg_array[-1][-1].pt2.value
 		self.local_mins.append(last_local_min)
 
 		self.areas = []
