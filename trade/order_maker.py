@@ -71,9 +71,9 @@ class OrderMaker:
 				self.on_order_balances[s] = on_order_amt
 				self.total_balances[s] = available_amt + on_order_amt
 				if self.total_balances[s] > 0:
-					self.is_owned[s] == True
+					self.is_owned[s] = True
 				else:
-					self.is_owned[s] == False 
+					self.is_owned[s] = False 
 				
 
 
@@ -84,8 +84,7 @@ class OrderMaker:
 			print("API error unable to get_open_orders")
 		else:
 			for o_data in polo_order_data:
-				existing_sell_order = Order(Order.ORDER_ACTIVE, o['orderNumber'], curr_pair, 0, o['amount'], o['rate'], o['type']) 
-				o = Order(Order.ORDER_ACTIVE, o_data['orderNumber'], curr_pair, 0, o_data['amount'], o_data['rate'], o['type']) 
+				o = Order(Order.ORDER_ACTIVE, o_data['orderNumber'], curr_pair, 0, o_data['amount'], o_data['rate'], o_data['type']) 
 				ret_orders.append(o)
 
 		return ret_orders
@@ -113,9 +112,9 @@ class OrderMaker:
 						print("API error unable to cancel order")
 					amt_held_in_sym = open_orders[0].amount
 					amt_held_in_usd = amt_held_in_sym/signal.price
-					self.slow_buy(signal.sym, amt - amt_held_in_usd, limit = (signal.price*1.01))
+					self.slow_buy(signal.sym, amt - amt_held_in_usd, limit = (signal.price*1.005))
 			else:
-				self.slow_buy(signal.sym, amt, limit = (signal.price*1.01))
+				self.slow_buy(signal.sym, amt, limit = (signal.price*1.005))
 
 		elif signal.type == "SELL":
 			if len(open_orders) > 0: ##if open orders exist already for this curr_pair
@@ -123,11 +122,11 @@ class OrderMaker:
 					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': open_orders[0].id})
 					if cancel_result is None:
 						print("API error unable to cancel order")
-					self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.99))
+					self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
 				else: ##if sell order already exists do nothing
 					pass
 			else:
-				self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.99))
+				self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
 
 	## instead of signals triggering buy/sell, orders are preplaced based on operating range
 	def handle_signal_preorder(self, signal, operating_range):
