@@ -18,16 +18,16 @@ class TradeSimulator:
 	BUY_FEE = 0.0025
 
 	##core amounts for each currency
-	BTC_AMOUNT = 1
-	ETH_AMOUNT = 80
-	XMR_AMOUNT = 70
-	XRP_AMOUNT = 3000
-	ETC_AMOUNT = 300
-	LTC_AMOUNT = 100
-	DASH_AMOUNT = 10
-	REP_AMOUNT = 30
+	BTC_AMOUNT = 0.12 
+	ETH_AMOUNT = 	7
+	XMR_AMOUNT = 10
+	XRP_AMOUNT = 8000 
+	ETC_AMOUNT = 55 
+	LTC_AMOUNT = 25 
+	DASH_AMOUNT = 2 
+	REP_AMOUNT = 10
 	STR_AMOUNT = 3000
-	ZEC_AMOUNT = 3
+	ZEC_AMOUNT = 25000 
 	DEFAULT_AMOUNT = 10
 
 	def __init__(self, table_name_array, strategy_array, limit = -12345, to_print = True, to_print_trades = False, to_log = True):

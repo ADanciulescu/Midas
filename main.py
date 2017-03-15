@@ -33,6 +33,7 @@ from snap_table import SnapTable
 from snap_order_table import SnapOrderTable
 from normal_strategy import NormalStrategy
 from trader import Trader
+from stat_calculator import StatCalculator
 import table_names
 import time
 import threading
@@ -63,10 +64,13 @@ def main():
 	
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
-	##CandleFetcher.fetch_candles_after_date("XRP", date_to_timestamp("2016-6-1"), 300)
+	CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-6-1"), 300)
 	CandleFetcher.update_tables(table_names.short_term_tables)
 	trader = Trader(Trader.CLASSIC)
 	trader.run()
+	##CandleFetcher.update_tables(table_names.short_term_tables)
+	##trader = Trader(Trader.CLASSIC)
+	##trader.run()
 
 	##while(True):
 		##print(time.time())
@@ -85,7 +89,7 @@ def main():
 	##OrderMaker.update_orders()
 	##OrderMaker.place_buy_order("NXT", 0.01)
 
-	##CandleFetcher.fetch_candles_after_date("BTC", date_to_timestamp("2017-3-1"), 300)
+	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-6-1"), 300)
 	##e = Emailer()
 	##e.email_signal(test)
 	##om = OrderMaker([])
@@ -123,18 +127,8 @@ def main():
 		##total_percent *= (percent+1)
 	##print "Total Balance:", total_balance
 	##print "Total Percent:", total_percent
-	
-	##total = 1
-	##date1 = date_to_timestamp("2016-6-1")
-	##for i in range(18):
-		##date2 = date1+ 30*HALF_DAY
-		##tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
-		##strat = ShortTermStrategy(tn)
-		##strat = BollingerStrategy(tn, set_default = True)
-		##total *= (1+test_against_normal(strat))
-		##DBManager.drop_table(tn)
-		##date1 = date2
-	##print(total)
+
+	test_short()
 	
 
 	##date2 = date1+ HALF_DAY
@@ -177,6 +171,26 @@ def main():
 
 	##simulate(table_name_BTC_14400)
 	##simulate(table_name_LTC_14400)
+	
+def test_short():
+	total = 1
+	date1 = date_to_timestamp("2016-11-1")
+	for i in range(3):
+		date2 = date1+ 15*4*HALF_DAY
+		tn = CandleFetcher.cut_table(table_names.REP_300, date1, date2)
+		strat = ShortTermStrategy(tn)
+		##strat = BollingerStrategy(tn, set_default = True)
+		total *= (1+test_against_normal(strat))
+		date1 = date2
+		
+		sc = StatCalculator(tn)
+		volatility = sc.get_volatility()
+		volume = sc.get_volume()
+		print ("Volatility:", volatility)
+		print ("Volume:", volume)
+		
+		DBManager.drop_table(tn)
+	print(total)
 
 def test_against_normal(strat):
 	print("**************************************NORMAL************************************************")
