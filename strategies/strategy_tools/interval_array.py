@@ -179,8 +179,8 @@ class IntervalArray:
 				else:
 					agg_array.append([interval])
 		
-		##first_local_min = (agg_array[0][-1].pt2.value + agg_array[0][0].pt1.value)/2
-		first_local_min = agg_array[0][0].pt1.value
+		first_local_min = (agg_array[0][-1].pt2.value + agg_array[0][0].pt1.value)/2
+		##first_local_min = agg_array[0][0].pt1.value
 		self.local_mins.append(first_local_min)
 		i = 1
 		while i < len(agg_array)-1:

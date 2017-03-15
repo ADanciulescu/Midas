@@ -145,9 +145,9 @@ class TradeSimulator:
 			print(("Profit Percent: ", self.profit_percent))
 		else:
 			print("NO MONEY SPENT")
-		##if self.num_currencies == 1:
-			##self.profit_per_bitsec = self.profit_percent/self.bit_sec
-			##print self.profit_per_bitsec
+		if self.num_currencies == 1:
+			self.profit_per_bitsec = 100000*self.balance/self.bit_sec
+			print("Profit per bitsec:", self.profit_per_bitsec)
 		print()
 
 	##returns snapshot at the end

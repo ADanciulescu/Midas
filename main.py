@@ -65,9 +65,9 @@ def main():
 	##OrderMaker.get_last_trade_rate("USDT_BTC")
 	##DBManager.drop_matching_tables("SIGNAL")
 	##CandleFetcher.fetch_candles_after_date("REP", date_to_timestamp("2016-6-1"), 300)
-	CandleFetcher.update_tables(table_names.short_term_tables)
-	trader = Trader(Trader.CLASSIC)
-	trader.run()
+	##CandleFetcher.update_tables(table_names.short_term_tables)
+	##trader = Trader(Trader.CLASSIC)
+	##trader.run()
 	##CandleFetcher.update_tables(table_names.short_term_tables)
 	##trader = Trader(Trader.CLASSIC)
 	##trader.run()
@@ -173,24 +173,31 @@ def main():
 	##simulate(table_name_LTC_14400)
 	
 def test_short():
-	total = 1
-	date1 = date_to_timestamp("2016-11-1")
-	for i in range(3):
-		date2 = date1+ 15*4*HALF_DAY
-		tn = CandleFetcher.cut_table(table_names.REP_300, date1, date2)
-		strat = ShortTermStrategy(tn)
+	total_profit = 1
+	total_balance = 0
+	total_balance_bitsec = 0
+	date1 = date_to_timestamp("2016-6-1")
+	for i in range(1):
+		date2 = date1+ 9*15*4*HALF_DAY
+		tn = CandleFetcher.cut_table(table_names.ETH_300, date1, date2)
+		strat = ShortTermStrategy(tn, calc_stats = True)
 		##strat = BollingerStrategy(tn, set_default = True)
-		total *= (1+test_against_normal(strat))
+		(profit, balance, balance_bitsec) = test_against_normal(strat)
+		total_profit *= 1+profit
+		total_balance += balance 
+		total_balance_bitsec += balance_bitsec 
 		date1 = date2
-		
-		sc = StatCalculator(tn)
-		volatility = sc.get_volatility()
-		volume = sc.get_volume()
-		print ("Volatility:", volatility)
-		print ("Volume:", volume)
-		
+
+		##sc = StatCalculator(tn)
+		##volatility = sc.get_volatility()
+		##volume = sc.get_volume()
+		##print ("Volatility:", volatility)
+		##print ("Volume:", volume)
 		DBManager.drop_table(tn)
-	print(total)
+	print("total profit:", total_profit)
+	print("total balance:", total_balance)
+	print("total balance bitsec:", total_balance_bitsec)
+	##print(total_profit_bitsec)
 
 def test_against_normal(strat):
 	print("**************************************NORMAL************************************************")
@@ -201,6 +208,7 @@ def test_against_normal(strat):
 	f_bits = trade_sim.total_bits_bought_array[0]
 	f_balance = trade_sim.balance
 	f_profit_percent = trade_sim.profit_percent
+	f_balance_bitsec = trade_sim.profit_per_bitsec
 
 	strat = NormalStrategy(tn, f_bits, f_bitsec)
 	trade_sim = TradeSimulator([tn], [strat], to_log = True)
@@ -220,7 +228,8 @@ def test_against_normal(strat):
 	##for r in strat.runs:
 		##total+=r
 	##print total/len(strat.runs)
-	return f_profit_percent
+	##return f_profit_percent
+	return (f_profit_percent, f_balance, f_balance_bitsec)
 
 ## optimize parameters
 def optimize(table_name_array):

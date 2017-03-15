@@ -16,17 +16,18 @@ alltables = dbListTables(con)
 ##eth_trend = dbGetQuery( con,'select date, hits from ethereum_table_1475280000_1476432000' )
 ##eth_roc = dbGetQuery( con,'select date, value from USDT_ETH_1475280000_9999999999_14400___SIMPLE_ROC' )
 
-btc = dbGetQuery(con,'select date, close from CANDLE_USDT_BTC_1475280000_9999999999_14400')
-btc_vol = dbGetQuery(con,'select date, volume from CANDLE_USDT_BTC_1475280000_9999999999_14400')
-btc_trend = dbGetQuery( con,'select date, hits from TREND_BTC_table_1475280000_1484899200' )
-eth = dbGetQuery(con,'select date, close from CANDLE_USDT_ETH_1475280000_9999999999_14400')
-eth_vol = dbGetQuery(con,'select date, volume from CANDLE_USDT_ETH_1475280000_9999999999_14400')
-eth_trend = dbGetQuery( con,'select date, hits from TREND_ETH_table_1475280000_1484899200' )
-xmr = dbGetQuery(con,'select date, close from CANDLE_USDT_XMR_1475280000_9999999999_14400')
-xmr_trend = dbGetQuery( con,'select date, hits from TREND_XMR_table_1475280000_1484899200' )
+##btc = dbGetQuery(con,'select date, close from CANDLE_USDT_BTC_1475280000_9999999999_14400')
+##btc_vol = dbGetQuery(con,'select date, volume from CANDLE_USDT_BTC_1475280000_9999999999_14400')
+##btc_trend = dbGetQuery( con,'select date, hits from TREND_BTC_table_1475280000_1484899200' )
+##eth = dbGetQuery(con,'select date, close from CANDLE_USDT_ETH_1475280000_9999999999_14400')
+##eth_vol = dbGetQuery(con,'select date, volume from CANDLE_USDT_ETH_1475280000_9999999999_14400')
+##eth_trend = dbGetQuery( con,'select date, hits from TREND_ETH_table_1475280000_1484899200' )
+##xmr = dbGetQuery(con,'select date, close from CANDLE_USDT_XMR_1475280000_9999999999_14400')
+##xmr_trend = dbGetQuery( con,'select date, hits from TREND_XMR_table_1475280000_1484899200' )
 
-btc_boll_low = dbGetQuery(con,'select date, value from POINT_USDT_BTC_1475280000_9999999999_14400___SIMPLE_AVG_20_LOW')
-btc_boll_high = dbGetQuery(con,'select date, value from POINT_USDT_BTC_1475280000_9999999999_14400___SIMPLE_AVG_20_HIGH')
+
+##btc_boll_low = dbGetQuery(con,'select date, value from POINT_USDT_BTC_1475280000_9999999999_14400___SIMPLE_AVG_20_LOW')
+##btc_boll_high = dbGetQuery(con,'select date, value from POINT_USDT_BTC_1475280000_9999999999_14400___SIMPLE_AVG_20_HIGH')
 
 ##plot(btc[,'date'], btc[,'close'], type = 'l') 
 ##plot(eth[,'date'], eth[,'close'], type = 'l') 
@@ -42,9 +43,9 @@ btc_boll_high = dbGetQuery(con,'select date, value from POINT_USDT_BTC_147528000
 
 ##comb2 = merge(x = eth, y = btc, by = "date") 
 
-comb_btc = merge(x = btc, y = btc_trend, by = "date") 
-comb_eth = merge(x = eth, y = eth_trend, by = "date") 
-comb_xmr = merge(x = xmr, y = xmr_trend, by = "date") 
+##comb_btc = merge(x = btc, y = btc_trend, by = "date") 
+##comb_eth = merge(x = eth, y = eth_trend, by = "date") 
+##comb_xmr = merge(x = xmr, y = xmr_trend, by = "date") 
 
 ##trend1 =  dbGetQuery( con,'select date, value from POINT_BTC_table___SIMPLE_AVG_3' )
 ##trend2 =  dbGetQuery( con,'select date, value from POINT_BTC_table___SIMPLE_AVG_25' )
@@ -54,9 +55,21 @@ comb_xmr = merge(x = xmr, y = xmr_trend, by = "date")
 ##plot(trend2[,'date'], trend2[,'hits'], type = 'l', col = 'green')
 
 
-reg_btc = lm(close ~ hits, data = comb_btc)
-reg_eth = lm(close ~ hits, data = comb_eth)
-reg_xmr = lm(close ~ hits, data = comb_xmr)
+##reg_btc = lm(close ~ hits, data = comb_btc)
+##reg_eth = lm(close ~ hits, data = comb_eth)
+##reg_xmr = lm(close ~ hits, data = comb_xmr)
 ##reg2 = lm(close.x ~ close.y, data = comb2)
 
+btc_stats = dbGetQuery( con,'select buy_rate, sell_rate, volume, volatility from STRATSTAT_SHORTTERM_BTC_300' )
+eth_stats = dbGetQuery( con,'select buy_rate, sell_rate, volume, volatility from STRATSTAT_SHORTTERM_ETH_300' )
+xmr_stats = dbGetQuery( con,'select buy_rate, sell_rate, volume, volatility from STRATSTAT_SHORTTERM_XMR_300' )
+
+reg_btc_volume = lm((sell_rate-buy_rate) ~ volume, data = btc_stats)
+reg_btc_volat = lm(((sell_rate-buy_rate)/buy_rate) ~ volatility, data = btc_stats)
+
+reg_xmr_volume = lm((sell_rate-buy_rate) ~ volume, data = xmr_stats)
+reg_xmr_volat = lm(((sell_rate-buy_rate)/buy_rate) ~ volatility, data = xmr_stats)
+
+reg_eth_volume = lm((sell_rate-buy_rate) ~ volume, data = eth_stats)
+reg_eth_volat = lm((sell_rate-buy_rate) ~ volatility, data = eth_stats)
 ##source("C:\\Users\\andrei\\dev\\Midas\\r_scripts\\btc_eth_corr.r")

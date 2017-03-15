@@ -8,19 +8,25 @@ from range import Range
 from moving_average import MovingAverage
 from point_table import PointTable
 from db_manager import DBManager
+from point_populator import PointPopulator
+from strat_stat import StratStat
+from strat_stat_table import StratStatTable
+from standard_deviation import StandardDeviation
 
-	
 class ShortTermStrategy:
 
 	NAME = "SHORTTERM"
 	DATA_PAST = 50 
-	VOL_PERIOD_LONG = 50
-	VOL_PERIOD_SHORT = 1
+	VOL_PERIOD_LONG = 500
+	VOL_PERIOD_SHORT = 20 
+	STDDEV_PERIOD_LONG = 100 
+	STDDEV_PERIOD_SHORT = 10
 
-	def __init__(self, table_name, is_simul = True, to_print = False):
+	def __init__(self, table_name, is_simul = True, to_print = False, calc_stats = False):
 		self.table_name = table_name
 		self.candles = CandleTable.get_candle_array(table_name)
 		self.to_print = to_print
+		self.calc_stats = calc_stats
 		self.interval_array = None
 		self.is_simul = is_simul
 		self.area_array = []
@@ -45,15 +51,30 @@ class ShortTermStrategy:
 			self.calc_vol_tables()
 	
 	def calc_vol_tables(self):
+
+		if self.calc_stats:
+			self.strat_stat_array = []
+			self.ss_tn = StratStatTable.calc_name(self.table_name, self.NAME)
+			if DBManager.exists_table(self.ss_tn):
+				DBManager.drop_table(self.ss_tn)
+			sst = StratStatTable(self.ss_tn)
+			sst.save()
+
 		pt_name = CandleTable.to_point_table(self.table_name, "volume")
-		points = PointTable.get_point_array(pt_name)
+		pt_close = CandleTable.to_point_table(self.table_name, "close")
+		self.points = PointTable.get_point_array(pt_name)
+		self.points_close = PointTable.get_point_array(pt_close)
 		pt_name_1 = "TEMP1"
-		mv1 = MovingAverage(pt_name_1, points)
+		mv1 = MovingAverage(pt_name_1, self.points)
 		pt_name_2 = "TEMP2"
-		mv2 = MovingAverage(pt_name_2, points)
-		DBManager.drop_matching_tables("TEMP")
+		mv2 = MovingAverage(pt_name_2, self.points)
 		self.vol_pts_short = mv1.simple(self.VOL_PERIOD_SHORT)
 		self.vol_pts_long = mv2.simple(self.VOL_PERIOD_LONG)
+		
+		##pp = PointPopulator(self.table_name) 
+		##self.stddev_pts_short = pp.create_stddev(self.STDDEV_PERIOD_SHORT) 
+		##self.stddev_pts_long = pp.create_stddev(self.STDDEV_PERIOD_LONG) 
+		DBManager.drop_matching_tables("TEMP")
 
 
 	##called by signaler when it grabs new data
@@ -186,6 +207,10 @@ class ShortTermStrategy:
 				##self.recalc_interval_array(candle_num)
 				##return Operation(Operation.NONE_OP, 0)
 
+			##if self.is_simul and candle_num != len(self.candles)-1:
+				##if self.candles[candle_num+1].volume < self.amount:
+					##return Operation(Operation.NONE_OP, 0)
+
 
 
 			type = Operation.NONE_OP
@@ -194,13 +219,22 @@ class ShortTermStrategy:
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			self.floor = floor
 			self.ceiling = ceiling
-			
-			if not self.is_simul:
-				print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
+			##print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
 
-			if self.is_simul:
-				##self.factor = self.vol_pts_short[candle_num].value/self.vol_pts_long[candle_num].value
-				self.factor = 1
+			##if self.is_simul and candle_num > self.STDDEV_PERIOD_LONG:
+				##if self.vol_pts_short[candle_num].value > self.vol_pts_long[candle_num].value:
+					##self.recalc_interval_array(candle_num)
+					##return Operation(Operation.NONE_OP, 0)
+				##if self.vol_pts_short[candle_num].value > 0:
+					##self.factor = self.vol_pts_short[candle_num].value/self.vol_pts_long[candle_num].value				
+				##else:
+					##self.factor = 1
+				
+				##self.factor = self.stddev_pts_short[candle_num-self.STDDEV_PERIOD_SHORT].value/self.stddev_pts_long[candle_num-self.STDDEV_PERIOD_LONG].value				
+				##self.factor = self.stddev_pts_long[candle_num-self.STDDEV_PERIOD_LONG].value/self.stddev_pts_long[candle_num-self.STDDEV_PERIOD_LONG].value				
+			##else:
+				##self.factor = 1
+			self.factor = 1
 
 			if floor > 0:
 				self.area_array.append((floor, ceiling))
@@ -214,12 +248,31 @@ class ShortTermStrategy:
 					else:
 						amount = self.amount
 					self.last = "buy"
+
+					if self.is_simul and self.calc_stats:
+						ss = StratStat(self.ss_tn, self.candles[candle_num].close, candle_num)
+						self.strat_stat_array.append(ss)
 			##if broke through ceiling since last candle -> sell
 			elif self.candles[candle_num-1].close < ceiling and self.candles[candle_num].close > ceiling:
 				if self.last == "buy":
 					type = Operation.SELL_OP
 					amount = bits 
 					self.last = "sell"
+					
+					if self.is_simul and self.calc_stats:
+						ss = self.strat_stat_array[-1]
+						sell_rate = self.candles[candle_num].close
+						total_volume = 0
+						total_price = 0
+						num_candles = 0
+						for c in self.candles[ss.buy_candle_index:candle_num+1]:
+							total_volume += c.volume
+							total_price += c.close
+							num_candles+=1
+						stddev = StandardDeviation.simple(self.points_close[ss.buy_candle_index:candle_num+1])
+						volatility = stddev/(total_price/num_candles)
+						ss.update_values(sell_rate, total_volume, volatility)
+						ss.save()
 			elif floor == -1:
 				##if self.last == "buy":
 					##if self.candles[candle_num].close < self.area_array[-1][0]:
