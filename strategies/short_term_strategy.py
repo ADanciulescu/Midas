@@ -28,6 +28,7 @@ class ShortTermStrategy:
 		init_candles = self.candles[:self.DATA_PAST]
 		self.ranges = self.create_ranges_better(init_candles)
 		self.interval_array = self.create_interval_array(self.ranges)
+		
 		##self.interval_array.pprint()
 		##print self.interval_array.local_maxes
 		##print self.interval_array.get_limits(773)
@@ -155,21 +156,28 @@ class ShortTermStrategy:
 		if candle_num < self.DATA_PAST:
 			return Operation(Operation.NONE_OP, 0)
 		else:
-
 			##if called by signaler, need to recalculate interval_array
 			if not self.is_simul:
 				num_candles = len(self.candles)
 				range_candles = self.candles[candle_num-self.DATA_PAST+1:candle_num + 1]
 				self.ranges = self.create_ranges_better(range_candles)
 				self.interval_array = self.create_interval_array(self.ranges)
-			
+	
+			##make sure that more volume was traded during the next candle than amount intended to trade
+			##this ensures a valid trade could have plausably happened	
+			##if self.is_simul and ((candle_num == len(self.candles)-1) or self.candles[candle_num+1].volume < self.amount):
+				##self.recalc_interval_array(candle_num)
+				##return Operation(Operation.NONE_OP, 0)
+
+
+
 			type = Operation.NONE_OP
 			amount = 0
 			
 			(floor, ceiling) = self.interval_array.get_limits(self.candles[candle_num].close)
 			self.floor = floor
 			self.ceiling = ceiling
-			print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
+			##print(("f:", floor,"c:",  ceiling, "prev:", self.candles[candle_num-1].close, "cur:", self.candles[candle_num].close))	
 
 
 			if floor > 0:
@@ -205,16 +213,17 @@ class ShortTermStrategy:
 				type = Operation.NONE_OP
 		
 			if self.is_simul:
-				pt1 = Point("", self.candles[candle_num-1].date, self.candles[candle_num-1].close)
-				pt2 = Point("", self.candles[candle_num].date, self.candles[candle_num].close)
-				new_r = Range(pt1, pt2, 0)
-				self.ranges.pop(0)
-				self.ranges.append(new_r)
-				
-				##if candle_num %10 == 0:
-				self.interval_array = self.create_interval_array(self.ranges)
-
+				self.recalc_interval_array(candle_num)
 			return Operation(type, amount)
 				
-
+	
+	def recalc_interval_array(self, candle_num):
+		pt1 = Point("", self.candles[candle_num-1].date, self.candles[candle_num-1].close)
+		pt2 = Point("", self.candles[candle_num].date, self.candles[candle_num].close)
+		new_r = Range(pt1, pt2, 0)
+		self.ranges.pop(0)
+		self.ranges.append(new_r)
+		
+		##if candle_num %10 == 0:
+		self.interval_array = self.create_interval_array(self.ranges)
 

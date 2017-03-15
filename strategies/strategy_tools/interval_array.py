@@ -21,8 +21,8 @@ class Area:
 			self.low_limit = -1
 			self.high_limit = -1
 		else:
-			self.low_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.2)
-			self.high_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.8)
+			self.low_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.1)
+			self.high_limit = interval_array.find_percentile(self.low_min, self.high_min, 0.7)
 			
 			if (self.high_limit-self.low_limit)*2/(self.high_limit+self.low_limit) < 0.004:
 				self.low_limit = -10
@@ -264,6 +264,8 @@ class IntervalArray:
 		print("Interval Array:")
 		for r in self.interval_array:
 			r.pprint()
+		for m in self.local_mins:
+			print(m)
 	
 	
 	## return spot to insert the new pt into interval array
