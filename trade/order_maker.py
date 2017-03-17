@@ -191,14 +191,15 @@ class OrderMaker:
 	def slow_sell_code(self, sym, sym_money, limit, sell_all):
 		curr_pair = "USDT_" + sym
 		rate = self.get_bottom_ask(curr_pair)
-
+		print("here")
 		if sell_all:
-			self.update_balances()
-			amount = self.available_balances[sym]
+			amount = self.order_updater.sym_infos[sym].available_balance
+			print(amount)
 			if amount == 0:
 				return
 		else:
 			amount = sym_money/rate
+		print("here2")
 		
 		print(("Slow selling", curr_pair, ":", amount, "at", rate))
 		order = self.place_sell_order(curr_pair, rate, amount)

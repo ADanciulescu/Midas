@@ -34,10 +34,11 @@ class OrderUpdater:
 	## thread runs this code
 	## updates balance and open orders for each sym every RUN_PERIOD
 	def update_orders(self):
-		last_time = 0
+		last_time = time.time() 
 		cur_time = time.time()
 		while(True):
 			if (cur_time - last_time) > self.RUN_PERIOD:
+				print("before")
 				available_balances = self.get_available_balances()
 				(open_buy_orders, open_sell_orders) = self.get_open_orders()
 				
@@ -45,7 +46,10 @@ class OrderUpdater:
 					self.sym_infos[s].update(available_balances[s], open_buy_orders[s], open_sell_orders[s])
 				
 				self.last_time = cur_time
-				cur_time = time.time()
+			else:
+				time.sleep(1)
+			cur_time = time.time()
+
 		return ret_orders
 
 
