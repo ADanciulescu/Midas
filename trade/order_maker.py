@@ -26,11 +26,11 @@ class OrderMaker:
 	
 	##amounts of each symbol to trade
 	SYM_AMOUNTS = { 
-			"BTC" : 150,
-			"ETH" : 150,
-			"XMR" : 150,
+			"BTC" : 175,
+			"ETH" : 200,
+			"XMR" : 175,
 			"DASH" : 150,
-			"ETC" : 100,
+			"ETC" : 125,
 			"LTC" : 75,
 			"REP" : 75,
 			"NXT" : 75,
@@ -246,6 +246,7 @@ class OrderMaker:
 					if cancel_result is None:
 						print("API error unable to cancel order")
 					else:
+						print("order cancelled")
 						order.move(Order.ORDER_CANCELLED, amount_filled)
 				else:
 					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
@@ -264,6 +265,7 @@ class OrderMaker:
 						else:
 							print("Failed to move buy order:", curr_pair, "to new rate:", new_rate)
 			order.polo_update()
+		print("Done slow BUYING", curr_pair)
 	
 	
 	##Sell sym money worth of sym currency by repeatedly posting order at slightly less than current lowest ask
@@ -318,6 +320,7 @@ class OrderMaker:
 						else:
 							print("Failed to move sell order:", curr_pair, "to new rate:", new_rate)
 			order.polo_update()
+		print("Done slow SELLING", curr_pair)
 
 	##places a buy order to buy curr_pair at rate and amount given 
 	def place_buy_order(self, curr_pair, rate, amount):
