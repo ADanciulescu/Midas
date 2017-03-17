@@ -27,10 +27,10 @@ class SymInfo:
 	def calculate_stats(self):
 		self.open_buying_amt = 0 
 		for o in self.open_buy_orders:
-				self.open_buying_amt += o.amount
+			self.open_buying_amt += o.amount
 		self.open_selling_amt = 0 
 		for o in self.open_sell_orders:
-				self.open_selling_amt += o.amount
+			self.open_selling_amt += o.amount
 
 		self.total_balance = self.open_selling_amt + self.available_balance
 		if self.total_balance > 0:

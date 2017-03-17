@@ -19,8 +19,8 @@ class Order:
 	AMOUNT = "amount"
 	RATE = "rate"
 	TYPE = "type"
-	BID = "bid"
-	ASK = "ask"
+	BID = "buy"
+	ASK = "sell"
 
 	def __init__(self, table_name, id, curr_pair, date_placed, amount, rate, type, date_filled = "NULL"):
 		self.table_name = table_name
@@ -33,7 +33,7 @@ class Order:
 		self.type = type
 
 	def get_sym(self):
-		return curr_pair.split("_")[1]
+		return self.curr_pair.split("_")[1]
 
 	##uses cursor tuple to create a Point object and return it
 	@staticmethod

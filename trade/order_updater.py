@@ -34,23 +34,18 @@ class OrderUpdater:
 	## thread runs this code
 	## updates balance and open orders for each sym every RUN_PERIOD
 	def update_orders(self):
-		last_time = time.time() 
-		cur_time = time.time()
+		last_time = 0 
 		while(True):
-			if (cur_time - last_time) > self.RUN_PERIOD:
-				print("before")
+			if (time.time() - last_time) > self.RUN_PERIOD:
 				available_balances = self.get_available_balances()
 				(open_buy_orders, open_sell_orders) = self.get_open_orders()
 				
 				for s in self.SYMS:
 					self.sym_infos[s].update(available_balances[s], open_buy_orders[s], open_sell_orders[s])
 				
-				self.last_time = cur_time
+				last_time = time.time() 
 			else:
 				time.sleep(1)
-			cur_time = time.time()
-
-		return ret_orders
 
 
 
@@ -70,16 +65,15 @@ class OrderUpdater:
 				if curr_pair in polo_order_data:
 					curr_data = polo_order_data[curr_pair]
 					for o_data in curr_data:
-						o = OrderTable.find_order(Order.ORDER_ACTIVE, o_data['orderNumber'])
-						o = Order(Order.ORDER_ACTIVE, o_data['orderNumber'], curr_pair, 0, o_data['amount'], o_data['rate'], o_data['type']) 
-						o.amount = o_data['amount']
-						o.rate = o_data['rate']
-						o.update()
-
+						##o = OrderTable.find_order(Order.ORDER_ACTIVE, o_data['orderNumber'])
+						o = Order(Order.ORDER_ACTIVE, o_data['orderNumber'], curr_pair, 0, float(o_data['amount']), float(o_data['rate']), o_data['type']) 
+						##o.amount = o_data['amount']
+						##o.rate = o_data['rate']
+						##o.update()
 						if o.type == Order.BID:
-							open_buy_orders[o.get_sym()].append(o)
+							open_buy_orders[s].append(o)
 						elif o.type == Order.ASK:
-							open_sell_orders[o.get_sym()].append(o)
+							open_sell_orders[s].append(o)
 
 		return (open_buy_orders, open_sell_orders)
 

@@ -66,7 +66,7 @@ class OrderMaker:
 
 	##wrapper for cancel or move order
 	##tries repeatedly until either successful or order is confirmed to be already gone
-	def try_repeatedly(func, order):
+	def try_repeatedly(self, func, order):
 		sym = order.get_sym()
 		sym_info = self.order_updater.sym_infos[sym]
 		open_orders = []
@@ -117,19 +117,18 @@ class OrderMaker:
 			if move_result["success"] == 1:
 				date_placed = time.time()
 				new_order_id = move_result['orderNumber']
-				new_order_rate = move_result['rate']
-				new_order_amount = move_result['amount']
-				new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, new_order_amount, new_order_rate, order.type) 
+				new_order = Order(Order.ORDER_ACTIVE, new_order_id, order.curr_pair, date_placed, order.amount, order.rate, order.type) 
 				new_order.save()
 
 				sym = order.get_sym()
 				sym_info = self.order_updater.sym_infos[sym]
 				if order.type == Order.BID:
-					sym_info.update(new_balances[sym], [new_order], sym_info.open_sell_orders)
+					sym_info.update(sym_info.available_balance, [new_order], sym_info.open_sell_orders)
 				elif order.type == Order.ASK:
-					sym_info.update(new_balances[sym], sym_info.open_buy_orders, [new_order])
+					sym_info.update(sym_info.available_balance, sym_info.open_buy_orders, [new_order])
+				return self.SUCCESS
 			else:
-				print("Failed to move buy order:", curr_pair, "to new rate:", new_rate)
+				print("Failed to move buy order:", order.curr_pair, "to new rate:", order.rate)
 				return self.FAIL
 
 
@@ -218,7 +217,7 @@ class OrderMaker:
 					order.rate = new_rate
 					print(("Updating slow selling", curr_pair, ":", order.amount, "at", new_rate))
 					self.try_repeatedly(self.move_order, order)
-		print("Done slow BUYING", curr_pair)
+		print("Done slow SELLING", curr_pair)
 	
 
 	##places a buy order to buy curr_pair at rate and amount given 
@@ -250,7 +249,7 @@ class OrderMaker:
 			o.save()
 			
 			sym_info = self.order_updater.sym_infos[o.get_sym()]
-			sym_info.update(sym_info.available_balance, [o], sym_info.open_sell_orders)
+			sym_info.update(sym_info.available_balance, sym_info.open_buy_orders, [o])
 			return o
 	
 	##return the rate of the top current bid for the currency pair(ignores my order)
