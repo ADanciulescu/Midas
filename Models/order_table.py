@@ -43,6 +43,20 @@ class OrderTable:
 			orders.append(o)
 			row = cursor.fetchone()
 		return orders
+	
+	##return order object with matching id
+	@staticmethod
+	def find_order(table_name, id):
+		dbm = DBManager.get_instance()
+		cursor = dbm.get_cursor()
+		cursor.execute("SELECT * FROM '{tn}' WHERE id = {v_id}".format(tn = table_name, v_id = id))
+		row = cursor.fetchone()	
+		o = Order.from_tuple(table_name, row)
+		return o
+
+		
+
+
 
 	@staticmethod
 	def create_tables():

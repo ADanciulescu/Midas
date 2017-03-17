@@ -103,7 +103,7 @@ class CandleFetcher():
 	
 	##updates the big tables for all the currencies with any new candles, for any missing candles that should be here create fake placeholder candles
 	@staticmethod
-	def update_tables_imperative(tns, curr_avail):
+	def update_tables_imperative(tns):
 		
 		##CandleFetcher.update_tables(tns) ##perform normal update of any legit candles(replacing fake ones)
 		

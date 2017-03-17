@@ -5,6 +5,7 @@ from sig import Sig
 from poloniex import Poloniex
 from order import Order
 from order_table import OrderTable
+from order_updater import OrderUpdater
 import time
 import threading
 import calendar
@@ -14,183 +15,123 @@ def createTimeStamp(datestr, format="%Y-%m-%d %H:%M:%S"):
 
 class OrderMaker:
 	
-	##factor represents what relative weight to give to each currency when deciding amount bought
-	FACTORS = { 
-			"BTC" : 0.5,
-			"ETH" : 0.25,
-			"LTC" : 0.1,
-			"XMR" : 0.1,
-			"REP" : 0.025,
-			"DASH" : 0.025
+	CURR_PAIR_AMOUNTS = { 
+			"USDT_BTC" : 175,
+			"USDT_ETH" : 200,
+			"USDT_XMR" : 175,
+			"USDT_DASH" : 150,
+			"USDT_ETC" : 125,
+			"USDT_LTC" : 75,
+			"USDT_REP" : 75,
+			"USDT_NXT" : 75,
+			"USDT_ZEC" : 150,
+			"USDT_XRP" : 0
 	}
 	
-	##amounts of each symbol to trade
-	SYM_AMOUNTS = { 
-			"BTC" : 175,
-			"ETH" : 200,
-			"XMR" : 175,
-			"DASH" : 150,
-			"ETC" : 125,
-			"LTC" : 75,
-			"REP" : 75,
-			"NXT" : 75,
-			"ZEC" : 150
-	}
-
-	SYMS = ["BTC", "ETH", "XMR", "DASH", "REP", "NXT", "ETC", "LTC", "ZEC"]
-
 	TINY_AMT = 0.00000001
-	
-	OVERBID_AMOUNT = 0.00001 ##amount to overbid by
-	EXPENSE_FRACTION = 0.2 ## what fraction of USDT to use to buy for this order
+	FAIL = "FAIL"
+	SUCCESS = "SUCCESS"
 
 	def __init__(self):
 		self.polo = Poloniex.get_instance()
-		self.is_owned = {}
-		self.on_order_balances = {}
-		self.available_balances = {}
-		self.total_balances = {}
+		self.order_updater = OrderUpdater()
 		
-		for s in self.SYMS:
-			self.on_order_balances[s] = 0
-			self.available_balances[s] = 0
-			self.total_balances[s] = 0
-			self.is_owned[s] = False
-		
-		self.update_balances()
-
-	def update_balances(self):
-		info = self.polo.api_query("returnCompleteBalances",{})
-		if info is None:
-			print("API error unable to update_balances")
-		else:
-			for s in self.SYMS:
-				available_amt = float(info[s]['available'])
-				on_order_amt = float(info[s]['onOrders'])
-				self.available_balances[s] = available_amt
-				self.on_order_balances[s] = on_order_amt
-				self.total_balances[s] = available_amt + on_order_amt
-				if self.total_balances[s] > 0:
-					self.is_owned[s] = True
-				else:
-					self.is_owned[s] = False 
-				
-
-
-	def get_open_orders(self, curr_pair):
-		ret_orders = []
-		polo_order_data = self.polo.api_query("returnOpenOrders", {'currencyPair': curr_pair})
-		if polo_order_data is None:
-			print("API error unable to get_open_orders")
-		else:
-			for o_data in polo_order_data:
-				o = Order(Order.ORDER_ACTIVE, o_data['orderNumber'], curr_pair, 0, o_data['amount'], o_data['rate'], o_data['type']) 
-				ret_orders.append(o)
-
-		return ret_orders
-
+		self.order_updater.run()
 	
 	## slow buy when signal says to buy, slow sell when signal says to sell
 	def handle_signal_classic(self, signal):
-		amt = self.SYM_AMOUNTS[signal.sym]
 		curr_pair = "USDT_" + signal.sym
+		amt_in_usd = self.CURR_PAIR_AMOUNTS[curr_pair]
 		
-		open_orders = []
-		if self.on_order_balances[signal.sym] > 0:
-			open_orders = self.get_open_orders(curr_pair)
 
-		if len(open_orders) > 1:
-			print ("More than 1 order on:". curr_pair)
+		sym_info = self.order_updater.sym_infos[signal.sym]
+		open_buy_orders = sym_info.open_buy_orders
+		open_sell_orders = sym_info.open_sell_orders
 
 		if signal.type == "BUY":
-			if len(open_orders) > 0: ##if open orders exist already for this curr_pair
-				if open_orders[0].type == Order.BID: ##if buy already exists do nothing
-					pass
-				else: ##if sell order already exists cancel it and buy amt_desired - amt_held
-					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': open_orders[0].id})
-					if cancel_result is None:
-						print("API error unable to cancel order")
-					amt_held_in_sym = open_orders[0].amount
-					amt_held_in_usd = amt_held_in_sym/signal.price
-					self.slow_buy(signal.sym, amt - amt_held_in_usd, limit = (signal.price*1.005))
-			else:
-				self.slow_buy(signal.sym, amt, limit = (signal.price*1.005))
-
+			if len(open_buy_orders) > 0: ##if open buy orders exist already for this curr_pair do nothing
+				return
+			if len(open_sell_orders) > 0: ##if open sell orders exist already for this curr_pair cancel them then slow buy
+				self.try_repeatedly(self.cancel_order, sym_info.open_sell_orders[0])
+			balance_available = sym_info.balance_available
+			balance_in_usd = balance_available * signal.price
+			self.slow_buy(signal.sym, amt_in_usd - balance_in_usd, limit = (signal.price*1.005))
+		
 		elif signal.type == "SELL":
-			if len(open_orders) > 0: ##if open orders exist already for this curr_pair
-				if open_orders[0].type == Order.BID: ##if buy already cancel it and sell all 
-					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': open_orders[0].id})
-					if cancel_result is None:
-						print("API error unable to cancel order")
-					self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
-				else: ##if sell order already exists do nothing
-					pass
-			else:
-				self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
-
-	## instead of signals triggering buy/sell, orders are preplaced based on operating range
-	def handle_signal_preorder(self, signal, operating_range):
-		sym = signal.sym
-		max_usd_amt = self.SYM_AMOUNTS[sym]
-		owned_amt = self.curr_available_balances[sym]
-		curr_pair = "USDT_" + sym
-		polo_order_data = self.polo.api_query("returnOpenOrders", {'currencyPair': curr_pair})
-
-		if len(polo_order_data) > 2:
-			print("something is wrong more than 2 open orders for a specific currency")
-
-		##for s in self.SYMS:
-			##print(s, self.curr_available_balances[s])
-
-		##get information about currently existing open buy/sell orders
-		existing_buy_order = None
-		existing_sell_order = None
-		for o in polo_order_data:
-			if o['type'] == "sell":
-				existing_sell_order = Order(Order.ORDER_ACTIVE, o['orderNumber'], curr_pair, 0, o['amount'], o['rate'], Order.ASK) 
-			elif o['type'] == "buy":
-				existing_buy_order = Order(Order.ORDER_ACTIVE, o['orderNumber'], curr_pair, 0, o['amount'], o['rate'], Order.BID) 
-		
-		buy_usd_amt = max_usd_amt - owned_amt*signal.price
-
-		floor = operating_range[0]
-		ceiling = operating_range[1]
-		
-		sym_amt = owned_amt 
-		if existing_sell_order is not None:
-			if ceiling == -1:
-				print("Cancelling sell order", curr_pair)
-				cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': existing_sell_order.id})
-			else:
-				print(("Updating preselling", curr_pair, ":", existing_sell_order.amount, "at", ceiling))
-				move_result = self.polo.api_query("moveOrder", {'orderNumber': existing_sell_order.id, 'rate' : ceiling, 'amount' : sym_amt})
-		else:
-			if ceiling == -1:
+			if len(open_sell_orders) > 0: ##if open sell orders exist already for this curr_pair do nothing
 				return
-			else:
-				if sym_amt > 0:
-					print(("Creating presell", curr_pair, ":", sym_amt, "at", ceiling))
-					self.place_sell_order(curr_pair, ceiling, sym_amt)
-		
-		if floor != -1:
-			sym_amt = buy_usd_amt/floor
-		else:
-			sym_amount = -1
-		if existing_buy_order is not None:
-			if floor == -1 or sym_amt <= 0:
-				print("Cancelling buy order", curr_pair)
-				cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': existing_buy_order.id})
-			else:
-				print(("Updating prebuying", curr_pair, ":", existing_buy_order.amount, "at", floor))
-				move_result = self.polo.api_query("moveOrder", {'orderNumber': existing_buy_order.id, 'rate' : sym_amt})
-		else:
-			if floor == -1:
+			if len(open_buy_orders) > 0: ##if open buy orders exist already for this curr_pair cancel them then sell
+				self.try_repeatedly(self.cancel_order, sym_info.open_buy_orders[0])
+			self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
+
+	##wrapper for cancel or move order
+	##tries repeatedly until either successful or order is confirmed to be already gone
+	def try_repeatedly(func, order):
+		sym = order.get_sym()
+		sym_info = self.order_updater.sym_infos[sym]
+		open_orders = []
+		if order.type == Order.BID:
+			open_orders = sym_info.open_buy_orders
+		elif order.type == Order.ASK:
+			open_orders = sym_info.open_sell_orders
+
+		##if error while cancelling or moving order
+		##2 possibilities: 
+		##api error -> try again until works, OR
+		##order is already gone -> try again until order is gone from sym_info(which updates itself on its own thread)
+		while(len(open_orders) > 0):
+			result = func(order)
+			if result == self.FAIL:
+				time.sleep(1)
+				if order.type == Order.BID:
+					open_orders = sym_info.open_buy_orders
+				elif order.type == Order.ASK:
+					open_orders = sym_info.open_sell_orders
+			elif result == self.SUCCESS:
 				return
+
+
+
+	def cancel_order(self, order):
+		cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
+		if cancel_result is None:
+			print("API error unable to cancel order")
+			return self.FAIL
+		else:
+			order.drop()
+			sym = order.get_sym()
+			sym_info = self.order_updater.sym_infos[sym]
+			new_balances = self.order_updater.get_available_balances() 
+			if order.type == Order.BID:
+				sym_info.update(new_balances[sym], [], sym_info.open_sell_orders)
+			elif order.type == Order.ASK:
+				sym_info.update(new_balances[sym], sym_info.open_buy_orders, [])
+			return self.SUCCESS
+
+	def move_order(self, order):
+		move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : order.rate})
+		if move_result is None:
+			print("API error unable to move order")
+			return self.FAIL
+		else:
+			if move_result["success"] == 1:
+				date_placed = time.time()
+				new_order_id = move_result['orderNumber']
+				new_order_rate = move_result['rate']
+				new_order_amount = move_result['amount']
+				new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, new_order_amount, new_order_rate, order.type) 
+				new_order.save()
+
+				sym = order.get_sym()
+				sym_info = self.order_updater.sym_infos[sym]
+				if order.type == Order.BID:
+					sym_info.update(new_balances[sym], [new_order], sym_info.open_sell_orders)
+				elif order.type == Order.ASK:
+					sym_info.update(new_balances[sym], sym_info.open_buy_orders, [new_order])
 			else:
-				if sym_amt > 0:
-					print(("Creating prebuy", curr_pair, ":", sym_amt, "at", floor))
-					self.place_buy_order(curr_pair, floor, sym_amt)
-			
+				print("Failed to move buy order:", curr_pair, "to new rate:", new_rate)
+				return self.FAIL
+
 
 	##ASAP buy sym money worth of currency sym at the lowest ask price
 	def fast_buy(self, sym, sym_money):
@@ -220,59 +161,34 @@ class OrderMaker:
 	
 	##Buy sym money worth of sym currency by repeatedly posting order at slightly more than current highest bid
 	def slow_buy_code(self, sym, sym_money, limit):
-		
-
 		##place initial buy order
 		curr_pair = "USDT_" + sym
 		rate = self.get_top_bid(curr_pair) + OrderMaker.TINY_AMT
 
 		amount = sym_money/rate
 
-		initial_amount = amount
-		
-		
 		print(("Slow buying", curr_pair, ":", amount, "at", rate))
 		order = self.place_buy_order(curr_pair, rate, amount)
+
+		sym_info = self.order_updater.sym_infos[sym]
 		
-		while(order.is_active()):
+		while(len(sym_info.open_buy_orders) > 0):
+			order = sym_info.open_buy_orders[0]
 			new_rate = self.get_top_bid(curr_pair, order)
-			amount_filled = initial_amount - order.amount
+			##amount_filled = initial_amount - order.amount
 			
 			## if i've been overbid, modify my bid to get to top of list
 			if new_rate != order.rate:
-
 				if new_rate > limit: ##if surpassed limit cancel order
-					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
-					if cancel_result is None:
-						print("API error unable to cancel order")
-					else:
-						print("order cancelled")
-						order.move(Order.ORDER_CANCELLED, amount_filled)
+					self.try_repeatedly(self.cancel_order, order)
 				else:
-					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
-					if move_result is None:
-						print("API error unable to move order")
-					else:
-						if move_result["success"] == 1:
-							print(("Updating slow buying", curr_pair, ":", order.amount, "at", new_rate))
-							date_placed = time.time()
-							new_order_id = move_result['orderNumber']
-							order.move(Order.ORDER_FILLED, amount_filled)
-							new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
-							new_order.save()
-							order = new_order
-							initial_amount = order.amount
-						else:
-							print("Failed to move buy order:", curr_pair, "to new rate:", new_rate)
-			order.polo_update()
+					order.rate = new_rate
+					print(("Updating slow buying", curr_pair, ":", order.amount, "at", new_rate))
+					self.try_repeatedly(self.move_order, order)
 		print("Done slow BUYING", curr_pair)
-	
 	
 	##Sell sym money worth of sym currency by repeatedly posting order at slightly less than current lowest ask
 	def slow_sell_code(self, sym, sym_money, limit, sell_all):
-		
-
-		##place initial buy order
 		curr_pair = "USDT_" + sym
 		rate = self.get_bottom_ask(curr_pair)
 
@@ -283,44 +199,26 @@ class OrderMaker:
 				return
 		else:
 			amount = sym_money/rate
-
-		initial_amount = amount
-		
 		
 		print(("Slow selling", curr_pair, ":", amount, "at", rate))
 		order = self.place_sell_order(curr_pair, rate, amount)
 		
-		while(order.is_active()):
+		sym_info = self.order_updater.sym_infos[sym]
+		
+		while(len(sym_info.open_sell_orders) > 0):
+			order = sym_info.open_sell_orders[0]
 			new_rate = self.get_bottom_ask(curr_pair, order)
-			amount_filled = initial_amount - order.amount
 			
-			## if i've been overbid, modify my bid to get to top of list
+			## if i've been underask, modify my ask to get to top of list
 			if new_rate != order.rate:
 				if new_rate < limit: ##if surpassed limit cancel order
-					cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': order.id})
-					if cancel_result is None:
-						print("API error unable to cancel order")
-					else:
-						print("order cancelled")
-						order.move(Order.ORDER_CANCELLED, amount_filled)
+					self.try_repeatedly(self.cancel_order, order)
 				else:
-					move_result = self.polo.api_query("moveOrder", {'orderNumber': order.id, 'rate' : new_rate})
-					if move_result is None:
-						print("API error unable to cancel order")
-					else:
-						if move_result["success"] == 1:
-							print(("Updating slow selling", curr_pair, ":", order.amount, "at", new_rate))
-							new_order_id = move_result['orderNumber']
-							date_placed = time.time()
-							order.move(Order.ORDER_FILLED, amount_filled)
-							new_order = Order(Order.ORDER_ACTIVE, new_order_id, curr_pair, date_placed, order.amount, new_rate, Order.ASK) 
-							new_order.save()
-							order = new_order
-							initial_amount = order.amount
-						else:
-							print("Failed to move sell order:", curr_pair, "to new rate:", new_rate)
-			order.polo_update()
-		print("Done slow SELLING", curr_pair)
+					order.rate = new_rate
+					print(("Updating slow selling", curr_pair, ":", order.amount, "at", new_rate))
+					self.try_repeatedly(self.move_order, order)
+		print("Done slow BUYING", curr_pair)
+	
 
 	##places a buy order to buy curr_pair at rate and amount given 
 	def place_buy_order(self, curr_pair, rate, amount):
@@ -331,9 +229,11 @@ class OrderMaker:
 			return self.place_buy_order(curr_pair, rate, amount)
 		else:
 			order_id = order_result["orderNumber"]
-			o = None
 			o = Order(Order.ORDER_ACTIVE, order_id, curr_pair, date_placed, amount, rate, Order.BID) 
 			o.save()
+
+			sym_info = self.order_updater.sym_infos[o.get_sym()]
+			sym_info.update(sym_info.available_balance, [o], sym_info.open_sell_orders)
 			return o
 	
 	##places a sell order to buy curr_pair at rate and amount given 
@@ -347,45 +247,11 @@ class OrderMaker:
 			order_id = order_result['orderNumber']
 			o = Order(Order.ORDER_ACTIVE, order_id, curr_pair, date_placed, amount, rate, Order.ASK) 
 			o.save()
+			
+			sym_info = self.order_updater.sym_infos[o.get_sym()]
+			sym_info.update(sym_info.available_balance, [o], sym_info.open_sell_orders)
 			return o
 	
-	##update order table
-	##possibly move completed active order to filed orders 
-	##TODO: delete or find use, currently not used
-	def update_orders(self):
-		order_array = OrderTable.get_order_array(Order.ORDER_ACTIVE)
-		
-		##create a dictionary that groups all orders by key = curr_pair
-		order_dict = {}
-		for o in order_array:
-			if order_dict.get(o.curr_pair) != None:
-				order_dict[o.curr_pair].append(o)
-			else:
-				order_dict[o.curr_pair] = [o]
-
-		for curr_pair in order_dict:
-			##get all db orders for the curr_pair
-			orders = order_dict[curr_pair]
-			##get open polo orders for same pair
-			polo_data = self.polo.api_query("returnOpenOrders", {'currencyPair': curr_pair})
-			
-			##if found db active order on polo, update its info
-			##if not means db order is no longer active and should be moved to filled orders db
-			for o in orders:
-				found = False
-				for d in polo_data:
-					if o.id == d["orderNumber"]:
-						found = True
-						o.amount = d["amount"]
-						o.update()
-
-				if not found:
-					o.drop()
-					o.table_name = OrderTable.ORDER_FILLED
-					o.date_filled = time.time()
-					o.save()
-		
-
 	##return the rate of the top current bid for the currency pair(ignores my order)
 	def get_top_bid(self, curr_pair, prev_order = None):
 		bids_result =  Poloniex.get_instance().returnOrderBook(curr_pair)["bids"]
@@ -496,3 +362,68 @@ class OrderMaker:
 				if createTimeStamp(trades_result[i]['date']) < date:
 					rate = float(trades_result[i]['rate'])
 					return rate
+	
+	'''
+	## instead of signals triggering buy/sell, orders are preplaced based on operating range
+	def handle_signal_preorder(self, signal, operating_range):
+		sym = signal.sym
+		max_usd_amt = self.SYM_AMOUNTS[sym]
+		owned_amt = self.curr_available_balances[sym]
+		curr_pair = "USDT_" + sym
+		polo_order_data = self.polo.api_query("returnOpenOrders", {'currencyPair': curr_pair})
+
+		if len(polo_order_data) > 2:
+			print("something is wrong more than 2 open orders for a specific currency")
+
+		for s in self.SYMS:
+			print(s, self.curr_available_balances[s])
+
+		get information about currently existing open buy/sell orders
+		existing_buy_order = None
+		existing_sell_order = None
+		for o in polo_order_data:
+			if o['type'] == "sell":
+				existing_sell_order = Order(Order.ORDER_ACTIVE, o['orderNumber'], curr_pair, 0, o['amount'], o['rate'], Order.ASK) 
+			elif o['type'] == "buy":
+				existing_buy_order = Order(Order.ORDER_ACTIVE, o['orderNumber'], curr_pair, 0, o['amount'], o['rate'], Order.BID) 
+		
+		buy_usd_amt = max_usd_amt - owned_amt*signal.price
+
+		floor = operating_range[0]
+		ceiling = operating_range[1]
+		
+		sym_amt = owned_amt 
+		if existing_sell_order is not None:
+			if ceiling == -1:
+				print("Cancelling sell order", curr_pair)
+				cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': existing_sell_order.id})
+			else:
+				print(("Updating preselling", curr_pair, ":", existing_sell_order.amount, "at", ceiling))
+				move_result = self.polo.api_query("moveOrder", {'orderNumber': existing_sell_order.id, 'rate' : ceiling, 'amount' : sym_amt})
+		else:
+			if ceiling == -1:
+				return
+			else:
+				if sym_amt > 0:
+					print(("Creating presell", curr_pair, ":", sym_amt, "at", ceiling))
+					self.place_sell_order(curr_pair, ceiling, sym_amt)
+		
+		if floor != -1:
+			sym_amt = buy_usd_amt/floor
+		else:
+			sym_amount = -1
+		if existing_buy_order is not None:
+			if floor == -1 or sym_amt <= 0:
+				print("Cancelling buy order", curr_pair)
+				cancel_result = self.polo.api_query("cancelOrder", {'orderNumber': existing_buy_order.id})
+			else:
+				print(("Updating prebuying", curr_pair, ":", existing_buy_order.amount, "at", floor))
+				move_result = self.polo.api_query("moveOrder", {'orderNumber': existing_buy_order.id, 'rate' : sym_amt})
+		else:
+			if floor == -1:
+				return
+			else:
+				if sym_amt > 0:
+					print(("Creating prebuy", curr_pair, ":", sym_amt, "at", floor))
+					self.place_buy_order(curr_pair, floor, sym_amt)
+		'''

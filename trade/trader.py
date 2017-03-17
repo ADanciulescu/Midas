@@ -13,7 +13,6 @@ class Trader:
 	PREORDER = "preorder"
 
 	def __init__(self, mode):
-		##DBManager.drop_matching_tables("SIGNAL")
 		self.signaler = Signaler(table_names.short_term_tables, to_print = False, to_email = False)
 		self.period =  float(CandleTable.get_period(table_names.short_term_tables[0]))
 		self.order_maker = OrderMaker()
@@ -22,14 +21,15 @@ class Trader:
 	def run(self):
 		print("Starting Trader")
 		while(True):
+			##DBManager.drop_matching_tables("SIGNAL")
 			secs_last_run = CandleTable.get_last_date(table_names.short_term_tables[0])
 			secs_cur = time.time()
 			
 			##print secs_cur-secs_last_run
+			##if(True):
 			if(secs_cur-secs_last_run) > (self.period+1):
 				print("***********************************SIGNALS*********************************************")
-				self.order_maker.update_balances()
-				self.signaler.update(self.order_maker.is_owned)
+				self.signaler.update(self.order_maker.order_updater.sym_infos)
 				new_signals_array = self.signaler.new_signals_array
 				self.handle_new_currency_signals(new_signals_array)
 				for i in range(len(table_names.short_term_tables)):
@@ -42,9 +42,9 @@ class Trader:
 			last_signal.pprint()
 			if self.mode == Trader.CLASSIC:
 				self.order_maker.handle_signal_classic(last_signal)	
-			else:
-				operating_range = (self.signaler.strat_array[i].floor, self.signaler.strat_array[i].ceiling)
-				self.order_maker.handle_signal_preorder(last_signal, operating_range)	
+			##else:
+				##operating_range = (self.signaler.strat_array[i].floor, self.signaler.strat_array[i].ceiling)
+				##self.order_maker.handle_signal_preorder(last_signal, operating_range)	
 			
 
 

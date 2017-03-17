@@ -24,7 +24,7 @@ class Signaler:
 		self.trader_tables = trader_tables
 		self.strat_array = []
 		self.setup()
-		self.is_owned = {} ## array holding info about whether a currency is owned(true) or not(false) 
+		self.sym_infos = {} ## array holding info about whether a currency is owned(true) or not(false) 
 	
 	##setup before it runs
 	## populates signal_table_names
@@ -35,10 +35,10 @@ class Signaler:
 			signal_table_name = tn.replace("CANDLE", "SIGNAL_" + strat.get_name())
 			self.signal_table_names.append(signal_table_name)
 	
-	##is_owned is used to determine what currencies are available to be sold/bought(passed into corresponding Strategy to make correct decision)
+	##sym_infos -> is_owned is used to determine what currencies are available to be sold/bought(passed into corresponding Strategy to make correct decision)
 	## updates signaler with new signals
-	def update(self, is_owned):
-		self.is_owned = is_owned 
+	def update(self, sym_infos):
+		self.sym_infos = sym_infos 
 		self.new_signals_array = []
 		self.update_all_signals()
 		self.push_to_db()
@@ -67,7 +67,7 @@ class Signaler:
 	def update_all_signals(self):
 		
 		##update tables with new data
-		CandleFetcher.update_tables_imperative(self.trader_tables, self.is_owned)
+		CandleFetcher.update_tables_imperative(self.trader_tables)
 		
 		
 		##for each candle table, compute signal table name and get new signals
@@ -127,7 +127,7 @@ class Signaler:
 		##run a strategy on the candles and store the resulting operations returned
 		strat = self.strat_array[tn_index]
 		sym = SignalTable.get_sym(self.signal_table_names[tn_index])
-		strat.update_state(candles, self.is_owned[sym])
+		strat.update_state(candles, self.sym_infos[sym].is_owned)
 	
 		##i = new_candle_index
 		##while i < len(candles):

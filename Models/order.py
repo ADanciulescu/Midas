@@ -32,6 +32,9 @@ class Order:
 		self.rate = rate
 		self.type = type
 
+	def get_sym(self):
+		return curr_pair.split("_")[1]
+
 	##uses cursor tuple to create a Point object and return it
 	@staticmethod
 	def from_tuple(table_name, tup):
