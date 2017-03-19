@@ -53,7 +53,7 @@ class OrderMaker:
 				return
 			if len(open_sell_orders) > 0: ##if open sell orders exist already for this curr_pair cancel them then slow buy
 				self.try_repeatedly(self.cancel_order, sym_info.open_sell_orders[0])
-			balance_available = sym_info.balance_available
+			balance_available = sym_info.available_balance
 			balance_in_usd = balance_available * signal.price
 			self.slow_buy(signal.sym, amt_in_usd - balance_in_usd, limit = (signal.price*1.005))
 		
@@ -62,7 +62,7 @@ class OrderMaker:
 				return
 			if len(open_buy_orders) > 0: ##if open buy orders exist already for this curr_pair cancel them then sell
 				self.try_repeatedly(self.cancel_order, sym_info.open_buy_orders[0])
-			self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
+			self.slow_sell(signal.sym, 1, sell_all = True, limit = (signal.price*0.995))
 
 	##wrapper for cancel or move order
 	##tries repeatedly until either successful or order is confirmed to be already gone
@@ -98,6 +98,7 @@ class OrderMaker:
 			print("API error unable to cancel order")
 			return self.FAIL
 		else:
+			print("Successfully cancelled order", order.curr_pair)
 			order.drop()
 			sym = order.get_sym()
 			sym_info = self.order_updater.sym_infos[sym]
@@ -172,6 +173,7 @@ class OrderMaker:
 		sym_info = self.order_updater.sym_infos[sym]
 		
 		while(len(sym_info.open_buy_orders) > 0):
+			print("Slow buy code", sym)
 			order = sym_info.open_buy_orders[0]
 			new_rate = self.get_top_bid(curr_pair, order)
 			##amount_filled = initial_amount - order.amount
@@ -190,15 +192,12 @@ class OrderMaker:
 	def slow_sell_code(self, sym, sym_money, limit, sell_all):
 		curr_pair = "USDT_" + sym
 		rate = self.get_bottom_ask(curr_pair)
-		print("here")
 		if sell_all:
 			amount = self.order_updater.sym_infos[sym].available_balance
-			print(amount)
 			if amount == 0:
 				return
 		else:
 			amount = sym_money/rate
-		print("here2")
 		
 		print(("Slow selling", curr_pair, ":", amount, "at", rate))
 		order = self.place_sell_order(curr_pair, rate, amount)
@@ -206,6 +205,7 @@ class OrderMaker:
 		sym_info = self.order_updater.sym_infos[sym]
 		
 		while(len(sym_info.open_sell_orders) > 0):
+			print("Slow sell code", sym)
 			order = sym_info.open_sell_orders[0]
 			new_rate = self.get_bottom_ask(curr_pair, order)
 			
@@ -267,7 +267,7 @@ class OrderMaker:
 				else:
 					bits_above_my_order = 0
 					i=0
-					while(float(bids_result[i][0]) > prev_order.rate):
+					while(float(bids_result[i][0]) > prev_order.rate) and (bits_above_my_order < prev_order.amount*0.25):
 						bits_above_my_order += float(bids_result[i][1])
 						i += 1
 
@@ -293,7 +293,7 @@ class OrderMaker:
 				else:
 					bits_below_my_order = 0
 					i=0
-					while(float(asks_result[i][0]) < prev_order.rate):
+					while(float(asks_result[i][0]) < prev_order.rate) and (bits_below_my_order < prev_order.amount*0.25):
 						##print asks[i][0], "at", asks[i][1]
 						bits_below_my_order += float(asks_result[i][1])
 						i += 1

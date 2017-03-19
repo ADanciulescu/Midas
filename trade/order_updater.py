@@ -36,6 +36,7 @@ class OrderUpdater:
 	def update_orders(self):
 		last_time = 0 
 		while(True):
+			print("updating")
 			if (time.time() - last_time) > self.RUN_PERIOD:
 				available_balances = self.get_available_balances()
 				(open_buy_orders, open_sell_orders) = self.get_open_orders()
@@ -84,7 +85,7 @@ class OrderUpdater:
 		info = self.polo.api_query("returnCompleteBalances",{})
 		if info is None:
 			print("API error unable to update_balances")
-			return self.get_available_balances(self)
+			return self.get_available_balances()
 		else:
 			for s in self.SYMS:
 				available_amt = float(info[s]['available'])
