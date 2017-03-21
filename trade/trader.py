@@ -4,6 +4,9 @@ from db_manager import DBManager
 from signaler import Signaler
 from candle_table import CandleTable
 from order_maker import OrderMaker
+from order_updater import OrderUpdater
+from scheduler import Scheduler
+from task import Task
 import table_names
 import time
 
@@ -13,27 +16,33 @@ class Trader:
 	PREORDER = "preorder"
 
 	def __init__(self, mode):
-		self.signaler = Signaler(table_names.short_term_tables, to_print = False, to_email = False)
-		self.period =  float(CandleTable.get_period(table_names.short_term_tables[0]))
-		self.order_maker = OrderMaker()
 		self.mode = mode
+		self.order_updater = OrderUpdater()
+		self.scheduler = Scheduler()
+		self.signaler = Signaler(table_names.short_term_tables, to_print = False, to_email = False)
+		self.order_maker = OrderMaker(self.order_updater, self.scheduler)
 
 	def run(self):
 		print("Starting Trader")
-		while(True):
-			##DBManager.drop_matching_tables("SIGNAL")
-			secs_last_run = CandleTable.get_last_date(table_names.short_term_tables[0])
-			secs_cur = time.time()
-			
-			##print secs_cur-secs_last_run
-			##if(True):
-			if(secs_cur-secs_last_run) > (self.period+1):
-				print("***********************************SIGNALS*********************************************")
-				self.signaler.update(self.order_maker.order_updater.sym_infos)
-				new_signals_array = self.signaler.new_signals_array
-				self.handle_new_currency_signals(new_signals_array)
-				for i in range(len(table_names.short_term_tables)):
-					print("last operation was: " , self.signaler.strat_array[i].last)
+		signal_task = Task(self.grab_new_signals, 0, ())
+		self.scheduler.schedule_task(signal_task)
+		update_task = Task(self.order_updater.update_orders, 5, ())
+		self.scheduler.schedule_task(update_task)
+		self.scheduler.run()
+
+	def grab_new_signals(self):
+		period =  float(CandleTable.get_period(table_names.short_term_tables[0]))
+		last_time = CandleTable.get_last_date(table_names.short_term_tables[0])
+		cur_time = time.time()
+		if(cur_time-last_time) > (period+1):
+			print("***********************************SIGNALS*********************************************")
+			self.signaler.update(self.order_updater.sym_infos)
+			new_signals_array = self.signaler.new_signals_array
+			self.handle_new_currency_signals(new_signals_array)
+			for i in range(len(table_names.short_term_tables)):
+				print("last operation was: " , self.signaler.strat_array[i].last)
+
+		return Task.CONTINUE
 
 	##perform buys/sells depending on last signal
 	def handle_new_currency_signals(self, new_signals_array):

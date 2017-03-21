@@ -2,12 +2,12 @@
 ## uses a thread to update every 5 seconds
 ## order maker uses this as a source of truth about orders
 
-import threading
 import time
 from order import Order
 from order_table import OrderTable
 from poloniex import Poloniex
 from sym_info import SymInfo
+from task import Task
 
 class OrderUpdater:
 	##amounts of each symbol to trade
@@ -26,27 +26,17 @@ class OrderUpdater:
 			self.sym_infos[s] = si
 
 
-	def run(self):
-		t = threading.Thread(target = self.update_orders, args = ())
-		t.start()
 		
-	
-	## thread runs this code
+	##task function	
 	## updates balance and open orders for each sym every RUN_PERIOD
 	def update_orders(self):
-		last_time = 0 
-		while(True):
-			if (time.time() - last_time) > self.RUN_PERIOD:
-				available_balances = self.get_available_balances()
-				(open_buy_orders, open_sell_orders) = self.get_open_orders()
-				
-				for s in self.SYMS:
-					self.sym_infos[s].update(available_balances[s], open_buy_orders[s], open_sell_orders[s])
-				
-				last_time = time.time() 
-			else:
-				time.sleep(1)
-
+		print("updating")
+		available_balances = self.get_available_balances()
+		(open_buy_orders, open_sell_orders) = self.get_open_orders()
+		for s in self.SYMS:
+			self.sym_infos[s].update(available_balances[s], open_buy_orders[s], open_sell_orders[s])
+		return Task.CONTINUE
+		
 
 
 	## returns dictionary of open_sell_orders and open_buy_orders for given sym

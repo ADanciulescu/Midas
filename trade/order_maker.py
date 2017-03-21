@@ -6,6 +6,7 @@ from poloniex import Poloniex
 from order import Order
 from order_table import OrderTable
 from order_updater import OrderUpdater
+from task import Task
 import time
 import threading
 import calendar
@@ -32,11 +33,11 @@ class OrderMaker:
 	FAIL = "FAIL"
 	SUCCESS = "SUCCESS"
 
-	def __init__(self):
+	def __init__(self, order_updater, scheduler):
 		self.polo = Poloniex.get_instance()
-		self.order_updater = OrderUpdater()
+		self.order_updater = order_updater
+		self.scheduler = scheduler
 		
-		self.order_updater.run()
 	
 	## slow buy when signal says to buy, slow sell when signal says to sell
 	def handle_signal_classic(self, signal):
@@ -62,7 +63,7 @@ class OrderMaker:
 				return
 			if len(open_buy_orders) > 0: ##if open buy orders exist already for this curr_pair cancel them then sell
 				self.try_repeatedly(self.cancel_order, sym_info.open_buy_orders[0])
-			self.slow_sell(signal.sym, amt, sell_all = True, limit = (signal.price*0.995))
+			self.slow_sell(signal.sym, 1, sell_all = True, limit = (signal.price*0.995))
 
 	##wrapper for cancel or move order
 	##tries repeatedly until either successful or order is confirmed to be already gone
@@ -150,74 +151,92 @@ class OrderMaker:
 
 	## creates a thread that performs slow buy and runs slow_buy_code	
 	def slow_buy(self, sym, sym_money, limit =  100000):
-		t = threading.Thread(target = self.slow_buy_code, args = (sym, sym_money, limit))
-		t.start()
-	
+
+		balance = self.order_updater.sym_infos["USDT"].available_balance
+
+		if sym_money > balance:
+			print("Can't buy, not enough funds")
+			return
+		else:
+			##place initial buy order
+			curr_pair = "USDT_" + sym
+			rate = self.get_top_bid(curr_pair) + OrderMaker.TINY_AMT
+			amount = sym_money/rate
+			print(("Slow buying", curr_pair, ":", amount, "at", rate))
+			order = self.place_buy_order(curr_pair, rate, amount)
+
+			##set up a task to update order
+			slow_buy_task = Task(self.slow_buy_update, 0, args = (sym, sym_money, limit))
+			self.scheduler.schedule_task(slow_buy_task)
+
 	## creates a thread that performs slow sell and runs slow_sell_code	
 	def slow_sell(self, sym, sym_money, limit = 0, sell_all = False):
-		t = threading.Thread(target = self.slow_sell_code, args = (sym, sym_money, limit, sell_all))
-		t.start()
+		##place initial sell order
+		curr_pair = "USDT_" + sym
+		rate = self.get_bottom_ask(curr_pair)
+		if sell_all:
+			amount = self.order_updater.sym_infos[sym].available_balance
+			if amount == 0:
+				return
+		else:
+			amount = sym_money/rate
+		print(("Slow selling", curr_pair, ":", amount, "at", rate))
+		order = self.place_sell_order(curr_pair, rate, amount)
+		
+		
+		
+		##set up a task to update order
+		slow_sell_task = Task(self.slow_sell_update, 0, args = (sym, sym_money, limit, sell_all))
+		self.scheduler.schedule_task(slow_sell_task)
+		##t = threading.Thread(target = self.slow_sell_code, args = (sym, sym_money, limit, sell_all))
+		##t.start()
 	
 	##Buy sym money worth of sym currency by repeatedly posting order at slightly more than current highest bid
-	def slow_buy_code(self, sym, sym_money, limit):
-		##place initial buy order
+	def slow_buy_update(self, sym, sym_money, limit):
 		curr_pair = "USDT_" + sym
-		rate = self.get_top_bid(curr_pair) + OrderMaker.TINY_AMT
-
-		amount = sym_money/rate
-
-		print(("Slow buying", curr_pair, ":", amount, "at", rate))
-		order = self.place_buy_order(curr_pair, rate, amount)
-
 		sym_info = self.order_updater.sym_infos[sym]
+		open_buy_orders = sym_info.open_buy_orders
 		
-		while(len(sym_info.open_buy_orders) > 0):
-			order = sym_info.open_buy_orders[0]
+		if len(open_buy_orders) == 0:
+			print("Done slow BUYING", curr_pair)
+			return Task.DONE
+		else:
+			order = open_buy_orders[0]
 			new_rate = self.get_top_bid(curr_pair, order)
 			##amount_filled = initial_amount - order.amount
 			
 			## if i've been overbid, modify my bid to get to top of list
 			if new_rate != order.rate:
 				if new_rate > limit: ##if surpassed limit cancel order
-					self.try_repeatedly(self.cancel_order, order)
+					self.cancel_order(order)
 				else:
 					order.rate = new_rate
 					print(("Updating slow buying", curr_pair, ":", order.amount, "at", new_rate))
-					self.try_repeatedly(self.move_order, order)
-		print("Done slow BUYING", curr_pair)
+					self.move_order(order)
+			return Task.CONTINUE
 	
 	##Sell sym money worth of sym currency by repeatedly posting order at slightly less than current lowest ask
-	def slow_sell_code(self, sym, sym_money, limit, sell_all):
+	def slow_sell_update(self, sym, sym_money, limit, sell_all):
 		curr_pair = "USDT_" + sym
-		rate = self.get_bottom_ask(curr_pair)
-		print("here")
-		if sell_all:
-			amount = self.order_updater.sym_infos[sym].available_balance
-			print(amount)
-			if amount == 0:
-				return
-		else:
-			amount = sym_money/rate
-		print("here2")
-		
-		print(("Slow selling", curr_pair, ":", amount, "at", rate))
-		order = self.place_sell_order(curr_pair, rate, amount)
-		
 		sym_info = self.order_updater.sym_infos[sym]
-		
-		while(len(sym_info.open_sell_orders) > 0):
-			order = sym_info.open_sell_orders[0]
+		open_sell_orders = sym_info.open_sell_orders
+	
+		if len(open_sell_orders) == 0:
+			print("Done slow SELLING", curr_pair)
+			return Task.DONE
+		else:
+			order = open_sell_orders[0]
 			new_rate = self.get_bottom_ask(curr_pair, order)
 			
 			## if i've been underask, modify my ask to get to top of list
 			if new_rate != order.rate:
 				if new_rate < limit: ##if surpassed limit cancel order
-					self.try_repeatedly(self.cancel_order, order)
+					self.cancel_order(order)
 				else:
 					order.rate = new_rate
 					print(("Updating slow selling", curr_pair, ":", order.amount, "at", new_rate))
-					self.try_repeatedly(self.move_order, order)
-		print("Done slow SELLING", curr_pair)
+					self.move_order(order)
+			return Task.CONTINUE
 	
 
 	##places a buy order to buy curr_pair at rate and amount given 
