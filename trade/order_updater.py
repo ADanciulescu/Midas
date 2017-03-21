@@ -36,8 +36,6 @@ class OrderUpdater:
 		for s in self.SYMS:
 			self.sym_infos[s].update(available_balances[s], open_buy_orders[s], open_sell_orders[s])
 		return Task.CONTINUE
-		
-
 
 	## returns dictionary of open_sell_orders and open_buy_orders for given sym
 	def get_open_orders(self):
@@ -74,7 +72,7 @@ class OrderUpdater:
 		info = self.polo.api_query("returnCompleteBalances",{})
 		if info is None:
 			print("API error unable to update_balances")
-			return self.get_available_balances(self)
+			return self.get_available_balances()
 		else:
 			for s in self.SYMS:
 				available_amt = float(info[s]['available'])

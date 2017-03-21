@@ -54,7 +54,7 @@ class OrderMaker:
 				return
 			if len(open_sell_orders) > 0: ##if open sell orders exist already for this curr_pair cancel them then slow buy
 				self.try_repeatedly(self.cancel_order, sym_info.open_sell_orders[0])
-			balance_available = sym_info.balance_available
+			balance_available = sym_info.available_balance
 			balance_in_usd = balance_available * signal.price
 			self.slow_buy(signal.sym, amt_in_usd - balance_in_usd, limit = (signal.price*1.005))
 		
@@ -99,6 +99,7 @@ class OrderMaker:
 			print("API error unable to cancel order")
 			return self.FAIL
 		else:
+			print("Successfully cancelled order", order.curr_pair)
 			order.drop()
 			sym = order.get_sym()
 			sym_info = self.order_updater.sym_infos[sym]
@@ -182,7 +183,6 @@ class OrderMaker:
 			amount = sym_money/rate
 		print(("Slow selling", curr_pair, ":", amount, "at", rate))
 		order = self.place_sell_order(curr_pair, rate, amount)
-		
 		
 		
 		##set up a task to update order
@@ -286,7 +286,7 @@ class OrderMaker:
 				else:
 					bits_above_my_order = 0
 					i=0
-					while(float(bids_result[i][0]) > prev_order.rate):
+					while(float(bids_result[i][0]) > prev_order.rate) and (bits_above_my_order < prev_order.amount*0.25):
 						bits_above_my_order += float(bids_result[i][1])
 						i += 1
 
@@ -312,7 +312,7 @@ class OrderMaker:
 				else:
 					bits_below_my_order = 0
 					i=0
-					while(float(asks_result[i][0]) < prev_order.rate):
+					while(float(asks_result[i][0]) < prev_order.rate) and (bits_below_my_order < prev_order.amount*0.25):
 						##print asks[i][0], "at", asks[i][1]
 						bits_below_my_order += float(asks_result[i][1])
 						i += 1
