@@ -7,9 +7,13 @@ class HoldStrategy:
 
 	NAME = "HOLD"
 
-	def __init__(self, table_name):
+	def __init__(self, table_name, bitsec):
 		self.candles = CandleTable.get_candle_array(table_name)
-		self.amount = TradeSimulator.get_currency_amount(table_name)
+		self.bitsec = bitsec
+		num_candles = len(self.candles)
+		period = float(CandleTable.get_period(table_name))
+
+		self.amount = bitsec/(num_candles*period)
 
 	##simply returns name
 	def get_name(self):

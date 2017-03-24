@@ -15,7 +15,7 @@ class TradeSimulator:
 
 	##poloniex fees
 	SELL_FEE = 0.0015
-	BUY_FEE = 0.0025
+	BUY_FEE = 0.0015
 
 	##core amounts for each currency
 	BTC_AMOUNT = 0.12 
@@ -175,7 +175,7 @@ class TradeSimulator:
 				self.attempt_sell(i, last_date, self.bits_array[i], last_price)
 		
 		if self.money_spent > 0:
-			self.profit_percent = self.balance/(-1*self.max_debt)
+			self.profit_percent = 1 + self.balance/(-1*self.max_debt)
 		else:
 			self.profit_percent = 0
 
