@@ -7,20 +7,18 @@ class HoldStrategy:
 
 	NAME = "HOLD"
 
-	def __init__(self, table_name, bitsec):
+	def __init__(self, table_name, to_spend):
 		self.candles = CandleTable.get_candle_array(table_name)
-		self.bitsec = bitsec
 		num_candles = len(self.candles)
 		period = float(CandleTable.get_period(table_name))
-
-		self.amount = bitsec/(num_candles*period)
+		self.amount = to_spend/(self.candles[0].close*(1+TradeSimulator.BUY_FEE))
 
 	##simply returns name
 	def get_name(self):
 		return  self.NAME
 
 	##returns market operation
-	def decide(self, candle_num, bits):
+	def decide(self, candle_num, bits, balance):
 		
 		if candle_num == 0:
 			return Operation(Operation.BUY_OP, self.amount)

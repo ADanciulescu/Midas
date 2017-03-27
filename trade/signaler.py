@@ -127,12 +127,12 @@ class Signaler:
 		##run a strategy on the candles and store the resulting operations returned
 		strat = self.strat_array[tn_index]
 		sym = SignalTable.get_sym(self.signal_table_names[tn_index])
-		strat.update_state(candles, self.sym_infos[sym].is_owned)
+		strat.update_state(candles)
 	
 		##i = new_candle_index
 		##while i < len(candles):
 		i = len(candles) - 1
-		o = strat.decide(i, 0)	
+		o = strat.decide(i, self.sym_infos[sym].total_balance, self.sym_infos["USDT"].total_balance)	
 		sig = Sig(signal_tn, candles[i].date, SignalTable.get_sym(signal_tn), o.amount, candles[i].close, o.op)
 		new_signals.append(sig)	
 		##i += 1

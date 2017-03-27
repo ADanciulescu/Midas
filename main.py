@@ -70,9 +70,9 @@ def main():
 	##trader = Trader(Trader.CLASSIC)
 	##trader.run()
 	
-	##CandleFetcher.update_tables(table_names.short_term_tables)
-	##trader = Trader(Trader.CLASSIC)
-	##trader.run()
+	CandleFetcher.update_tables(table_names.short_term_tables)
+	trader = Trader(Trader.CLASSIC)
+	trader.run()
 
 	##while(True):
 		##print(time.time())
@@ -130,7 +130,7 @@ def main():
 	##print "Total Balance:", total_balance
 	##print "Total Percent:", total_percent
 
-	test_short()
+	##test_short()
 	
 
 	##date2 = date1+ HALF_DAY
@@ -182,7 +182,7 @@ def test_short():
 	for i in range(10):
 		date2 = date1+ 1*30*2*HALF_DAY
 		tn = CandleFetcher.cut_table(table_names.ETH_300, date1, date2)
-		strat = ShortTermStrategy(tn, calc_stats = True)
+		strat = ShortTermStrategy(tn, calc_stats = False)
 		##strat = BollingerStrategy(tn, set_default = True)
 		(profit, balance, balance_bitsec) = test_against_hold(strat)
 		total_profit *= 1+profit
@@ -236,15 +236,15 @@ def test_against_normal(strat):
 def test_against_hold(strat):
 	print("**************************************NORMAL************************************************")
 	tn = strat.table_name
-	trade_sim = TradeSimulator([tn], [strat], to_print_trades = False, to_log = True)
+	trade_sim = TradeSimulator([tn], [strat], limit = -100, to_print_trades = True, to_log = True)
 	trade_sim.run()
 	f_bitsec = trade_sim.bit_sec
 	f_balance = trade_sim.balance
 	f_profit_percent = trade_sim.profit_percent
 	f_balance_bitsec = trade_sim.profit_per_bitsec
 
-	strat = HoldStrategy(tn, f_bitsec)
-	trade_sim = TradeSimulator([tn], [strat], to_log = True)
+	strat = HoldStrategy(tn, 100)
+	trade_sim = TradeSimulator([tn], [strat], limit = -100, to_log = True)
 	trade_sim.run()
 	s_bitsec = trade_sim.bit_sec
 	s_balance = trade_sim.balance

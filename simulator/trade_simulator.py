@@ -30,7 +30,7 @@ class TradeSimulator:
 	ZEC_AMOUNT = 25000 
 	DEFAULT_AMOUNT = 10
 
-	def __init__(self, table_name_array, strategy_array, limit = -12345, to_print = True, to_print_trades = False, to_log = True):
+	def __init__(self, table_name_array, strategy_array, limit = None, to_print = True, to_print_trades = False, to_log = True):
 		self.table_name_array = table_name_array
 		self.strategy_array = strategy_array
 		self.balance_limit = limit ##limits how low max_debt can go before buying fails
@@ -69,7 +69,9 @@ class TradeSimulator:
 			candles = CandleTable.get_candle_array(tn)
 			self.candles_array.append(candles)
 		
-
+		for s in self.strategy_array:
+			if hasattr(s, "adapter") and self.balance_limit is not None:
+				s.adapter.set_limit(self.balance_limit)
 
 		##create trade tables 
 		if self.to_log:
@@ -110,8 +112,7 @@ class TradeSimulator:
 				##offset adjusts for different tables having different num of candles
 				offset = num_most_candles - len(self.candles_array[j])
 				if offset <= i:
-					
-					operation = self.strategy_array[j].decide(i - offset, self.bits_array[j])
+					operation = self.strategy_array[j].decide(i - offset, self.bits_array[j], self.balance)
 					self.process_operation(j, operation, self.candles_array[j][i-offset])
 				else: ##too early to trade these candles
 					pass
@@ -195,24 +196,13 @@ class TradeSimulator:
 	
 	def attempt_buy(self, currency_index, date, amount, price):
 		total_cost = (amount*price)*(1+TradeSimulator.BUY_FEE)
-		allowance =  self.balance - self.balance_limit ##balance_limit is a negative number
-
-		## if performing buy would surpass limit
-		if total_cost > allowance and self.balance_limit != -12345:
-			if allowance <= 0:
-				self.fail_buy(currency_index, date, amount, price)
-			else:
-				##use all existing allowance to complete a smaller but valid buy
-				new_amount = allowance/(price* (1 + TradeSimulator.BUY_FEE))
-				self.attempt_buy(currency_index, date, new_amount, price)
-		else: ##buying is valid, doesn't surpass limit
-			self.balance -= total_cost 
-			self.money_spent += total_cost 
-			self.bits_array[currency_index] += amount
-			self.total_bits_bought_array[currency_index] += amount
-			#update max_debt
-			if self.balance < self.max_debt:
-				self.max_debt = self.balance
+		self.balance -= total_cost 
+		self.money_spent += total_cost 
+		self.bits_array[currency_index] += amount
+		self.total_bits_bought_array[currency_index] += amount
+		#update max_debt
+		if self.balance < self.max_debt:
+			self.max_debt = self.balance
 		
 		
 		self.log_trade(currency_index, date, amount, price, Trade.BUY_TYPE)

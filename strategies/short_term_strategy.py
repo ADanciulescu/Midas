@@ -12,11 +12,12 @@ from point_populator import PointPopulator
 from strat_stat import StratStat
 from strat_stat_table import StratStatTable
 from standard_deviation import StandardDeviation
+from short_strat_adapter import ShortStratAdapter
 
 class ShortTermStrategy:
 
 	NAME = "SHORTTERM"
-	DATA_PAST = 50 
+	DATA_PAST = 25 
 	VOL_PERIOD_LONG = 500
 	VOL_PERIOD_SHORT = 20 
 	STDDEV_PERIOD_LONG = 100 
@@ -31,13 +32,15 @@ class ShortTermStrategy:
 		self.is_simul = is_simul
 		self.area_array = []
 
+		self.adapter = ShortStratAdapter(is_simul)
+
 		if is_simul:
 			self.amount = TradeSimulator.get_currency_amount(table_name)
 		else:
 			self.amount = 1
 		
 		init_candles = self.candles[:self.DATA_PAST]
-		self.ranges = self.create_ranges_better(init_candles)
+		self.ranges = self.create_ranges(init_candles)
 		self.interval_array = self.create_interval_array(self.ranges)
 		
 		##self.interval_array.pprint()
@@ -47,11 +50,9 @@ class ShortTermStrategy:
 		sym = CandleTable.get_target_currency(table_name)
 
 		if is_simul:
-			self.last = "sell"
 			self.calc_vol_tables()
 	
 	def calc_vol_tables(self):
-
 		if self.calc_stats:
 			self.strat_stat_array = []
 			self.ss_tn = StratStatTable.calc_name(self.table_name, self.NAME)
@@ -78,12 +79,8 @@ class ShortTermStrategy:
 
 
 	##called by signaler when it grabs new data
-	def update_state(self, new_candles, is_avail):
+	def update_state(self, new_candles):
 		self.candles = new_candles
-		if is_avail:
-			self.last = "buy"
-		else:
-			self.last = "sell"
 
 
 
@@ -112,63 +109,7 @@ class ShortTermStrategy:
 		##print self.interval_array.area_between(742.9959858699999, 744.10375414)
 
 
-
-
-	##merge ranges separated by a range of period length 1
-	@staticmethod
-	def merge_ranges(ranges):
-		merged_ranges = []
-		i = 0
-		while i < len(ranges):
-			if i > len(ranges)-3 or ranges[i+1].get_len() != 1:
-				r = ranges[i]
-				i += 1
-			else:
-				r = Range.merge(ranges[i], ranges[i+2], 0)
-				i += 3
-			merged_ranges.append(r)
-			
-		if len(ranges) != len(merged_ranges):
-			return ShortTermStrategy.merge_ranges(merged_ranges)
-		else:
-			return merged_ranges
-
-			
-
-	## populate ranges	
-	def create_ranges(self, train_candles):
-		range_candles = self.candles[-self.DATA_PAST:]
-		self.ranges = self.create_ranges_better(init_candles)
-		self.interval_array = self.create_interval_array(self.ranges)
-		ranges = []
-		r = Range(None, None, 0)
-		i = 0
-		while i < len(train_candles):
-			c = train_candles[i]
-			if r.pt1 is None: ##new range is being created
-				r.pt1 = Point("", c.date, c.open)
-			elif r.pt2 is None: ##new range was just created(pt2 is still None)
-				r.pt2 = Point("", c.date, c.close)
-				r.calc_type()
-			else: ##range already is populated, decide whether new point continues range or a new range should be created
-				if r.type == "INC":
-					if c.close >= r.pt2.value: ##continue trend
-						r.pt2 = Point("", c.date, c.close)
-					else: ##new trend must be made
-						ranges.append(r)
-						r = Range(None, None, 0)
-						i -= 2
-				else:
-					if c.close <= r.pt2.value: ##continue trend
-						r.pt2 = Point("", c.date, c.close)
-					else: ##new trend must be made
-						ranges.append(r)
-						r = Range(None, None, 0)
-						i -= 2
-			i += 1
-		return ranges
-	
-	def create_ranges_better(self, candles):
+	def create_ranges(self, candles):
 		ranges = []
 		i = 0
 		while i < len(candles)-1:
@@ -183,14 +124,12 @@ class ShortTermStrategy:
 		##self.interval_array.delete_range
 
 
-			
-
 	##simply returns name
 	def get_name(self):
 		return  self.NAME
 
 	##returns market operation
-	def decide(self, candle_num, bits):
+	def decide(self, candle_num, bits, balance):
 		if candle_num < self.DATA_PAST:
 			return Operation(Operation.NONE_OP, 0)
 		else:
@@ -198,7 +137,7 @@ class ShortTermStrategy:
 			if not self.is_simul:
 				num_candles = len(self.candles)
 				range_candles = self.candles[candle_num-self.DATA_PAST+1:candle_num + 1]
-				self.ranges = self.create_ranges_better(range_candles)
+				self.ranges = self.create_ranges(range_candles)
 				self.interval_array = self.create_interval_array(self.ranges)
 	
 			##make sure that more volume was traded during the next candle than amount intended to trade
@@ -234,45 +173,39 @@ class ShortTermStrategy:
 				##self.factor = self.stddev_pts_long[candle_num-self.STDDEV_PERIOD_LONG].value/self.stddev_pts_long[candle_num-self.STDDEV_PERIOD_LONG].value				
 			##else:
 				##self.factor = 1
-			self.factor = 1
 
 			if floor > 0:
 				self.area_array.append((floor, ceiling))
 
 			##if broke underneath floor since last candle -> buy
 			if self.candles[candle_num-1].close > floor and self.candles[candle_num].close < floor:
-				if self.last == "sell":
-					type = Operation.BUY_OP
-					if self.is_simul:
-						amount = self.amount*self.factor
-					else:
-						amount = self.amount
-					self.last = "buy"
+				type = Operation.BUY_OP
+				amount = self.amount
+				if self.is_simul and self.calc_stats:
+					ss = StratStat(self.ss_tn, self.candles[candle_num].close, candle_num)
+					self.strat_stat_array.append(ss)
 
-					if self.is_simul and self.calc_stats:
-						ss = StratStat(self.ss_tn, self.candles[candle_num].close, candle_num)
-						self.strat_stat_array.append(ss)
+				(amount, type) = self.adapter.approve(self.candles[candle_num].close, amount, type, balance, bits)
 			##if broke through ceiling since last candle -> sell
 			elif self.candles[candle_num-1].close < ceiling and self.candles[candle_num].close > ceiling:
-				if self.last == "buy":
-					type = Operation.SELL_OP
-					amount = bits 
-					self.last = "sell"
-					
-					if self.is_simul and self.calc_stats:
-						ss = self.strat_stat_array[-1]
-						sell_rate = self.candles[candle_num].close
-						total_volume = 0
-						total_price = 0
-						num_candles = 0
-						for c in self.candles[ss.buy_candle_index:candle_num+1]:
-							total_volume += c.volume
-							total_price += c.close
-							num_candles+=1
-						stddev = StandardDeviation.simple(self.points_close[ss.buy_candle_index:candle_num+1])
-						volatility = stddev/(total_price/num_candles)
-						ss.update_values(sell_rate, total_volume, volatility)
-						ss.save()
+				type = Operation.SELL_OP
+				amount = bits 
+				
+				if self.is_simul and self.calc_stats:
+					ss = self.strat_stat_array[-1]
+					sell_rate = self.candles[candle_num].close
+					total_volume = 0
+					total_price = 0
+					num_candles = 0
+					for c in self.candles[ss.buy_candle_index:candle_num+1]:
+						total_volume += c.volume
+						total_price += c.close
+						num_candles+=1
+					stddev = StandardDeviation.simple(self.points_close[ss.buy_candle_index:candle_num+1])
+					volatility = stddev/(total_price/num_candles)
+					ss.update_values(sell_rate, total_volume, volatility)
+					ss.save()
+				(amount, type) = self.adapter.approve(self.candles[candle_num].close, amount, type, balance, bits)
 			elif floor == -1:
 				##if self.last == "buy":
 					##if self.candles[candle_num].close < self.area_array[-1][0]:

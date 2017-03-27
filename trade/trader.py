@@ -39,8 +39,10 @@ class Trader:
 			self.signaler.update(self.order_updater.sym_infos)
 			new_signals_array = self.signaler.new_signals_array
 			self.handle_new_currency_signals(new_signals_array)
-			for i in range(len(table_names.short_term_tables)):
-				print("last operation was: " , self.signaler.strat_array[i].last)
+			
+			sym_infos = self.order_updater.sym_infos
+			for key, value in sym_infos.items():
+				print("last operation was: " , value.is_owned)
 
 		return Task.CONTINUE
 
