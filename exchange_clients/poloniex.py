@@ -14,7 +14,7 @@ class Poloniex:
 	INSTANCE = None
 
 	def __init__(self):
-		with open('./trade/poloniex_secret.key', 'r') as myfile:
+		with open('./exchange_clients/poloniex_secret.key', 'r') as myfile:
 			key = myfile.readline().rstrip()
 			secret = myfile.readline().rstrip()
 		self.APIKey = key

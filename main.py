@@ -179,9 +179,9 @@ def test_short():
 	total_balance = 0
 	total_balance_bitsec = 0
 	date1 = date_to_timestamp("2016-6-1")
-	for i in range(10):
-		date2 = date1+ 1*30*2*HALF_DAY
-		tn = CandleFetcher.cut_table(table_names.ETH_300, date1, date2)
+	for i in range(1):
+		date2 = date1+ 10*30*2*HALF_DAY
+		tn = CandleFetcher.cut_table(table_names.BTC_300, date1, date2)
 		strat = ShortTermStrategy(tn, calc_stats = False)
 		##strat = BollingerStrategy(tn, set_default = True)
 		(profit, balance, balance_bitsec) = test_against_hold(strat)
@@ -201,42 +201,11 @@ def test_short():
 	print("total balance bitsec:", total_balance_bitsec)
 	##print(total_profit_bitsec)
 
-def test_against_normal(strat):
-	print("**************************************NORMAL************************************************")
-	tn = strat.table_name
-	trade_sim = TradeSimulator([tn], [strat], to_print_trades = False, to_log = True)
-	trade_sim.run()
-	f_bitsec = trade_sim.bit_sec
-	f_bits = trade_sim.total_bits_bought_array[0]
-	f_balance = trade_sim.balance
-	f_profit_percent = trade_sim.profit_percent
-	f_balance_bitsec = trade_sim.profit_per_bitsec
-
-	strat = NormalStrategy(tn, f_bits, f_bitsec)
-	trade_sim = TradeSimulator([tn], [strat], to_log = True)
-	trade_sim.run()
-	s_bitsec = trade_sim.bit_sec
-	s_bits = trade_sim.total_bits_bought_array[0]
-	s_balance = trade_sim.balance
-	s_profit_percent = trade_sim.profit_percent
-	
-	print()
-	##print "First: bits, bitsec", f_bits, f_bitsec
-	##print "Second: bits, bitsec", s_bits, s_bitsec
-	print(("balance dif:", f_balance-s_balance))
-	print(("profit dif:", f_profit_percent-s_profit_percent))
-	print("**************************************NORMAL DONE*******************************************")
-	##total = 0
-	##for r in strat.runs:
-		##total+=r
-	##print total/len(strat.runs)
-	##return f_profit_percent
-	return (f_profit_percent, f_balance, f_balance_bitsec)
 
 def test_against_hold(strat):
 	print("**************************************NORMAL************************************************")
 	tn = strat.table_name
-	trade_sim = TradeSimulator([tn], [strat], limit = -100, to_print_trades = True, to_log = True)
+	trade_sim = TradeSimulator([tn], [strat], limit = -100, to_print_trades = False, to_log = True)
 	trade_sim.run()
 	f_bitsec = trade_sim.bit_sec
 	f_balance = trade_sim.balance

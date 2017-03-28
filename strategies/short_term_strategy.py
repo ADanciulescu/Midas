@@ -86,16 +86,13 @@ class ShortTermStrategy:
 
 	def create_interval_array(self, ranges):
 		##insert first range
-		if ranges[0].type == "DESC":
-			new_range = Range(ranges[0].pt2, ranges[0].pt1, 1)
-		else:
-			new_range = Range(ranges[0].pt1, ranges[0].pt2, 1)
+		##if ranges[0].type == "DESC":
+			##new_range = Range(ranges[0].pt2, ranges[0].pt1, 1)
+		##else:
+			##new_range = Range(ranges[0].pt1, ranges[0].pt2, 1)
 
-		interval_array = IntervalArray([new_range])
-
-		for r in ranges[1:]:
-			interval_array.add_range(r)
-	
+		interval_array = IntervalArray()
+		interval_array.add_ranges(ranges)	
 		interval_array.update_intervals()
 
 		return interval_array
@@ -136,7 +133,7 @@ class ShortTermStrategy:
 			##if called by signaler, need to recalculate interval_array
 			if not self.is_simul:
 				num_candles = len(self.candles)
-				range_candles = self.candles[candle_num-self.DATA_PAST+1:candle_num + 1]
+				range_candles = self.candles[candle_num-self.DATA_PAST:candle_num]
 				self.ranges = self.create_ranges(range_candles)
 				self.interval_array = self.create_interval_array(self.ranges)
 	
@@ -149,6 +146,8 @@ class ShortTermStrategy:
 			##if self.is_simul and candle_num != len(self.candles)-1:
 				##if self.candles[candle_num+1].volume < self.amount:
 					##return Operation(Operation.NONE_OP, 0)
+			if self.is_simul:
+				self.recalc_interval_array(candle_num)
 
 
 
@@ -223,8 +222,6 @@ class ShortTermStrategy:
 			else:
 				type = Operation.NONE_OP
 		
-			if self.is_simul:
-				self.recalc_interval_array(candle_num)
 			return Operation(type, amount)
 				
 	

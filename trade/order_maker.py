@@ -29,7 +29,7 @@ class OrderMaker:
 			"USDT_XRP" : 0
 	}
 	
-	TINY_AMT = 0.00000001
+	TINY_AMT = 0.00000011
 	FAIL = "FAIL"
 	SUCCESS = "SUCCESS"
 

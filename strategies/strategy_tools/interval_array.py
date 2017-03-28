@@ -2,6 +2,7 @@
 ## stores intervals that aggregate ranges travelled by price
 
 from range import Range
+import math
 
 class Area:
 
@@ -17,7 +18,8 @@ class Area:
 
 	def calculate_limits(self, interval_array):
 		self.mid = interval_array.find_percentile(self.low_min, self.high_min, 0.5)
-		if interval_array.height_at(self.mid) < 1:
+		##if interval_array.height_at(self.mid) < 1:
+		if False:
 			self.low_limit = -1
 			self.high_limit = -1
 		else:
@@ -30,15 +32,26 @@ class Area:
 
 class IntervalArray:
 
-	def __init__(self, interval_array):
-		self.interval_array = interval_array
+	def __init__(self):
+		self.interval_array = [] 
 		self.cumulative_array = []
 		self.local_mins = []
 		self.local_maxes = []
 
 	def add_ranges(self, ranges):
-		for r in ranges:
-			self.add_range(r)
+		num_ranges = len(ranges)
+		
+		if ranges[0].type == "DESC":
+			new_range = Range(ranges[0].pt2, ranges[0].pt1, 0)
+		else:
+			new_range = Range(ranges[0].pt1, ranges[0].pt2, 0)
+		
+		self.interval_array = [new_range]
+		
+		for i, r in enumerate(ranges[1:]):
+			##val = math.log1p(i)
+			val = (i+1)/num_ranges
+			self.add_range(r, val)
 
 	def height_at(self, val):
 		for i in self.interval_array:
@@ -46,10 +59,11 @@ class IntervalArray:
 				return i.value
 	
 	##updates interval arrange by adding the range given
-	def add_range(self, r):
+	def add_range(self, r, val):
 		self.add_key_pt(r.pt1)	
 		self.add_key_pt(r.pt2)
-		self.update_interval_values(r, 1)
+		self.update_interval_values(r, val)
+
 	
 	##updates interval arrange by deleting the range given
 	def delete_range(self, r):
