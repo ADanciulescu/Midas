@@ -1,3 +1,23 @@
+import os
+import sys
+from pathlib import Path
+
+PROJECT_DIRECTORY = Path(__file__).parent.absolute()
+
+def addFoldersToPath(directory, recursive=True):
+	'''
+	Directory has to be pathlib format
+	'''
+	for item in directory.iterdir():
+		if item.is_dir():
+			sys.path.append(str(item))
+			if recursive:
+				addFoldersToPath(item)
+
+addFoldersToPath(PROJECT_DIRECTORY)				
+
+
+
 from poloniex import Poloniex
 from db_manager import DBManager
 from trade_simulator import TradeSimulator
