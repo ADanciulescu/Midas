@@ -386,6 +386,6 @@ def populate_sim_roc_points(source_table_name):
 	pp = PointPopulator(source_table_name)
 	pp.create_roc()
 
-
-main()
+if __name__ == '__main__':
+	main()
 
