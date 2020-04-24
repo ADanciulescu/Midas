@@ -5,17 +5,10 @@ import argparse
 
 PROJECT_DIRECTORY = Path(__file__).parent.absolute()
 
-def addFoldersToPath(directory, recursive=True):
-	'''
-	Directory has to be pathlib format
-	'''
-	for item in directory.iterdir():
-		if item.is_dir():
-			sys.path.append(str(item))
-			if recursive:
-				addFoldersToPath(item)
+from utils import addFoldersToPath
 
-addFoldersToPath(PROJECT_DIRECTORY)				
+addFoldersToPath(PROJECT_DIRECTORY)
+				
 
 from candle_fetcher import CandleFetcher
 from tools import date_to_timestamp
@@ -27,6 +20,5 @@ parser.add_argument('--ticker', help='Pull data on this ticker, i.e BTC', requir
 parser.add_argument('--start_date', help='Pull data after this date, i.e 2019-6-1', required=True)
 parser.add_argument('--resolution', help='Width of each candle in seconds, i.e 300, 7200, 14400', required=True)
 args = parser.parse_args()
-
 
 CandleFetcher.fetch_candles_after_date(args.ticker, date_to_timestamp(args.start_date), int(args.resolution))
