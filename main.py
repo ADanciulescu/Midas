@@ -57,6 +57,11 @@ from stat_calculator import StatCalculator
 import table_names
 import time
 import threading
+import argparse
+
+parser = argparse.ArgumentParser(description='The best Trading Script!')
+parser.add_argument('--strategy', help='Pick a strategy to run; i.e. classic')
+args = parser.parse_args()
 
 ##TODO: keep testing with more data and keep adjusting parameters
 ##TODO: buy btc
@@ -70,7 +75,11 @@ import threading
 HALF_DAY = 43200
 
 def main():
-	test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
+	if args.strategy == "classic":
+		test = Sig("tn", 1451793600, "BTC", 1.1, 42, "BUY")
+		CandleFetcher.update_tables(table_names.short_term_tables)
+		trader = Trader(Trader.CLASSIC)
+		trader.run()
 
 	##DBManager.drop_matching_tables("SIGNAL")
 	##signaler = Signaler(table_names.short_term_tables)
@@ -90,9 +99,7 @@ def main():
 	##trader = Trader(Trader.CLASSIC)
 	##trader.run()
 	
-	CandleFetcher.update_tables(table_names.short_term_tables)
-	trader = Trader(Trader.CLASSIC)
-	trader.run()
+
 
 	##while(True):
 		##print(time.time())
