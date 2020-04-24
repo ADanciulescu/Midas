@@ -60,7 +60,7 @@ import threading
 import argparse
 
 parser = argparse.ArgumentParser(description='The best Trading Script!')
-parser.add_argument('--strategy', help='Pick a strategy to run; i.e. classic')
+parser.add_argument('--strategy', help='Pick a strategy to run; i.e. classic', required=True)
 args = parser.parse_args()
 
 ##TODO: keep testing with more data and keep adjusting parameters
