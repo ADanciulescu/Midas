@@ -61,4 +61,9 @@
  4. Add different exchange clients other than poloniex since others may have advatanges such as lower fees/
  
  5. Look into possibility for arbitrage between exchanges.
-
+ 
+  <h2>How to run:</h2>
+   <h3>Fetch Data:</h3>
+      python3 pull_data.py --ticker BTC --start_date 2019-1-1 --resolution 300
+   <h3>Backtest Strategy against existing data:</h3>
+      python3 backtest.py --strategy BollingerStrategy --ticker BTC --start_date 2019-06-01 --resolution 300 --num_days 100
