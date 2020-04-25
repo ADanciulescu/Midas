@@ -4,18 +4,9 @@ from pathlib import Path
 
 PROJECT_DIRECTORY = Path(__file__).parent.absolute()
 
-def addFoldersToPath(directory, recursive=True):
-	'''
-	Directory has to be pathlib format
-	'''
-	for item in directory.iterdir():
-		if item.is_dir():
-			sys.path.append(str(item))
-			if recursive:
-				addFoldersToPath(item)
+from utils import addFoldersToPath
 
-addFoldersToPath(PROJECT_DIRECTORY)				
-
+addFoldersToPath(PROJECT_DIRECTORY)
 
 
 from poloniex import Poloniex
