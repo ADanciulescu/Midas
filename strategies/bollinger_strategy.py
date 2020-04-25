@@ -29,7 +29,7 @@ class BollingerStrategy:
 	STANDARD_AMOUNT = 1
 
 	def __init__(self, table_name, std_amount = False, bb_factor = 2.5, to_carry = True, one_op = True, stddev_adjust = True, wait_better = True,
-			avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False):
+			avg_period = 80, num_past_buy = 0, num_past_sell = 6, set_default = False, calc_stats = False):
 		
 		##model parameters
 		self.bb_factor = bb_factor ##number of standard deviations of difference between a bollinger band and the avg
@@ -218,7 +218,7 @@ class BollingerStrategy:
 		return (amount, type)
 
 	##returns market operation
-	def decide(self, candle_num, bits):
+	def decide(self, candle_num, bits, balance):
 		date = self.candles[candle_num].date
 		amount = self.amount
 		price = self.candles[candle_num].close
